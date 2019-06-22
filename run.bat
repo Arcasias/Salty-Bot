@@ -1,2 +1,2 @@
-node index.js
-cmd /k
+npm start
+pause
