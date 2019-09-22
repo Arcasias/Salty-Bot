@@ -7,7 +7,6 @@ const fs = require('fs');
 const Guild = require('./Guild');
 const list = require('../data/list.json');
 const path = require('path');
-const Playlist = require('./Playlist');
 const Singleton = require('./Singleton');
 const User = require('./User');
 
@@ -274,7 +273,6 @@ class Salty extends Singleton {
                     this.bot.channels.get(guild.defaultChannel)
                         .send(UTIL.title(UTIL.choice(this.getList('intro'))));
                 }
-                guild.playlist = new Playlist();
             });
             
             const loadingTime = Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;

@@ -7,10 +7,7 @@ const S = require('../../classes/Salty');
 const error = require('../../classes/Exception');
 const ytdl = require('ytdl-core');
 
-const youtube = google.youtube({
-    version: 'v3',
-    auth: process.env.GOOGLE_API,
-});
+const youtube = new google.youtube_v3.Youtube(process.env.GOOGLE_API);
 const youtubeURL = 'https://www.youtube.com/watch?v=';
 const youtubeRegex = new RegExp('https://www.youtube.com/watch', 'i');
 
@@ -43,8 +40,6 @@ module.exports = new Command({
             effect: "Searches for a video on YouTube and plays the first result"
         },
     ],
-    // TODO: REMOVE -> there seems to be a problem with the ytdl library. Check this issue to see if it's resolved and remove mode on this command once it's fixed.
-    // https://github.com/discordjs/discord.js/issues/3314
     mode: 'none',
     visibility: 'public', 
     action: function (msg, args) {
