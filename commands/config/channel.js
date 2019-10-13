@@ -25,30 +25,27 @@ module.exports = new Command({
         },
     ],
     visibility: 'admin', 
-    action: function (msg, args) {
-        let guild = Guild.get(msg.guild.id);
+    action: async function (msg, args) {
+        const guild = Guild.get(msg.guild.id);
 
         if (args[0] && S.getList('add').includes(args[0])) {
-            guild.defaultChannel = msg.channel.id;
-
-            S.embed(msg, { title: `channel **${ msg.channel.name }** has been successfuly set as default bot channel for **${ msg.guild.name }**`, type: 'success' });
+            await Guild.update(guild.id, { default_channel: msg.channel.id });
+            await S.embed(msg, { title: `channel **${ msg.channel.name }** has been successfuly set as default bot channel for **${msg.guild.name}**`, type: 'success' });
         } else if (args[0] && S.getList('delete').includes(args[0])) {
-            if (! guild.defaultChannel) {
+            if (!guild.default_channel) {
                 return S.msg(msg, "no default bot channel set");
             }
-            guild.defaultChannel = null;
-
-            S.embed(msg, { title: "default bot channel has been successfuly removed", type: 'success' });
+            await Guild.update(guild.id, { default_channel: null });
+            await S.embed(msg, { title: "default bot channel has been successfuly removed", type: 'success' });
         } else {
-            if (! guild.defaultChannel) {
+            if (!guild.default_channel) {
                 return S.msg(msg, "no default bot channel set");
             }
-            let chanName = bot.channels.get(guild.defaultChannel).name;
-
-            if (msg.channel.id == guild.defaultChannel) {
-                S.embed(msg, { title: "this is the current default channel", description: "I'll speak right here when I need to" });
+            const chanName = S.bot.channels.get(guild.default_channel).name;
+            if (parseInt(msg.channel.id) === parseInt(guild.default_channel)) {
+                await S.embed(msg, { title: "this is the current default channel", description: "I'll speak right here when I need to" });
             } else {
-                S.embed(msg, { title: `default bot channel is **${ chanName }**`, description: "this is where I'll speak when I need to" });
+                await S.embed(msg, { title: `default bot channel is **${chanName}**`, description: "this is where I'll speak when I need to" });
             }
         }
     },

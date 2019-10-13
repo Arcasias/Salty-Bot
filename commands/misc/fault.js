@@ -17,15 +17,14 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-
-        let fault = S.getList('fault');
-        let text = (UTIL.choice(fault.start) + UTIL.choice(fault.sentence))
+    action: async function (msg, args) {
+        const fault = S.getList('fault');
+        const text = (UTIL.choice(fault.start) + UTIL.choice(fault.sentence))
             .replace(/<subject>/g, UTIL.choice(fault.subject))
             .replace(/<reason>/g, UTIL.choice(fault.reason))
             .replace(/<punishment>/g, UTIL.choice(fault.punishment));
 
-        S.msg(msg, text);
+        await S.msg(msg, text);
     },
 });
 

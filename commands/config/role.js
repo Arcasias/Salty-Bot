@@ -26,41 +26,42 @@ module.exports = new Command({
         },
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
-        if (args[0] && S.getList('add').includes(args[0])) {
-            let { guild } = msg;
+    action: async function (msg, args) {
+        const { guild } = msg;
+        const guildDBId = Guild.get(guild.id).id;
 
-            if (! args[1]) {
-                throw new error.MissingArg("name of the role");
+        if (args[0] && S.getList('add').includes(args[0])) {
+            if (!args[1]) {
+                throw new error.MissingArg("new role");
             }
-            args.shift();
-            let role = guild.roles.find(r => r.name === args.join(" "));
-            if (! role) {
+            let role = msg.mentions.roles.first();
+            const roleName = args.slice(1).join(" ");
+            if (!role) {
+                role = guild.roles.find(r => r.name === roleName);
+            }
+            if (!role) {
                 try {
-                    guild.createRole({ name: args.join(" "), color: '#1eff00' }).then(role => {
-                        Guild.get(guild.id).defaultRole = role.id;
-                        S.embed(msg, { title: `role **${ role.name }** has been successfuly created and set as default role for **${ guild.name }**`, type: 'success' });
-                    });
+                    role = await guild.createRole({ name: roleName, color: '#1eff00' });
+                    await Guild.update(guildDBId, { default_role: role.id });
+                    await S.embed(msg, { title: `role **${role.name}** has been successfuly created and set as default role for **${guild.name}**`, type: 'success' });
                 } catch (error) {
                     throw new error.PermissionDenied("authorized to create new roles", "I");
                 }
             } else {
-                Guild.get(guild.id).defaultRole = role.id;
-                S.embed(msg, { title: `role **${ role.name }** has been successfuly set as default role for **${ guild.name }**`, type: 'success' });
+                await Guild.update(guildDBId, { default_role: role.id });
+                await S.embed(msg, { title: `role **${ role.name }** has been successfuly set as default role for **${guild.name}**`, type: 'success' });
             }
         } else if (args[0] && S.getList('delete').includes(args[0])) {
-            let { guild } = msg;
-            if (! Guild.get(guild.id).defaultChannel) {
+            if (!Guild.get(guild.id).default_channel) {
                 throw new error.SaltyException("no default role set");
             }
-            Guild.get(guild.id).defaultRole = null;
-            S.embed(msg, { title: "default role has been successfuly removed", type: 'success' });
+            await Guild.update(guildDBId, { default_role: null });
+            await S.embed(msg, { title: "default role has been successfuly removed", type: 'success' });
         } else {
-            let { guild } = msg;
-            if (! Guild.get(guild.id).defaultRole) {
+            if (!Guild.get(guild.id).default_role) {
                 return S.msg(msg, "No default role set");
             } else {
-                let role = guild.roles.get(Guild.get(guild.id).defaultRole);
+                const role = guild.roles.get(Guild.get(guild.id).default_role);
                 S.embed(msg, { title: `default role is ${ role.name }`, description: "newcomers will automatically get this role", color: role.color });
             }
         }

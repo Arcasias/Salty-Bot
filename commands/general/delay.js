@@ -22,7 +22,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
 
 		if (! args[0]) throw new error.MissingArg("anything");
 
@@ -33,7 +33,6 @@ module.exports = new Command({
 		msg.delete().catch();
 
 		setTimeout(() => {
-
 			S.msg(msg, args.join(" "));
 		}, delay);
     },

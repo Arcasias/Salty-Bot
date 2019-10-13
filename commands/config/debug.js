@@ -1,7 +1,6 @@
 'use strict';
 
 const Command = require('../../classes/Command');
-const Data = require('../../classes/Data');
 const Guild = require('../../classes/Guild');
 const S = require('../../classes/Salty');
 const error = require('../../classes/Exception');
@@ -21,7 +20,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         if (! args[0]) throw new error.MissingArg("instructions");
 
         let res = eval(args.join(" "));

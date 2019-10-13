@@ -17,8 +17,8 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-        S.msg(msg, UTIL.choice(S.getList('jokes')));
+    action: async function (msg, args) {
+        await S.msg(msg, UTIL.choice(S.getList('jokes')));
     },
 });
 

@@ -22,31 +22,32 @@ module.exports = new Command({
         },
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
-
+    action: async function (msg, args) {
         if (args[0] && S.getList('clear').includes(args[0])) {
-
-            if (! INTERVALS[msg.guild.id]) throw new error.EmptyObject("interval");
-
+            if (! INTERVALS[msg.guild.id]) {
+                throw new error.EmptyObject("interval");
+            }
             clearInterval(INTERVALS[msg.guild.id]);
 
             S.embed(msg, { title: "Interval cleared", type: 'success' });
-
         } else {
-
-            if (! args[0]) throw new error.MissingArg("delay");
-            if (isNaN(args[0])) throw new error.IncorrectValue("delay", "number");
-
-            if (! args[1]) throw new error.MissingArg("message");
-
+            if (! args[0]) {
+                throw new error.MissingArg("delay");
+            }
+            if (isNaN(args[0])) {
+                throw new error.IncorrectValue("delay", "number");
+            }
+            if (! args[1]) {
+                throw new error.MissingArg("message");
+            }
             let delay = parseInt(args.shift()) * 1000;
 
             msg.delete().catch();
 
-            if (INTERVALS[msg.guild.id]) clearInterval(INTERVALS[msg.guild.id]);
-
+            if (INTERVALS[msg.guild.id]) {
+                clearInterval(INTERVALS[msg.guild.id]);
+            }
             INTERVALS[msg.guild.id] = setInterval(() => {
-
                 S.msg(msg, args.join(" "));
             }, delay);
         }

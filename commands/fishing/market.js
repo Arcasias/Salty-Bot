@@ -34,9 +34,9 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-        let angler = User.get(msg.author.id);
-        let { gold, inventory } = angler;
+    action: async function (msg, args) {
+        const angler = User.get(msg.author.id);
+        const { gold, inventory } = angler;
 
         if (args[0] && S.getList('buy').includes(args[0])) {
             let itemIds = Object.keys(items).filter(itemId => items[itemId].price)

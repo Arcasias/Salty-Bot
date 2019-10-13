@@ -26,17 +26,15 @@ class Command extends Multiton {
      * @param {String}   data.name
      * @param {String}   data.visibility
      */
-    constructor(data) {
+    constructor(values) {
         super(...arguments);
-        const invalidKey = this.loadAttributes(data, 'action', 'help', 'keys', 'name', 'visibility');
-        if (invalidKey) {
-            const errorMessage = invalidKey === 'name' ?
-                `Missing key "name" found for one of the commands` :
-                `Missing key found for command "${this.name}" : ${invalidKey}`;
-            throw new error.SaltyException('MissingKey', errorMessage);
-        }
-        // Optional keys
-        this.mode = data.mode;
+
+        this.action = values.action;
+        this.help = values.help;
+        this.keys = values.keys;
+        this.name = values.name;
+        this.visibility = values.visibility;
+        this.mode = values.mode;
     }
 
     /**
@@ -53,10 +51,10 @@ class Command extends Multiton {
             if (this.mode && this.mode !== process.env.MODE) {
                 throw new error.SaltyException('WrongEnvironment', "it looks like I'm not in the right environment to do that");
             }
-            this.action(msg, args);
+            await this.action(msg, args);
         } catch (err) {
-            LOG.error(`(${err.name}) ${err.message}`);
-            S.embed(msg, { title: err.message, type: 'error' });
+            LOG.error(err.stack);
+            await S.embed(msg, { title: err.message, type: 'error' });
         }
     }
 }

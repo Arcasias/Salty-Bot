@@ -21,17 +21,20 @@ module.exports = new Command({
         },
     ],
     visibility: 'public',
-    action: function (msg, args) {
+    action: async function (msg, args) {
 
-        if (! args[0]) throw new error.MissingArg("image name");
+        if (!args[0]) {
+            throw new error.MissingArg("image name");
+        }
 
     	imgur.search(args.join("AND"), {
     		sort: 'top', 
     		dateRange: 'all',
     		page: 1 }).then(json => {
 
-    			if (json.data.length < 1) throw new error.Error();
-
+    			if (json.data.length < 1) {
+                    throw new error.Error();
+                }
     			const { title, link, images } = UTIL.choice(json.data);
 
     			let image = images ? images[0].link : link;

@@ -21,7 +21,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let user = User.get(msg.author.id);
 
         if (args[0] && S.getList('delete').includes(args[0])) {

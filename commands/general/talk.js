@@ -20,7 +20,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let cleanedMsg = " " + args.map(arg => UTIL.clean(arg)).join(" ") + " ";
         let meanFound = [];
         let answers = [];
@@ -38,9 +38,9 @@ module.exports = new Command({
                     answers.push(UTIL.choice(S.getList('answers')[meanList[meanFound[i]].answers[j]]));
                 }
             }
-            S.msg(msg, answers.join(", "));
+            await S.msg(msg, answers.join(", "));
         } else {
-            S.msg(msg, UTIL.choice(S.getList('answers')['rand']));
+            await S.msg(msg, UTIL.choice(S.getList('answers')['rand']));
         }
     },
 });

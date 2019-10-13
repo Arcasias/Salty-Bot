@@ -7,13 +7,9 @@
         "205030241670922240",
         "235852846409580544"
     ],
-    "blackList": [],
     "prefix": "$",
     "debug": true,
-    "updateDbInterval": 900000,
-    "testSong": "https://www.youtube.com/watch?v=mPTCq3LiZSE",
     "tempImageFolder": "assets/img/temp/",
-    "defaultRod": "00210001",
     "rank": [
         {
             "name": "Rookie",

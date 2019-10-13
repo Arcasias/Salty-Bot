@@ -36,13 +36,11 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-
-        if (! args[0]) {
+    action: async function (msg, args) {
+        if (!args[0]) {
             return S.commands.list.get('talk').run(msg, args);
         }
         let message;
-
         for (let sa of specialActions) {
             if (sa.keywords.includes(args[0])) {
                 message = sa.response;
@@ -52,7 +50,7 @@ module.exports = new Command({
             msg.delete();
             message = args.join(" ")
         }
-        S.msg(msg, message);
+        await S.msg(msg, message);
     },
 });
 

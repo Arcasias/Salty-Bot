@@ -23,14 +23,11 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-
+    action: async function (msg, args) {
         if (! args[0] || ! args[1]) {
             throw new error.MissingArg("choices");
         }
-        let options = args.join(" ").split('/');
-
-        S.msg(msg, `I choose ${UTIL.choice(options)}`);
+        await S.msg(msg, `I choose ${UTIL.choice(args.join(" ").split('/'))}`);
     },
 });
 

@@ -22,12 +22,12 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         const mention = msg.mentions.users.first();
         const isReqAdmin = S.isAdmin(mention || msg.author, msg.guild);
 
         // Yes, it's horrendous, I just wanted to have a bit of fun with ternary operators :)
-        S.msg(msg, mention ?
+        await S.msg(msg, mention ?
             mention.bot ?
                 mention.id !== bot.user.id ?
                     "that's just a bot you know, who cares ?"

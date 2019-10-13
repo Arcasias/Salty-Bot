@@ -1,7 +1,7 @@
 'use strict';
 
 const Command = require('../../classes/Command');
-const Creature = require('../../classes/Creature');
+const Fish = require('../../classes/Fish');
 const creatures = require('../../data/creatures.json');
 const items = require('../../data/items.json');
 const S = require('../../classes/Salty');
@@ -22,7 +22,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let authorId = msg.author.id;
         let angler = User.get(msg.author.id);
 
@@ -61,7 +61,7 @@ module.exports = new Command({
                 if (UTIL.generate(15 + 10 * angler.rank)) {
                     if (bait) {
                         let fishPool = Object.keys(creatures).filter(creature => creatures[creature].bait == bait);
-                        fish = new Creature(UTIL.choice(fishPool));
+                        fish = new Fish(UTIL.choice(fishPool));
                         quality = fish.quality;
                     } else {
                         quality = UTIL.randStat(rod.pool);
@@ -70,14 +70,14 @@ module.exports = new Command({
 
                         if ('forgotten' === quality) angler.inventory.push("00270001");
 
-                        fish = new Creature(UTIL.choice(fishPool));
+                        fish = new Fish(UTIL.choice(fishPool));
                     }
                 // Junk
                 } else {
                     quality = 'junk';
                     let fishPool = Object.keys(creatures).filter(creature => creatures[creature].quality == quality);
 
-                    fish = new Creature(UTIL.choice(fishPool));
+                    fish = new Fish(UTIL.choice(fishPool));
                 }
                 let qualityProps = S.config.quality[quality];
                 let xp = qualityProps.xp

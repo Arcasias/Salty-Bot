@@ -16,9 +16,9 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
-        let { name, anime, image } = UTIL.choice(S.getList('waifus'));
-        S.embed(msg, {
+    action: async function (msg, args) {
+        const { name, anime, image } = UTIL.choice(S.getList('waifus'));
+        await S.embed(msg, {
             title: name,
             description: `anime: ${anime}`,
             image: UTIL.choice(image),

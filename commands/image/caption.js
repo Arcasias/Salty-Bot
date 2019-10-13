@@ -29,7 +29,7 @@ module.exports = new Command({
     ],
     visibility: 'public',
     mode: 'local',
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let canvas, canvasImg, canvasTxt, c;
         let imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? UTIL.title(args.join(" ").split("\\")) : null;
@@ -112,9 +112,7 @@ module.exports = new Command({
                     imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
                     imgPath = path.join(S.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
                 });
-            }).catch(err => {
-                LOG.error(err);
-            });
+            }).catch(LOG.error(err));
         }
     },
 });

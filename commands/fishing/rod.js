@@ -23,7 +23,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let angler = User.get(msg.author.id);
         let equippedRod = items[angler.equipped.rod];
         let rodsToString = '';
@@ -42,7 +42,7 @@ module.exports = new Command({
             }
             angler.equipped.rod = angler.inventory[args[0] - 1];
 
-            S.embed(msg, { title: `you just equipped **${ items[angler.equipped.rod].name }**`, type: 'success' });
+            await S.embed(msg, { title: `you just equipped **${ items[angler.equipped.rod].name }**`, type: 'success' });
         
         } else {
             let options = {
@@ -51,7 +51,7 @@ module.exports = new Command({
                 description: equippedRod.description,
                 fields: [{ title: "List of rods", description: rodsToString }]
             };
-            S.embed(msg, options);
+            await S.embed(msg, options);
         } 
     },
 });

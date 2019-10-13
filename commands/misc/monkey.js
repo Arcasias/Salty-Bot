@@ -26,38 +26,37 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
+        if (!args[0]) {
+            throw new error.MissingArg("length");
+        }
+        if (args[0] < 1) {
+            throw new error.IncorrectValue("length", "number between 1 and 10");
+        }
 
-        if (! args[0]) throw new error.MissingArg("length");
+        const runningMsg = await S.msg(msg, "monkey sorting ...")
+        let tests = 0;
+        let length = Math.min(args[0], 10);
+        let list = [];
 
-        if (args[0] < 1) throw new error.IncorrectValue("length", "number between 1 and 10");
+        const sortingTime = await new Promise((resolve, reject) => {
+            for (let i = 0; i < length; i ++) {
+                list.push(i);
+            }
+            list = UTIL.shuffle(list);
+            tests = 0;
 
-        S.msg(msg, "monkey sorting ...").then(message => {
+            const startTimeStamp = Date.now();
 
-            let runningMsg = message;
-            let tests = 0;
-            let length = Math.min(args[0], 10);
-            let list = [];
-
-            new Promise((resolve, reject) => {
-                for (let i = 0; i < length; i ++) {
-                    list.push(i);
-                }
+            while (! UTIL.isSorted(list)) {
                 list = UTIL.shuffle(list);
-                tests = 0;
-
-                const startTimeStamp = Date.now();
-
-                while (! UTIL.isSorted(list)) {
-                    list = UTIL.shuffle(list);
-                    tests ++;
-                }
-                resolve(Math.floor((Date.now() - startTimeStamp) / 100) / 10);
-            }).then(sortingTime => {
-                runningMsg.delete();
-                S.embed(msg, { title: `monkey sort on a **${ length }** elements list took **${ sortingTime }** seconds in **${ tests }** tests`, type: 'success', react: '🐒' });
-            });
+                tests ++;
+            }
+            resolve(Math.floor((Date.now() - startTimeStamp) / 100) / 10);
         });
+
+        runningMsg.delete();
+        await S.embed(msg, { title: `monkey sort on a **${ length }** elements list took **${ sortingTime }** seconds in **${ tests }** tests`, type: 'success', react: '🐒' });
     },
 });
 

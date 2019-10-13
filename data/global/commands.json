@@ -1,1 +1,12 @@
-[{"keys":["omae","shindeiru","shine"],"effect":"msg.channel.send(`Omaay wah mow, sheen day eeru`, { tts: true }).then(message => message.delete()); this.msg(msg, `Omae wa mou shindeiru`);","name":"omae"},{"keys":["reply","self"],"effect":"msg.reply();","name":"reply"}]
+[
+    {
+        "keys": "omae, shindeiru, shine",
+        "effect":"msg.channel.send(`Omaay wah mow, sheen day eeru`, { tts: true }).then(message => message.delete()); this.msg(msg, `Omae wa mou shindeiru`);",
+        "name":"omae"
+    },
+    {
+        "keys": "reply, self",
+        "effect": "msg.reply();",
+        "name": "reply"
+    }
+]

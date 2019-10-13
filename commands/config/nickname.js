@@ -26,92 +26,41 @@ module.exports = new Command({
         },
     ],
     visibility: 'admin', 
-    action: async (msg, args) => {
+    action: async function (msg, args) {
+        const members = msg.guild.members.array();
+        const particle = args.slice(1).join(" ");
+        const particleRegex = new RegExp(particles);
 
-        let members = msg.guild.members.array();
-        let promises = [];
-        let progressMsg;
+        if (!args[0]) {
+            throw new error.MissingArg("add or delete + particle");
+        }
+        if (!particle) {
+            throw new error.MissingArg("nickname particle");
+        }
 
-        if (args[0] && S.getList('add').includes(args[0])) {
+        if (S.getList('add').includes(args[0])) {
+            await changeNames(nickname => nickname.match(particleRegex) ? nickname : `${nickname.trim()} ${particle}`);
+        } else if (S.getList('delete').includes(args[0])) {
+            await changeNames(nickname => nickname.replace(particleRegex, "").trim());
+        }
 
-            args.shift();
-
-            if (! args[0]) throw new error.MissingArg("nickname particle");
-
-            await S.msg(msg, `changing nicknames: 0/${ members.length }`).then(message => {
-
-                progressMsg = message;
-
-                for (let i = 0; i < members.length; i ++) {
-
-                    let newNick = members[i].nickname ? members[i].nickname: members[i].user.username;
-
-                    newNick = newNick.trim() + " " + args.join(" ");
-
-                    promises.push(members[i].setNickname(newNick).then(() => {
-
-                        message.edit(`changing nicknames: ${ i + 1 }/${ members.length }`);
-
-                    }).catch(error => {
-
-                        return true
-                    }));
-                }
-            });
-
-            Promise.all(promises).then(() => {
-
-                progressMsg.delete().then(() => {
-
-                    S.embed(msg, { title: "nicknames successfully changed", type: 'success' });
-                });
-            });
-
-        } else if (args[0] && S.getList('delete').includes(args[0])) {
-
-            args.shift();
-
-            if (! args[0]) throw new error.MissingArg("nickname particle");
-            
-            await S.msg(msg, `changing nicknames: 0/${ members.length }`).then(message => {
-                
-                progressMsg = message;
-
-                for (let i = 0; i < members.length; i ++) {
-
-                    let newNick = members[i].nickname ? members[i].nickname: members[i].user.username;
-
-                    newNick = newNick.replace(new RegExp(args.join(" "), 'g'), "").trim();
-
-                    if (newNick != members[i].nickname) {
-
-                        promises.push(members[i].setNickname(newNick).then(() => {
-
-                            message.edit(`changing nicknames: ${ i + 1 }/${ members.length }`);
-
-                        }).catch(error => {
-
-                            return true
-                        }));
-                    
-                    } else {
-
-                        message.edit(`changing nicknames: ${ i + 1 }/${ members.length }`);
+        async function changeNames(transformation) {
+            const progressMsg = await S.msg(msg, `changing nicknames: 0/${members.length}`);
+            for (let i = 0; i < members.length; i ++) {
+                const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
+                if (newNick != members[i].nickname) {
+                    try {
+                        await members[i].setNickname(newNick);
+                        await progressMsg.edit(`changing nicknames: ${i + 1}/${members.length}`);
+                    } catch (err) {
+                        LOG.error(err);
                     }
+                } else {
+                    await progressMsg.edit(`changing nicknames: ${i + 1}/${members.length}`);
                 }
-            });
-
-            Promise.all(promises).then(() => {
-
-                progressMsg.delete().then(() => {
-
-                    S.embed(msg, { title: "nicknames successfully changed", type: 'success' });
-                });
-            });
-
-        } else {
-
-            throw new error.MissingArg("add or delete + particle")
+            }
+            await progressMsg.delete();
+            await S.embed(msg, { title: "nicknames successfully changed", type: 'success' });
         }
     },
 });

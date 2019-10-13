@@ -24,7 +24,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         fs.readdir(path, (error, files) => {
             if (error) {
                 return LOG.error(error);

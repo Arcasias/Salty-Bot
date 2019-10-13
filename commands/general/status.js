@@ -23,8 +23,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
-
+    action: async function (msg, args) {
         const options = {
             title: `Salty Bot`,
             url: packageInfo.homepage,
@@ -35,14 +34,14 @@ module.exports = new Command({
                 { title: `Servers`, description: `Running on ${Guild.size} servers` },
                 { title: `Users`, description: `Handling ${User.size} users` },
                 { title: `Developers`, description: `${S.config.devs.length} contributors` },
-                { title: `Blacklist`, description: `${S.config.blackList.length} troublemakers` },
+                { title: `Blacklist`, description: `${User.filter(u => u.black_listed).length} troublemakers` },
             ],
             inline: true,
         };
         if (process.env.DEBUG === 'true') {
             options.footer = `Debug mode active`;
         }
-        S.embed(msg, options);
+        await S.embed(msg, options);
     },
 });
 

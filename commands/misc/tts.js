@@ -21,14 +21,14 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
 
         // Just sends the arguments as a TTS message
-        if (! args[0]) throw new error.MissingArg("message");
-
+        if (!args[0]) {
+            throw new error.MissingArg("message");
+        }
         msg.delete();
-
-        msg.channel.send(args.join(" "), { tts: true });
+        await msg.channel.send(args.join(" "), { tts: true });
     },
 });
 

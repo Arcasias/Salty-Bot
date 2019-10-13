@@ -26,7 +26,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         let mention = msg.mentions.users.first();
         let reqUserId = null;
         let title = "";
@@ -61,7 +61,7 @@ module.exports = new Command({
             options.image = bestFish.image;
         }
 
-        S.embed(msg, options);
+        await S.embed(msg, options);
     },
 });
 

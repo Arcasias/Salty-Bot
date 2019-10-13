@@ -25,9 +25,9 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
 
-        S.embed(msg, { title: msg.mentions.users.first() ?
+        await S.embed(msg, { title: msg.mentions.users.first() ?
             `${ msg.mentions.members.first().nickname } currently has ${ User.get(msg.mentions.users.first().id).gold } gold`
             : `you have ${ User.get(msg.author.id).gold } gold` });
     },

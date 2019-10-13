@@ -15,11 +15,12 @@ module.exports = new Command({
         }
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
-        S.embed(msg, {
+    action: async function (msg, args) {
+        await S.embed(msg, {
             title: `${ UTIL.choice(S.getList('answers')['bye']) } ♥`,
             type: 'success',
-        }).then(S.destroy.bind(S));
+        });
+        await S.destroy();
     },
 });
 

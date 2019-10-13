@@ -31,7 +31,7 @@ module.exports = new Command({
         }
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
         var { author } = msg;
         let options = {
             color: 0xFFFFFF,
@@ -94,7 +94,7 @@ module.exports = new Command({
             options.title = "list of commands";
             options.description = "these are the commands categories. To access a specific category's commands, use the command \`$help category_name\`";
         }
-        S.embed(msg, options);
+        await S.embed(msg, options);
     },
 });
 

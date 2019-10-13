@@ -16,11 +16,9 @@ module.exports = new Command({
         }
     ],
     visibility: 'dev', 
-    action: function (msg, args) {
-    	S.embed(msg, {
-            title: "Restarting ...",
-            type: 'success',
-        }).then(S.restart.bind(S));
+    action: async function (msg, args) {
+    	await S.embed(msg, { title: "Restarting ...", type: 'success' });
+        await S.restart();
     },
 });
 

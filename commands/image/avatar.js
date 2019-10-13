@@ -24,7 +24,7 @@ module.exports = new Command({
         },
     ],
     visibility: 'public', 
-    action: function (msg, args) {
+    action: async function (msg, args) {
 
         // Sets author as default user and adapt color to his/her role
         const mention = msg.mentions.users.first();
@@ -56,7 +56,7 @@ module.exports = new Command({
             options.color = parseInt(color);
             options.description = desc;
         }
-        S.embed(msg, options);
+        await S.embed(msg, options);
     },
 });
 
