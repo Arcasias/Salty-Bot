@@ -1,5 +1,4 @@
 import Command from '../../classes/Command.js';
-import packageJson from '../../package.json';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
@@ -67,7 +66,7 @@ export default new Command({
                 const command = this.commands.list.get(this.commands.keys[arg]);
                 const category = categories.find(cat => help[cat].find(cmd => cmd.name === command.name));
                 options.title = `**${command.name.toUpperCase()}**`;
-                options.url = `${packageJson.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
+                options.url = `${this.config.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
                 if (0 < command.keys.length) {
                     options.description = `Alternative usage: ${command.keys.join(", ")}`;
                 }

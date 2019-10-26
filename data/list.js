@@ -1,4 +1,4 @@
-{
+export default {
     "add": [
         "add",
         "append",
@@ -115,7 +115,7 @@
                 "thank",
                 "thx",
                 "grateful"
-            ] 
+            ]
         },
         "welcome": {
             "answers": [ "thank" ],
@@ -477,4 +477,4 @@
             "being assraped by a gang of 8 strong N-words"
         ]
     }
-}        
+};

@@ -1,10 +1,10 @@
-import config from '../data/config.json';
+import config from '../data/config.js';
 import * as Database from './Database.js';
 import Discord from 'discord.js';
 import Dialog from './Dialog.js';
 import fs from 'fs';
 import Guild from './Guild.js';
-import list from '../data/list.json';
+import list from '../data/list.js';
 import path from 'path';
 import QuickCommand from './QuickCommand.js';
 import User from './User.js';

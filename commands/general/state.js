@@ -1,6 +1,5 @@
 import Command from '../../classes/Command.js';
 import Guild from '../../classes/Guild.js';
-import packageJson from '../../package.json';
 import User from '../../classes/User.js';
 
 export default new Command({
@@ -21,7 +20,7 @@ export default new Command({
     async action(msg, args) {
         const options = {
             title: `Salty Bot`,
-            url: packageJson.homepage,
+            url: this.config.homepage,
             description: `Last started on ${this.startTime.toString().split(' GMT')[0]}`,
             fields: [
                 { title: `Hosted on`, description: process.env.MODE === 'server' ? 'Server' : 'Local instance' },
