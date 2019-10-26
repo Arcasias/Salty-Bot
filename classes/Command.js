@@ -21,7 +21,7 @@ class Command extends Multiton {
         keys: [],
         name: "",
         visibility: 'public',
-        env: 'local',
+        env: 'server',
     };
 
     /**
@@ -30,7 +30,7 @@ class Command extends Multiton {
      * @param  {Array}   args
      * @param  {Boolean} [crud] WIP
      */
-    async run(msg, args, crud=false) {
+    async run(msg, args) {
         try {
             if (this.deprecated) {
                 throw new error.DeprecatedCommand(this.name);

@@ -4,12 +4,12 @@ import './classes/util/Log.js';
 import './classes/util/Util.js';
 
 async function load() {
-    // Set ENV according to the presence of a Discord API token
-    try {
-        await import('./local.js');
-        process.env.MODE = 'local';
-    } catch (err) {
+    // Set ENV according to the presence of a SERVER env variable
+    if (process.env.SERVER) {
         process.env.MODE = 'server';
+    } else {
+        process.env.MODE = 'local';
+        await import('./local.js');
     }
 
     const { config, init } = await import('./classes/Salty.js');

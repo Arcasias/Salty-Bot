@@ -398,6 +398,7 @@ export {
     commands,
     config,
     fishing,
+    startTime,
     // Methods
     restart,
     destroy,
