@@ -45,7 +45,7 @@ export default new Command({
         }
         if (! message) {
             msg.delete();
-            message = args.join(" ")
+            message = args.join(" ");
         }
         await this.msg(msg, message);
     },

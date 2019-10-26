@@ -48,7 +48,7 @@ export default new Command({
                 throw new error.SaltyException("the playlist is full ! You can delete some songs if you want to add new ones");
             }
             let valid = true;
-            let promises = [];
+            const promises = [];
 
             urls.forEach(songURL => {
                 if (! valid) return;
@@ -88,7 +88,7 @@ export default new Command({
             }
             let songs = args.join('').split(',');
             const requestIsArray = Array.isArray(songs);
-            if (! requestIsArray) {
+            if (!requestIsArray) {
                 songs = [songs];
             }
 
@@ -102,12 +102,12 @@ export default new Command({
                 }
             });
             let removed;
-            let sortedIds = UTIL.sortArray(songs);
+            const sortedIds = UTIL.sortArray(songs);
 
             for (let i = sortedIds.length - 1; 0 <= i; i --) {
                 removed = favPlaylist.splice(sortedIds[i] - 1, 1);
             }
-            let message = (requestIsArray ? `songs n°${sortedIds.join(", ")}`: `song n°${songs[0]} - **${removed.title}**`) + " removed from the favorites playlist";
+            const message = (requestIsArray ? `songs n°${sortedIds.join(", ")}`: `song n°${songs[0]} - **${removed.title}**`) + " removed from the favorites playlist";
 
             this.embed(msg, { title: message, type: 'success' });
 
@@ -116,7 +116,7 @@ export default new Command({
                 return this.embed(msg, { title: "the favorites playlist is empty", description: "it's about time somebody added something to it, don't you think ?" });
             }
             let duration = 0;
-            let options = {
+            const options = {
                 title: "favorites playlist",
                 fields: [],
             };
@@ -126,8 +126,8 @@ export default new Command({
 
                 duration += song.duration;
 
-                let name = `${ i + 1 }) ${ song.title }`
-                let desc = `${ UTIL.formatDuration(song.duration) } - [Open in browser](${ song.url })`
+                const name = `${ i + 1 }) ${ song.title }`;
+                const desc = `${ UTIL.formatDuration(song.duration) } - [Open in browser](${ song.url })`;
 
                 options.fields.push({ title: name, description: desc });
 

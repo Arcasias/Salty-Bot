@@ -1,5 +1,5 @@
 class SaltyException extends Error {
-    constructor(name='SaltyException', message, ...args) {
+    constructor(name='SaltyException', message=false, ...args) {
         if (name && !message) {
             message = name;
             name = 'SaltyException';
@@ -36,7 +36,7 @@ class MissingArg extends SaltyException {
 class MissingMention extends SaltyException {
     constructor(arg, ...args) {
         super('MissingMention', `you need to mention someone`, ...args);
-    }   
+    }
 }
 
 class OutOfRange extends SaltyException {
@@ -48,7 +48,7 @@ class OutOfRange extends SaltyException {
 class PermissionDenied extends SaltyException {
     constructor(requiredPermission, user="you", ...args) {
         super('PermissionDenied', `${user} need to be **${requiredPermission}** to do this`, ...args);
-    }   
+    }
 }
 
 

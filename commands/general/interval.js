@@ -1,7 +1,7 @@
 import Command from '../../classes/Command.js';
 import * as error from '../../classes/Exception.js';
 
-const INTERVALS = {}
+const INTERVALS = {};
 
 export default new Command({
     name: 'interval',

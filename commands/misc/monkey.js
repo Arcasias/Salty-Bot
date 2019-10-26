@@ -30,7 +30,7 @@ export default new Command({
             throw new error.IncorrectValue("length", "number between 1 and 10");
         }
 
-        const runningMsg = await this.msg(msg, "monkey sorting ...")
+        const runningMsg = await this.msg(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(args[0], 10);
         let list = [];

@@ -31,7 +31,7 @@ export default new Command({
     mode: 'local',
     async action(msg, args) {
         let canvas, canvasImg, canvasTxt, c, fontSize, border, lineSpace;
-        let imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
+        const imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? args.join(" ").split("\\").map(line => UTIL.title(line)) : null;
 
         let imgOffset;

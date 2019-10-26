@@ -74,7 +74,7 @@ export default new Command({
                     fish = new Fish(UTIL.choice(fishPool));
                 }
                 let qualityProps = this.config.quality[quality];
-                let xp = qualityProps.xp
+                let xp = qualityProps.xp;
                 let gold = Math.ceil(fish.weight || 1 * fish.value || 0);
 
                 angler.xp += xp;

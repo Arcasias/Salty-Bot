@@ -40,22 +40,19 @@ export default new Command({
                 const messages = await channel.fetchMessages({ limit: 1 });
                 await messages[0].delete();
                 await purge(channel);
-            }
+            };
             return purge(msg.channel);
-
         } else {
-            if (args[0] && args[0] != parseInt(args[0])) {
+            if (isNaN(args[0])) {
                 throw new error.IncorrectValue("length", "number");
             }
             if (parseInt(args[0]) === 0) {
                 throw new error.SaltyException("you must delete at least 1 message");
             }
-
-            let toDelete = Math.min(parseInt(args[0]) + 1, 100) || 100;
-
+            const toDelete = Math.min(parseInt(args[0]) + 1, 100) || 100;
             try {
                 await msg.channel.bulkDelete(toDelete, true);
-                await this.embed(msg, { title: `${ toDelete } messages have been successfully deleted`, type: 'success' });
+                await this.embed(msg, { title: `${toDelete} messages have been successfully deleted`, type: 'success' });
             } catch (err) {
                 LOG.error(err);
             }

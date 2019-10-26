@@ -34,7 +34,7 @@ export default new Command({
         const { gold, inventory } = angler;
 
         if (args[0] && this.getList('buy').includes(args[0])) {
-            let itemIds = Object.keys(items).filter(itemId => items[itemId].price)
+            let itemIds = Object.keys(items).filter(itemId => items[itemId].price);
             let marketItems = itemIds.map(id => Object.assign(items[id], { id }));
             let options = {
                 title: "sea market",
@@ -101,7 +101,7 @@ export default new Command({
                 footer: UTIL.choice(this.getList('transactionSuccess')),
             });
         } else {
-            let itemIds = Object.keys(items).filter(itemId => items[itemId].price)
+            let itemIds = Object.keys(items).filter(itemId => items[itemId].price);
             let marketItems = itemIds.map(id => Object.assign(items[id], { id }));
 
             if (args[0]) {

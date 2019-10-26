@@ -68,7 +68,7 @@ function shuffle(array) {
 }
 
 function sortArray(array) {
-    return array.sort((a, b) => { return a - b });
+    return array.sort((a, b) => a - b);
 }
 
 function table(data) {
