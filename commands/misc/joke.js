@@ -1,14 +1,13 @@
-'use strict';
+import Command from '../../classes/Command.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'joke',
     keys: [
-        "joke",
-        "jokes",
+        "fun",
+        "haha",
         "jest",
+        "joker",
+        "jokes",
     ],
     help: [
         {
@@ -16,9 +15,9 @@ module.exports = new Command({
             effect: "Tells some spicy jokes !"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
-        await S.msg(msg, UTIL.choice(S.getList('jokes')));
+    visibility: 'public',
+    async action(msg, args) {
+        await this.msg(msg, UTIL.choice(this.getList('jokes')));
     },
 });
 

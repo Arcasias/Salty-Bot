@@ -1,14 +1,11 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import fs from 'fs';
 
-const Command = require('../../classes/Command');
-const fs = require('fs');
-const path = './assets/img/saltmoji';
-const S = require('../../classes/Salty');
+const emojiPath = './assets/img/saltmoji';
 
-module.exports = new Command({
+export default new Command({
     name: 'emoji',
     keys: [
-        "emoji",
         "emojis",
         "saltmoji",
         "saltmojis",
@@ -23,9 +20,9 @@ module.exports = new Command({
             effect: "Sends the indicated emoji"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
-        fs.readdir(path, (error, files) => {
+    visibility: 'public',
+    async action(msg, args) {
+        fs.readdir(emojiPath, (error, files) => {
             if (error) {
                 return LOG.error(error);
             }
@@ -38,16 +35,16 @@ module.exports = new Command({
                 let emoji = false;
 
                 if ("rand" === arg || "random" === arg) {
-                    emoji = UTIL.choice(emojiNames);                
+                    emoji = UTIL.choice(emojiNames);
                 } else if (emojiNames.includes(arg)) {
                     emoji = arg;
                 }
                 if (emoji) {
                     msg.delete();
-                    return msg.channel.send({ files: [`${ path }/${ emoji }.png`] });                
+                    return msg.channel.send({ files: [`${ emojiPath }/${ emoji }.png`] });
                 }
             }
-            S.embed(msg, {
+            this.embed(msg, {
                 title: "list of saltmojis",
                 description: emojiNames.join('\n'),
             });

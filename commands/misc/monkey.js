@@ -1,19 +1,15 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'monkey',
     keys: [
-        "monkey",
-        "monkeysort",
         "bogosort",
+        "monkeysort",
         "permutationsort",
-        "stupidsort",
-        "slowsort",
         "shotgunsort",
+        "slowsort",
+        "stupidsort",
     ],
     help: [
         {
@@ -25,8 +21,8 @@ module.exports = new Command({
             effect: "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we ?)"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         if (!args[0]) {
             throw new error.MissingArg("length");
         }
@@ -34,7 +30,7 @@ module.exports = new Command({
             throw new error.IncorrectValue("length", "number between 1 and 10");
         }
 
-        const runningMsg = await S.msg(msg, "monkey sorting ...")
+        const runningMsg = await this.msg(msg, "monkey sorting ...")
         let tests = 0;
         let length = Math.min(args[0], 10);
         let list = [];
@@ -56,7 +52,7 @@ module.exports = new Command({
         });
 
         runningMsg.delete();
-        await S.embed(msg, { title: `monkey sort on a **${ length }** elements list took **${ sortingTime }** seconds in **${ tests }** tests`, type: 'success', react: '🐒' });
+        await this.embed(msg, { title: `monkey sort on a **${ length }** elements list took **${ sortingTime }** seconds in **${ tests }** tests`, type: 'success', react: '🐒' });
     },
 });
 

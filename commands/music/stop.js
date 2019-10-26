@@ -1,21 +1,16 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
 
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'stop',
-    keys: [
-        "stop",
-    ],
+    keys: [],
     help: [
         {
             argument: null,
             effect: "Leaves the voice channel and deletes the queue"
         },
     ],
-    visibility: 'admin', 
+    visibility: 'admin',
     action: function (msg, args) {
         let { playlist } = Guild.get(msg.guild.id);
         let vcon = msg.guild.voiceConnection;
@@ -25,13 +20,13 @@ module.exports = new Command({
                 vcon.channel.leave();
             }
             playlist.queueClear();
-            S.embed(msg, {
-                title: UTIL.choice(S.getList('answers')['bye']),
+            this.embed(msg, {
+                title: UTIL.choice(this.getList('answers')['bye']),
                 type: 'success',
                 react: '⏹',
             });
         } else {
-            S.embed(msg, {
+            this.embed(msg, {
                 title: "I'm not in a voice channel",
                 type: 'error',
             });

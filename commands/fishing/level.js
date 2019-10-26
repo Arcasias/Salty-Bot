@@ -1,17 +1,14 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import User from '../../classes/User.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const User = require('../../classes/User');
-
-module.exports = new Command({
+export default new Command({
     name: 'level',
     keys: [
-        "level",
+        "exp",
+        "experience",
         "lvl",
         "rank",
         "xp",
-        "experience",
     ],
     help: [
         {
@@ -19,19 +16,19 @@ module.exports = new Command({
             effect: "Shows your current level"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         const authorId = msg.author.id;
-        const rank = S.config.rank[User.get(authorId).rank];
-        const rankProps = S.config.quality[rank.quality];
+        const rank = this.config.rank[User.get(authorId).rank];
+        const rankProps = this.config.quality[rank.quality];
 
         const options = {
             title: `${ msg.member.displayName } is rank ${ User.get(authorId).rank }: ${ rank.name }`,
             color: rankProps.color,
-            description: `Experience: ${ Math.floor(S.getXpInfos(authorId).xp) }/${ rank.xp }`,
+            description: `Experience: ${ Math.floor(this.getXpInfos(authorId).xp) }/${ rank.xp }`,
         };
 
-        await S.embed(msg, options);
+        await this.embed(msg, options);
     },
 });
 

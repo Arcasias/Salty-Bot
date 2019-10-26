@@ -1,13 +1,11 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import imgur from 'imgur';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const imgur = require('imgur');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
 imgur.setClientId();
 imgur.setAPIUrl('https://api.imgur.com/3/');
 
-module.exports = new Command({
+export default new Command({
     name: 'image',
     keys: [
         "image",
@@ -21,27 +19,27 @@ module.exports = new Command({
         },
     ],
     visibility: 'public',
-    action: async function (msg, args) {
+    async action(msg, args) {
 
         if (!args[0]) {
             throw new error.MissingArg("image name");
         }
 
-    	imgur.search(args.join("AND"), {
-    		sort: 'top', 
-    		dateRange: 'all',
-    		page: 1 }).then(json => {
-
-    			if (json.data.length < 1) {
-                    throw new error.Error();
-                }
-    			const { title, link, images } = UTIL.choice(json.data);
-
-    			let image = images ? images[0].link : link;
-
-    			S.embed(msg, { title, url: link, image });
-
-    	}).catch(S.embed.bind(S, msg, { title: "no result", type: 'error' }));
+        try {
+            const json = await imgur.search(args.join("AND"), {
+                sort: 'top',
+                dateRange: 'all',
+                page: 1
+            });
+            if (json.data.length < 1) {
+                throw new error.SaltyException('no result');
+            }
+            const { title, link, images } = UTIL.choice(json.data);
+            const image = images ? images[0].link : link;
+            this.embed(msg, { title, url: link, image });
+        } catch (err) {
+            this.embed(msg, { title: "no result", type: 'error' });
+        }
     },
 });
 

@@ -1,6 +1,4 @@
-'use strict';
-
-const ytdl = require('ytdl-core');
+import ytdl from 'ytdl-core';
 
 /**
  * Contains the attributes and methods required to store and play songs 
@@ -162,4 +160,4 @@ class Playlist {
     }
 }
 
-module.exports = Playlist;
+export default Playlist;

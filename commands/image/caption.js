@@ -1,24 +1,21 @@
-'use strict';
-
-const Command = require('../../classes/Command');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const path = require('path');
-const PImage = require('pureimage');
-const S = require('../../classes/Salty');
+import Command from '../../classes/Command.js';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import path from 'path';
+import PImage from 'pureimage';
+import { config } from '../../classes/Salty.js';
 
 const defaultDim = [450, 300];
 const maxTempImages = 5;
 const fontFamily = 'impact';
 
 let imgIndex = 1;
-let imgPath = path.join(S.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+let imgPath = path.join(config.tempImageFolder, `caption_temp_${imgIndex}.png`);
 
-module.exports = new Command({
+export default new Command({
     name: 'caption',
     keys: [
-        "caption",
         "cap",
     ],
     help: [
@@ -29,7 +26,7 @@ module.exports = new Command({
     ],
     visibility: 'public',
     mode: 'local',
-    action: async function (msg, args) {
+    async action(msg, args) {
         let canvas, canvasImg, canvasTxt, c;
         let imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? UTIL.title(args.join(" ").split("\\")) : null;
@@ -76,7 +73,7 @@ module.exports = new Command({
                         let metrics = c.measureText(line);
 
                         while (metrics.width > canvas.width * 0.9) {
-                            
+
                             fontSize -= 2;
 
                             c.font = `${ fontSize }pt ${ fontFamily }`;
@@ -86,8 +83,8 @@ module.exports = new Command({
                     for (let i = 0; i < Math.min(imgText.length, 2); i ++) {
                         const metrics = c.measureText(imgText[i]);
                         const txtHeight = imgText.length > 1 ?
-                            S.centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
-                            : S.centerTxtVertical(canvas.height / 2, metrics);
+                            this.centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
+                            : this.centerTxtVertical(canvas.height / 2, metrics);
 
                         c.fillStyle = "#ffffff";
                         c.fillText(imgText[i].trim(), canvas.width / 2 - metrics.width / 2, txtHeight);
@@ -105,12 +102,12 @@ module.exports = new Command({
         // Last step : send canvas.
         function sendCanvas() {
             PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath)).then(()=>{
-                S.msg(msg, null, imgPath).then(() => {
+                this.msg(msg, null, imgPath).then(() => {
 
                     msg.delete();
 
                     imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                    imgPath = path.join(S.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+                    imgPath = path.join(config.tempImageFolder, `caption_temp_${imgIndex}.png`);
                 });
             }).catch(LOG.error(err));
         }

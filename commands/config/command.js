@@ -1,14 +1,10 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import QuickCommand from '../../classes/QuickCommand.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const QuickCommand = require('../../classes/QuickCommand');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'command',
     keys: [
-        "command",
         "cmd",
     ],
     help: [
@@ -21,9 +17,9 @@ module.exports = new Command({
             effect: "Creates a new command having ***command keys*** as its triggers. ***command effect*** will then be displayed as a response"
         },
     ],
-    visibility: 'dev', 
-    action: async function (msg, args) {
-        if (args[0] && S.getList('delete').includes(args[0])) {
+    visibility: 'dev',
+    async action(msg, args) {
+        if (args[0] && this.getList('delete').includes(args[0])) {
             const commandName = args[1];
             if (!commandName) {
                 throw new error.MissingArg("command");
@@ -32,42 +28,41 @@ module.exports = new Command({
             if (!command) {
                 throw new error.SaltyException("NonExistingObject", "That command doesn't exist");
             }
-            S.unsetQuickCommand(command);
+            this.unsetQuickCommand(command);
             await QuickCommand.remove(command.id);
 
-            S.embed(msg, { title: `Command "**${command.name}**" deleted`, type: 'success' });
+            this.embed(msg, { title: `Command "**${command.name}**" deleted`, type: 'success' });
         } else if (args[0]) {
-            const { author } = msg;
             const allArgs = args.join(" ").split("\`\`\`");
 
             if (!allArgs[1]) {
                 throw new error.MissingArg("effect");
             }
-            let keys = allArgs.shift().split(",").filter(word => word.trim() != "");
+            let keys = allArgs.shift().split(",").filter(word => word.trim() !== "");
             const name = keys[0];
             const effect = allArgs.shift().trim();
 
             if (! keys[0]) {
                 throw new error.MissingArg("keys");
             }
-            
+
             for (let key = 0; key < keys.length; key ++) {
                 keys[key] = keys[key].trim().toLowerCase();
 
-                if (S.commands.keys[keys[key]]) {
+                if (this.commands.keys[keys[key]]) {
                     throw new error.SaltyException("ExistingObject", "That command already exists");
                 }
             }
 
             const commands = await QuickCommand.create({ name, keys: keys.join(), effect });
-            S.setQuickCommand(commands[0]);
+            this.setQuickCommand(commands[0]);
 
-            await S.embed(msg, { title: `Command "**${name}**" created`, type: 'success' });
+            await this.embed(msg, { title: `Command "**${name}**" created`, type: 'success' });
         } else {
             if (QuickCommand.size == 0) {
                 throw new error.EmptyObject("commands");
             }
-            await S.embed(msg, {
+            await this.embed(msg, {
                 title: "List of commands",
                 description: QuickCommand.map((cmd, i) => `${i + 1}) ${cmd.name}`).join('\n')
             });

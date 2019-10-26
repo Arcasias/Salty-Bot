@@ -1,26 +1,21 @@
-'use strict';
+import Command from '../../classes/Command.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'disconnect',
-    keys: [
-        "disconnect",
-    ],
+    keys: [],
     help: [
         {
             argument: null,
             effect: "Disconnects me and terminates my program. Think wisely before using this one, ok ?"
         }
     ],
-    visibility: 'dev', 
-    action: async function (msg, args) {
-        await S.embed(msg, {
-            title: `${ UTIL.choice(S.getList('answers')['bye']) } ♥`,
+    visibility: 'dev',
+    async action(msg, args) {
+        await this.embed(msg, {
+            title: `${ UTIL.choice(this.getList('answers')['bye']) } ♥`,
             type: 'success',
         });
-        await S.destroy();
+        await this.destroy();
     },
 });
 

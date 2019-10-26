@@ -1,19 +1,13 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Fish from '../../classes/Fish.js';
+import * as error from '../../classes/Exception.js';
+import User from '../../classes/User.js';
 
-const Command = require('../../classes/Command');
-const Fish = require('../../classes/Fish');
-const creatures = require('../../data/creatures.json');
-const items = require('../../data/items.json');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-const User = require('../../classes/User');
-
-module.exports = new Command({
+export default new Command({
     name: 'fish',
     keys: [
-        "fish",
-        "fishing",
         "fishes",
+        "fishing",
     ],
     help: [
         {
@@ -21,39 +15,39 @@ module.exports = new Command({
             effect: "Hook, line and sinker !"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         let authorId = msg.author.id;
         let angler = User.get(msg.author.id);
 
-        if (S.fishing[authorId]) {
-            throw new error.SaltyException(`you're already fishing for ${ Math.floor((Date.now() - S.fishing[authorId].time) / 1000) } seconds`);
+        if (this.fishing[authorId]) {
+            throw new error.SaltyException(`you're already fishing for ${ Math.floor((Date.now() - this.fishing[authorId].time) / 1000) } seconds`);
         }
         let fishingTime = UTIL.randRange(items[angler.equipped.rod].time);
         let options = {
-            title: UTIL.choice(S.getList('fishingStart')),
-            description: UTIL.choice(S.getList('fishingStartDescription')),
+            title: UTIL.choice(this.getList('fishingStart')),
+            description: UTIL.choice(this.getList('fishingStartDescription')),
             color: 0x284680,
-            react: UTIL.choice(S.getList('fishes')),
+            react: UTIL.choice(this.getList('fishes')),
         };
-        S.fishing[authorId] = {
+        this.fishing[authorId] = {
             rod: items[angler.equipped.rod],
             time: Date.now(),
             bait: null,
             msg: null,
         };
-        S.embed(msg, options).then(fishMsg => {
+        this.embed(msg, options).then(fishMsg => {
 
-            S.fishing[authorId].msg = fishMsg;
+            this.fishing[authorId].msg = fishMsg;
 
             setTimeout(() => {
-                let rod = S.fishing[authorId].rod;
-                let bait = S.fishing[authorId].bait;
+                let rod = this.fishing[authorId].rod;
+                let bait = this.fishing[authorId].bait;
                 let time = fishingTime / 1000;
                 let quality, fish;
 
-                S.fishing[authorId].msg.delete(() => {
-                    delete S.fishing[authorId];
+                this.fishing[authorId].msg.delete(() => {
+                    delete this.fishing[authorId];
                 }).catch(err => {
                     LOG.error(err);
                 });
@@ -79,7 +73,7 @@ module.exports = new Command({
 
                     fish = new Fish(UTIL.choice(fishPool));
                 }
-                let qualityProps = S.config.quality[quality];
+                let qualityProps = this.config.quality[quality];
                 let xp = qualityProps.xp
                 let gold = Math.ceil(fish.weight || 1 * fish.value || 0);
 
@@ -89,7 +83,7 @@ module.exports = new Command({
                 angler.fishCount ++;
 
                 if (angler.bestFish) {
-                    let bestFishRank = S.config.quality[angler.bestFish.quality].rank;
+                    let bestFishRank = this.config.quality[angler.bestFish.quality].rank;
                     if (bestFishRank < qualityProps.rank || (bestFishRank == qualityProps.rank && angler.bestFish.weight < fish.weight)) {
                         angler.bestFish = fish;
                     }
@@ -108,22 +102,22 @@ module.exports = new Command({
                     content: msg.author,
                     inline: true,
                 };
-                S.embed(msg, options);
+                this.embed(msg, options);
 
                 let currentRank = angler.rank;
-                let newRank = S.getXpInfos(authorId).rank;
+                let newRank = this.getXpInfos(authorId).rank;
 
                 if (currentRank < newRank) {
                     angler.rank = newRank;
-                    let rank = S.config.rank[newRank];
-                    let rankProps = S.config.quality[rank.quality];
+                    let rank = this.config.rank[newRank];
+                    let rankProps = this.config.quality[rank.quality];
                     let options = {
                         title: "RANK UP !",
                         color: rankProps.color,
                         description: `Congratulations ! You're now a ${ rank.name } !`,
                         react: '⏫',
                     };
-                    S.embed(msg, options);
+                    this.embed(msg, options);
                 }
             }, fishingTime);
         });

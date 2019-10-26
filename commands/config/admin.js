@@ -1,12 +1,8 @@
-'use strict';
+import Command from '../../classes/Command.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'admin',
     keys: [
-        "admin",
         "admins",
         "administrator",
         "administrators",
@@ -21,13 +17,13 @@ module.exports = new Command({
             effect: "Tells you wether the ***mention*** is an admin"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         const mention = msg.mentions.users.first();
-        const isReqAdmin = S.isAdmin(mention || msg.author, msg.guild);
+        const isReqAdmin = this.isAdmin(mention || msg.author, msg.guild);
 
         // Yes, it's horrendous, I just wanted to have a bit of fun with ternary operators :)
-        await S.msg(msg, mention ?
+        await this.is.msg(msg, mention ?
             mention.bot ?
                 mention.id !== bot.user.id ?
                     "that's just a bot you know, who cares ?"

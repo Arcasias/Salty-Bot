@@ -1,13 +1,9 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'tts',
     keys: [
-        "tts",
         "speak",
     ],
     help: [
@@ -20,8 +16,8 @@ module.exports = new Command({
             effect: "Says something out loud"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
 
         // Just sends the arguments as a TTS message
         if (!args[0]) {

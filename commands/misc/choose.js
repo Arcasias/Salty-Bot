@@ -1,13 +1,9 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'choose',
     keys: [
-        "choose",
         "choice",
         "chose",
         "shoes",
@@ -22,12 +18,12 @@ module.exports = new Command({
             effect: "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok ?"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         if (! args[0] || ! args[1]) {
             throw new error.MissingArg("choices");
         }
-        await S.msg(msg, `I choose ${UTIL.choice(args.join(" ").split('/'))}`);
+        await this.msg(msg, `I choose ${UTIL.choice(args.join(" ").split('/'))}`);
     },
 });
 

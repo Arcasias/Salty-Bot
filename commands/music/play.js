@@ -1,20 +1,18 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
+import google from 'googleapis';
+import * as error from '../../classes/Exception.js';
+import ytdl from 'ytdl-core';
 
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const google = require('googleapis');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-const ytdl = require('ytdl-core');
-
-const youtube = new google.youtube_v3.Youtube(process.env.GOOGLE_API);
+const youtube = new google.youtube_v3.Youtube();
 const youtubeURL = 'https://www.youtube.com/watch?v=';
-const youtubeRegex = new RegExp('https://www.youtube.com/watch', 'i');
+const youtubeRegex = new RegExp(youtubeURL, 'i');
 
-module.exports = new Command({
+const SYMBOLS = ['1⃣', '2⃣', '3⃣' ,'4⃣' ,'5⃣'];
+
+export default new Command({
     name: 'play',
     keys: [
-        "play",
         "sing",
         "song",
         "music",
@@ -40,16 +38,14 @@ module.exports = new Command({
             effect: "Searches for a video on YouTube and plays the first result"
         },
     ],
-    mode: 'none',
-    visibility: 'public', 
+    visibility: 'public',
     action: function (msg, args) {
-
         if (! msg.member.voiceChannel) {
             throw new error.SaltyException("you're not in a voice channel");
         }
-        let { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild.id);
         let arg = Array.isArray(args) ? args[0] : args;
-        if (! arg) {
+        if (!arg) {
             if (! playlist.queue[0]) {
                 throw new error.EmptyObject("queue");
             }
@@ -61,22 +57,21 @@ module.exports = new Command({
                 throw new error.SaltyException("I'm already playing");
             }
         }
-        if ("test" === arg) {
-            arg = S.config.testSong;
-        }
         if (['favorite', 'favorites', 'fav', 'favs'].includes(arg)) {
-            return playFavorites();
+            return playFavorites.call(this);
         }
         let validURL = arg.match(youtubeRegex);
         let directPlay = ['first', 'direct', '1'].includes(args[0]);
 
         if (directPlay) args.shift();
 
-        if (! validURL) {
+        if (!validURL) {
             youtube.search.list({
-                type: 'video',
+                key: process.env.GOOGLE_API,
+                maxResults: 5,
                 part: 'snippet',
                 q: args.join(" "),
+                type: 'video',
             }, (err, results) => {
                 if (err) {
                     return LOG.error(err);
@@ -90,32 +85,25 @@ module.exports = new Command({
                 if (results.data.items.length == 0) {
                     throw new error.SaltyException("no results found");
                 }
-                results.data.items.forEach((video, i) => {
-                    let videoURL = youtubeURL + video.id.videoId;
-                    searchResults.push(videoURL);
-                    options.fields.push({
-                        title: (i + 1) + ") " + video.snippet.title,
-                        description: `> [Open in browser](${ videoURL }) - From ${ video.snippet.channelTitle }`,
-                    });
-                });
-                if (! directPlay) {
-                    options.actions = {
-                        '1⃣': null,
-                        '2⃣': null,
-                        '3⃣': null,
-                        '4⃣': null,
-                        '5⃣': null,
-                    };
-                    for (let i = 0; i < 5; i ++) {
-                        options.actions[Object.keys(options.actions)[i]] = S.commands.list.get('play').run.bind(this, msg, searchResults[i]);
-                    }
-                    S.embed(msg, options);
+                if (directPlay) {
+                    const url = youtubeURL + results.data.items[0].id.videoId;
+                    addSong.call(this, url, { msg });
                 } else {
-                    addSong(searchResults[Object.keys(searchResults)[0]], { msg: msg });
+                    options.actions = {};
+                    results.data.items.forEach((video, i) => {
+                        let videoURL = youtubeURL + video.id.videoId;
+                        searchResults.push(videoURL);
+                        options.fields.push({
+                            title: (i + 1) + ") " + video.snippet.title,
+                            description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
+                        });
+                        options.actions[SYMBOLS[i]] = addSong.bind(this, searchResults[i], { msg });
+                    });
+                    this.embed(msg, options);
                 }
             });
         } else {
-            addSong(arg, { msg: msg });
+            addSong.call(this, arg, { msg });
         }
     },
 });
@@ -128,14 +116,14 @@ function addSong(songURL, parameters) {
     }
     const playlist = Guild.get(guild.id).playlist;
     if (UTIL.generate(3)) {
-        songURL = UTIL.choice(S.getList('surpriseSong'));
+        songURL = UTIL.choice(this.getList('surpriseSong'));
     }
     ytdl.getInfo(songURL, (err, info) => {
         if (err) {
-            if (msg) S.embed(msg, { title: "that video doesn't exist", type: 'error' });
+            if (msg) this.embed(msg, { title: "that video doesn't exist", type: 'error' });
         } else {
             if (msg) {
-                S.embed(msg, { title: `**${msg.member.displayName}** added **${info.title}** to the queue`, type: 'success' });
+                this.embed(msg, { title: `**${msg.member.displayName}** added **${info.title}** to the queue`, type: 'success' });
                 msg.delete();
             }
             playlist.addSong(info.title, info.length_seconds * 1000, songURL);
@@ -158,7 +146,7 @@ function playFavorites(data) {
         if (! Guild.get(guild.id).favS.Playlist[0]) {
             throw new error.EmptyObject("favorite playlist");
         }
-        S.embed(msg, { title: `**${msg.member.displayName}** started the favorites playlist ! Rock on baby !`, type: 'success' });
+        this.embed(msg, { title: `**${msg.member.displayName}** started the favorites playlist ! Rock on baby !`, type: 'success' });
     }
     const playlist = Guild.get(guild.id).playlist;
     UTIL.shuffle(Guild.get(guild.id).favS.Playlist).forEach(song => {

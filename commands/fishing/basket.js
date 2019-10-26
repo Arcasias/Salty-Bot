@@ -1,16 +1,10 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
+import User from '../../classes/User.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const items = require('../../data/items.json');
-const creatures = require('../../data/creatures.json');
-const error = require('../../classes/Exception');
-const User = require('../../classes/User');
-
-module.exports = new Command({
+export default new Command({
     name: 'basket',
     keys: [
-        "basket",
         "bucket",
         "stats",
         "statistics",
@@ -25,14 +19,14 @@ module.exports = new Command({
             effect: "Shows the content of ***mention***'s basket"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         let mention = msg.mentions.users.first();
         let reqUserId = null;
         let title = "";
 
         if (mention) {
-            if (mention.id === S.bot.user.id) {
+            if (mention.id === this.bot.user.id) {
                 throw new error.SaltyException("I don't have a basket. Fishes are friends, not food !");
             }
             title = "<mention>'s stats";
@@ -45,9 +39,9 @@ module.exports = new Command({
         let userStats = User.get(reqUserId);
         let options = {
             title: title,
-            color: S.config.quality[S.config.rank[userStats.rank].quality].color,
+            color: this.config.quality[this.config.rank[userStats.rank].quality].color,
             fields: [
-                { title: `Rank ${userStats.rank}: ${S.config.rank[userStats.rank].name}`, description: `current XP: ${Math.floor(S.getXpInfos(reqUserId).xp) }/${ S.config.rank[userStats.rank].xp}` },
+                { title: `Rank ${userStats.rank}: ${this.config.rank[userStats.rank].name}`, description: `current XP: ${Math.floor(this.getXpInfos(reqUserId).xp) }/${ this.config.rank[userStats.rank].xp}` },
                 { title: "fish count: " + userStats.fishCount, description: userStats.fishCount < 20 ? "that's not much": "that's a lot of fishes !" },
                 { title: "time spent fishing", description: UTIL.formatDuration(userStats.fishingTime) },
             ],
@@ -61,7 +55,7 @@ module.exports = new Command({
             options.image = bestFish.image;
         }
 
-        await S.embed(msg, options);
+        await this.embed(msg, options);
     },
 });
 

@@ -1,20 +1,15 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
+import packageJson from '../../package.json';
+import User from '../../classes/User.js';
 
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const packageInfo = require('../../package.json');
-const S = require('../../classes/Salty');
-const User = require('../../classes/User');
-
-module.exports = new Command({
-    name: 'status',
+export default new Command({
+    name: 'state',
     keys: [
-        "status",
-        "state",
-        "server",
-        "local",
-        "instance",
         "git",
+        "instance",
+        "local",
+        "server",
     ],
     help: [
         {
@@ -22,18 +17,18 @@ module.exports = new Command({
             effect: "Gets you some information about me"
         },
     ],
-    visibility: 'dev', 
-    action: async function (msg, args) {
+    visibility: 'dev',
+    async action(msg, args) {
         const options = {
             title: `Salty Bot`,
-            url: packageInfo.homepage,
-            description: `Last started on ${S.startTime.toString().split(' GMT')[0]}`,
+            url: packageJson.homepage,
+            description: `Last started on ${this.startTime.toString().split(' GMT')[0]}`,
             fields: [
                 { title: `Hosted on`, description: process.env.MODE === 'server' ? 'Server' : 'Local instance' },
-                { title: `Owner`, description: S.config.owner.username },
+                { title: `Owner`, description: this.config.owner.username },
                 { title: `Servers`, description: `Running on ${Guild.size} servers` },
                 { title: `Users`, description: `Handling ${User.size} users` },
-                { title: `Developers`, description: `${S.config.devs.length} contributors` },
+                { title: `Developers`, description: `${this.config.devs.length} contributors` },
                 { title: `Blacklist`, description: `${User.filter(u => u.black_listed).length} troublemakers` },
             ],
             inline: true,
@@ -41,7 +36,6 @@ module.exports = new Command({
         if (process.env.DEBUG === 'true') {
             options.footer = `Debug mode active`;
         }
-        await S.embed(msg, options);
+        await this.embed(msg, options);
     },
 });
-

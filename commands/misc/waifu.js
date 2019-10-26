@@ -1,12 +1,8 @@
-'use strict';
+import Command from '../../classes/Command.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'waifu',
     keys: [
-        "waifu",
         "waifus",
     ],
     help: [
@@ -15,10 +11,10 @@ module.exports = new Command({
             effect: "Gets you a proper waifu. It's about time"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
-        const { name, anime, image } = UTIL.choice(S.getList('waifus'));
-        await S.embed(msg, {
+    visibility: 'public',
+    async action(msg, args) {
+        const { name, anime, image } = UTIL.choice(this.getList('waifus'));
+        await this.embed(msg, {
             title: name,
             description: `anime: ${anime}`,
             image: UTIL.choice(image),

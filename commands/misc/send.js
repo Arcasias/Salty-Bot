@@ -1,7 +1,5 @@
-'use strict';
-
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
+import Command from '../../classes/Command.js';
+import { config } from '../../classes/Salty.js';
 
 const specialActions = [
     {
@@ -18,12 +16,11 @@ const specialActions = [
     },
 ];
 
-module.exports = new Command({
+export default new Command({
     name: 'send',
     keys: [
-        "send",
         "say",
-        S.config.prefix,
+        config.prefix,
     ],
     help: [
         {
@@ -35,10 +32,10 @@ module.exports = new Command({
             effect: "Sends something. Who knows what ?"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         if (!args[0]) {
-            return S.commands.list.get('talk').run(msg, args);
+            return this.commands.list.get('talk').run(msg, args);
         }
         let message;
         for (let sa of specialActions) {
@@ -50,7 +47,7 @@ module.exports = new Command({
             msg.delete();
             message = args.join(" ")
         }
-        await S.msg(msg, message);
+        await this.msg(msg, message);
     },
 });
 

@@ -1,12 +1,8 @@
-'use strict';
+import Command from '../../classes/Command.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'restart',
     keys: [
-        "restart",
         "reset",
     ],
     help: [
@@ -15,10 +11,10 @@ module.exports = new Command({
             effect: "Disconnects me and reconnects right after",
         }
     ],
-    visibility: 'dev', 
-    action: async function (msg, args) {
-    	await S.embed(msg, { title: "Restarting ...", type: 'success' });
-        await S.restart();
+    visibility: 'dev',
+    async action(msg, args) {
+    	await this.embed(msg, { title: "Restarting ...", type: 'success' });
+        await this.restart();
     },
 });
 

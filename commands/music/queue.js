@@ -1,15 +1,12 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
 const limit = 25;
 
-module.exports = new Command({
+export default new Command({
     name: 'queue',
     keys: [
-        "queue",
         "playlist",
         "q",
     ],
@@ -27,11 +24,11 @@ module.exports = new Command({
             effect: "Clears the queue"
         },
     ],
-    visibility: 'public', 
+    visibility: 'public',
     action: function (msg, args) {
         let { playlist } = Guild.get(msg.guild.id);
 
-        if (args[0] && S.getList('delete').includes(args[0])) {
+        if (args[0] && this.getList('delete').includes(args[0])) {
             if (! playlist.queue[0]) {
                 throw new error.EmptyObject("queue");
             }
@@ -42,7 +39,7 @@ module.exports = new Command({
             }
             let songs = args.join('').split(',');
             let requestIsArray = Array.isArray(songs);
-            
+
             if (! requestIsArray) songs = [songs];
 
             // Checks for validity
@@ -74,12 +71,12 @@ module.exports = new Command({
                 `Songs n°${args.join(" ")} removed from the queue` :
                 `Song n°${songs[0]} - **${removed.title}** removed from the queue`;
 
-            S.embed(msg, { title: message, type: 'success' });
+            this.embed(msg, { title: message, type: 'success' });
 
-        } else if (args[0] && S.getList('clear').includes(args[0])) {
+        } else if (args[0] && this.getList('clear').includes(args[0])) {
             playlist.queueClear();
 
-            S.embed(msg, { title: "queue cleared", type: 'success' });
+            this.embed(msg, { title: "queue cleared", type: 'success' });
 
         } else {
             if (! playlist.queue[0]) {
@@ -92,7 +89,7 @@ module.exports = new Command({
                 footer: `repeat: ${ playlist.repeat }`,
             };
 
-            // Returns an embed message displaying all songs    
+            // Returns an embed message displaying all songs
 
             let currentlyPlaying, marker = "";
             let ptr;
@@ -110,17 +107,17 @@ module.exports = new Command({
                 duration += song.duration;
 
                 let name = `${i + 1}) ${song.title}`;
-                let desc = `${S.formatDuration(song.duration)} - [Open in browser](${song.url})`;
+                let desc = `${this.formatDuration(song.duration)} - [Open in browser](${song.url})`;
 
                 if (ptr == i) name = "> " + name;
 
                 options.fields.push({ title: name, description: desc });
-                
+
                 i ++;
             });
-            options.description = `total duration: ${S.formatDuration(duration) + currentlyPlaying}`;
+            options.description = `total duration: ${this.formatDuration(duration) + currentlyPlaying}`;
 
-            S.embed(msg, options);
+            this.embed(msg, options);
         }
     },
 });

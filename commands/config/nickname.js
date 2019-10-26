@@ -1,15 +1,13 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import PromiseManager from '../../classes/PromiseManager.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'nickname',
     keys: [
-        "nickname",
-        "nick",
         "name",
+        "nick",
+        "pseudo",
     ],
     help: [
         {
@@ -25,43 +23,50 @@ module.exports = new Command({
             effect: "Removes the ***particle*** from each matching nickname"
         },
     ],
-    visibility: 'admin', 
-    action: async function (msg, args) {
-        const members = msg.guild.members.array();
+    visibility: 'admin',
+    async action(msg, args) {
         const particle = args.slice(1).join(" ");
-        const particleRegex = new RegExp(particles);
+        const particleRegex = new RegExp(particle, 'g');
+
+        const addList = this.getList('add');
+        const removeList = this.getList('delete');
 
         if (!args[0]) {
             throw new error.MissingArg("add or delete + particle");
-        }
-        if (!particle) {
-            throw new error.MissingArg("nickname particle");
-        }
-
-        if (S.getList('add').includes(args[0])) {
-            await changeNames(nickname => nickname.match(particleRegex) ? nickname : `${nickname.trim()} ${particle}`);
-        } else if (S.getList('delete').includes(args[0])) {
-            await changeNames(nickname => nickname.replace(particleRegex, "").trim());
-        }
-
-        async function changeNames(transformation) {
-            const progressMsg = await S.msg(msg, `changing nicknames: 0/${members.length}`);
-            for (let i = 0; i < members.length; i ++) {
-                const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
-                if (newNick != members[i].nickname) {
-                    try {
-                        await members[i].setNickname(newNick);
-                        await progressMsg.edit(`changing nicknames: ${i + 1}/${members.length}`);
-                    } catch (err) {
-                        LOG.error(err);
-                    }
-                } else {
-                    await progressMsg.edit(`changing nicknames: ${i + 1}/${members.length}`);
-                }
+        } else {
+            if (!particle) {
+                throw new error.MissingArg("nickname particle");
             }
-            await progressMsg.delete();
-            await S.embed(msg, { title: "nicknames successfully changed", type: 'success' });
+            if (addList.includes(args[0])) {
+                await changeNames.call(this, msg, nickname => nickname.match(particleRegex) ? nickname : `${nickname.trim()} ${particle}`);
+            } else if (removeList.includes(args[0])) {
+                await changeNames.call(this, msg, nickname => nickname.replace(particleRegex, "").trim());
+            } else {
+                throw new error.MissingArg("add or delete + particle");
+            }
         }
     },
 });
 
+async function changeNames(msg, transformation) {
+    const members = msg.guild.members.array();
+    const progressMsg = await this.msg(msg, `changing nicknames: 0/${members.length}`);
+    const pm = new PromiseManager();
+    for (let i = 0; i < members.length; i ++) {
+        const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
+        if (newNick !== members[i].nickname) {
+            try {
+                await members[i].setNickname(newNick);
+                pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
+            } catch (err) {
+                if (err.name !== 'DiscordAPIError' || err.message !== 'Missing Permissions') {
+                    throw err;
+                }
+            }
+        } else {
+            pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
+        }
+    }
+    pm.add(progressMsg.delete.bind(progressMsg));
+    this.embed(msg, { title: "nicknames successfully changed", type: 'success' });
+}

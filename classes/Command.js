@@ -1,14 +1,12 @@
-'use strict';
-
-const Multiton = require('./Multiton');
-const S = require('./Salty');
-const error = require('./Exception');
+import Multiton from './Multiton.js';
+import * as Salty from './Salty.js';
+import * as error from './Exception.js';
 
 const permissions = {
     public: null,
-    admin: S.isAdmin,
-    dev: S.isDev,
-    owner: S.isOwner,
+    admin: Salty.isAdmin,
+    dev: Salty.isDev,
+    owner: Salty.isOwner,
 };
 const PERM_GET = 0;
 const PERM_SET = 1;
@@ -16,45 +14,41 @@ const PERM_DEL = 2;
 const PERM_CLS = 3;
 
 class Command extends Multiton {
-    /**
-     * Command constructor. Takes a data object containing all accepted parameters.
-     * @param {Object}   data - The data object containing the parameters of the command.
-     * @param {Object}   data.action
-     * @param {Object[]} data.help
-     * @param {String[]} data.keys
-     * @param {String}   data.[mode]
-     * @param {String}   data.name
-     * @param {String}   data.visibility
-     */
-    constructor(values) {
-        super(...arguments);
-
-        this.action = values.action;
-        this.help = values.help;
-        this.keys = values.keys;
-        this.name = values.name;
-        this.visibility = values.visibility;
-        this.mode = values.mode;
-    }
+    static fields = {
+        action: () => {},
+        deprecated: false,
+        help: [],
+        keys: [],
+        name: "",
+        visibility: 'public',
+        env: 'local',
+    };
 
     /**
      * Runs the command action
-     * @param  {Object}  msg 
+     * @param  {Object}  msg
      * @param  {Array}   args
-     * @param  {Boolean} [crud] WIP 
+     * @param  {Boolean} [crud] WIP
      */
     async run(msg, args, crud=false) {
         try {
-            if (this.visibility !== 'public' && ! permissions[this.visibility].call(S, msg.author, msg.guild)) {
+            if (this.deprecated) {
+                throw new error.DeprecatedCommand(this.name);
+            }
+            if (this.visibility !== 'public' && ! permissions[this.visibility].call(Salty, msg.author, msg.guild)) {
                 throw new error.PermissionDenied(this.visibility);
             }
-            if (this.mode && this.mode !== process.env.MODE) {
+            if (this.env && this.env !== process.env.MODE) {
+                LOG.debug(this.name, this.env)
                 throw new error.SaltyException('WrongEnvironment', "it looks like I'm not in the right environment to do that");
             }
-            await this.action(msg, args);
+            await this.action.call(Salty, msg, args);
         } catch (err) {
-            LOG.error(err.stack);
-            await S.embed(msg, { title: err.message, type: 'error' });
+            if (err instanceof error.SaltyException) {
+                await Salty.embed(msg, { title: err.message, type: 'error' });
+            } else {
+                LOG.error(err.stack);
+            }
         }
     }
 }
@@ -75,7 +69,7 @@ class ObjectCommand extends Command {
      *      - 'name': Name or reference of the object, used for searching and displaying the object
      *      - values: the rest of the values should be explicited as key => value pairs, with
      *          the key being explicit enough about what the value is about
-     *          
+     *
      * @param {Object} data - The data object containing the parameters of the command.
      */
     constructor(data) {
@@ -97,7 +91,7 @@ class ObjectCommand extends Command {
         if (args[0]) {
 
             // add
-            if (S.getList('add').includes(args[0])) {
+            if (Salty.getList('add').includes(args[0])) {
 
                 if (! this.perm[PERM_SET]) throw new error.PermissionDenied("create");
                 if (! args[1]) throw new error.MissingArg("element");
@@ -108,10 +102,10 @@ class ObjectCommand extends Command {
 
                 this.list.push(newElement);
 
-                S.embed(msg, { title: `${args.join(" ")} added to ${this.name}`, type: 'success' });
+                Salty.embed(msg, { title: `${args.join(" ")} added to ${this.name}`, type: 'success' });
 
             // delete
-            } else if (S.getList('delete').includes(args[0])) {
+            } else if (Salty.getList('delete').includes(args[0])) {
 
                 if (! this.perm[PERM_SET]) throw new error.PermissionDenied("delete");
                 if (! args[1]) throw new error.MissingArg("element");
@@ -122,7 +116,7 @@ class ObjectCommand extends Command {
                 if (argIsIndex) {
 
                     elementIndex = parseInt(args[1]);
-                    
+
                 } else {
 
                     elementIndex = this.list.indexOf(this.list.find(el => Object.values(el).includes(joined)));
@@ -132,17 +126,17 @@ class ObjectCommand extends Command {
 
                 this.list.splice(elementIndex, 1);
 
-                S.embed(msg, { title: `${ argIsIndex ? 'item number ' + args[1]
+                Salty.embed(msg, { title: `${ argIsIndex ? 'item number ' + args[1]
                     : joined } removed from ${this.name}`, type: 'success' });
 
             // clear
-            } else if (S.getList('clear').includes(args[0])) {
+            } else if (Salty.getList('clear').includes(args[0])) {
 
                 if (! this.perm[PERM_SET]) throw new error.PermissionDenied("clear");
-                
+
                 this.list = [];
 
-                S.embed(msg, { title: `${this.name} cleared`, type: 'success' });
+                Salty.embed(msg, { title: `${this.name} cleared`, type: 'success' });
             }
 
         } else {
@@ -156,7 +150,7 @@ class ObjectCommand extends Command {
 
                 if (! isNaN(args[0])) {
 
-                    element = this.list[parseInt(args[0])];                
+                    element = this.list[parseInt(args[0])];
 
                 } else {
 
@@ -165,14 +159,14 @@ class ObjectCommand extends Command {
 
                 if (! element) throw new error.OutOfRange(joined);
 
-                S.embed(msg, {
+                Salty.embed(msg, {
                     title: `${this.name} - ${joined}`,
                     description: Object.values(element).join('\n'),
                 });
 
             } else {
 
-                S.embed(msg, {
+                Salty.embed(msg, {
                     title: `${this.name}`,
                     description: this.list.map(el => el.name).join('\n'),
                 });
@@ -183,4 +177,4 @@ class ObjectCommand extends Command {
     }
 }
 
-module.exports = Command;
+export default Command;

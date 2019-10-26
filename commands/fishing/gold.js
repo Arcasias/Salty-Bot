@@ -1,18 +1,14 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import User from '../../classes/User.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const User = require('../../classes/User');
-
-module.exports = new Command({
+export default new Command({
     name: 'gold',
     keys: [
-        "gold",
-        "golds",
-        "money",
-        "wallet",
+        "coin",
         "coins",
+        "money",
         "purse",
+        "wallet",
     ],
     help: [
         {
@@ -24,12 +20,12 @@ module.exports = new Command({
             effect: "Shows the amount of gold of ***mention***"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
 
-        await S.embed(msg, { title: msg.mentions.users.first() ?
-            `${ msg.mentions.members.first().nickname } currently has ${ User.get(msg.mentions.users.first().id).gold } gold`
-            : `you have ${ User.get(msg.author.id).gold } gold` });
+        await this.embed(msg, { title: msg.mentions.users.first() ?
+            `${ msg.mentions.members.first().nickname } currently has ${ User.get(msg.mentions.users.first().id).gold } gold` :
+            `you have ${ User.get(msg.author.id).gold } gold` });
     },
 });
 

@@ -1,21 +1,18 @@
-'use strict';
-
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-const ytdl = require('ytdl-core');
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
+import * as error from '../../classes/Exception.js';
+import ytdl from 'ytdl-core';
 
 const youtubeURL = 'https://www.youtube.com/watch?v=';
-const youtubeRegex = new RegExp('https://www.youtube.com/watch', 'g');
+const youtubeRegex = new RegExp(youtubeURL, 'g');
 const limit = 25;
 
-module.exports = new Command({
+export default new Command({
+    deprecated: true,
     name: 'favorites',
     keys: [
-        "favorites",
-        "favs",
         "fav",
+        "favs",
     ],
     help: [
         {
@@ -31,17 +28,17 @@ module.exports = new Command({
             effect: "Deletes a song from the favorites playlist"
         },
     ],
-    visibility: 'public', 
+    visibility: 'public',
     action: function (msg, args) {
         const { favPlaylist } = Guild.get(msg.guild.id);
 
-        if (args[0] && S.getList('add').includes(args[0])) {
+        if (args[0] && this.getList('add').includes(args[0])) {
             args.shift();
 
             if (! args[0]) {
                 throw new error.MissingArg("URL");
             }
-            
+
             const urls = args.join("").split(",");
 
             if (5 < urls.length) {
@@ -73,14 +70,14 @@ module.exports = new Command({
             Promise.all(promises).then(() => {
                 if (valid) {
                     const lastSong = favPlaylist[favPlaylist.length - 1].title;
-                    S.embed(msg, { title: `**${lastSong}** ${ 1 === urls.length ? "has" : `and **${urls.length - 1}** other songs have` } been successfully added to the favorites playlist`, type: 'success' });
+                    this.embed(msg, { title: `**${lastSong}** ${ 1 === urls.length ? "has" : `and **${urls.length - 1}** other songs have` } been successfully added to the favorites playlist`, type: 'success' });
                 } else {
-                    S.embed(msg, { title: 1 === urls.length ? "the URL you entered is invalid" : "one of the URLs you entered is invalid", type: 'error' });
+                    this.embed(msg, { title: 1 === urls.length ? "the URL you entered is invalid" : "one of the URLs you entered is invalid", type: 'error' });
                 }
             }).catch(err => {
-                S.embed(msg, { title: err.message, type: 'error' });
+                this.embed(msg, { title: err.message, type: 'error' });
             });
-        } else if (args[0] && S.getList('delete').includes(args[0])) {
+        } else if (args[0] && this.getList('delete').includes(args[0])) {
             args.shift();
 
             if (! favPlaylist[0]) {
@@ -112,11 +109,11 @@ module.exports = new Command({
             }
             let message = (requestIsArray ? `songs n°${sortedIds.join(", ")}`: `song n°${songs[0]} - **${removed.title}**`) + " removed from the favorites playlist";
 
-            S.embed(msg, { title: message, type: 'success' });
+            this.embed(msg, { title: message, type: 'success' });
 
         } else {
             if (! favPlaylist[0]) {
-                return S.embed(msg, { title: "the favorites playlist is empty", description: "it's about time somebody added something to it, don't you think ?" });
+                return this.embed(msg, { title: "the favorites playlist is empty", description: "it's about time somebody added something to it, don't you think ?" });
             }
             let duration = 0;
             let options = {
@@ -126,7 +123,7 @@ module.exports = new Command({
             // Returns an embed message displaying the playlist
             favPlaylist.forEach((song, i) => {
                 if (limit <= i) return;
-                
+
                 duration += song.duration;
 
                 let name = `${ i + 1 }) ${ song.title }`
@@ -138,7 +135,7 @@ module.exports = new Command({
             });
             options.description = `total duration: ${UTIL.formatDuration(duration)}`;
 
-            S.embed(msg, options);
+            this.embed(msg, options);
         }
     },
 });

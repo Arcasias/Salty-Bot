@@ -1,14 +1,11 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import { getList } from '../../classes/Salty.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const meanList = S.getList('meaning');
+const meanList = getList('meaning');
 
-module.exports = new Command({
+export default new Command({
     name: 'talk',
-    keys: [
-        "talk",
-    ],
+    keys: [],
     help: [
         {
             argument: null,
@@ -19,8 +16,8 @@ module.exports = new Command({
             effect: "I'll answer to what you said. As I'm not a really advanced AI, you may want to try simple things such as \"Hello\" or \"How are you\""
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
         let cleanedMsg = " " + args.map(arg => UTIL.clean(arg)).join(" ") + " ";
         let meanFound = [];
         let answers = [];
@@ -28,19 +25,19 @@ module.exports = new Command({
         for (let mean in meanList) {
             for (let i = 0; i < meanList[mean].list.length; i ++) {
                 if (! meanFound.includes(mean) && cleanedMsg.match(new RegExp(" " + meanList[mean].list[i] + " ", 'g'))) {
-                    meanFound.push(mean);            
+                    meanFound.push(mean);
                 }
             }
         }
         if (0 < meanFound.length) {
             for (let i = 0; i < meanFound.length; i ++) {
                 for (let j = 0; j < meanList[meanFound[i]].answers.length; j ++) {
-                    answers.push(UTIL.choice(S.getList('answers')[meanList[meanFound[i]].answers[j]]));
+                    answers.push(UTIL.choice(getList('answers')[meanList[meanFound[i]].answers[j]]));
                 }
             }
-            await S.msg(msg, answers.join(", "));
+            await this.msg(msg, answers.join(", "));
         } else {
-            await S.msg(msg, UTIL.choice(S.getList('answers')['rand']));
+            await this.msg(msg, UTIL.choice(getList('answers')['rand']));
         }
     },
 });

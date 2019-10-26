@@ -1,16 +1,11 @@
-'use strict';
-
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
 const INTERVALS = {}
 
-module.exports = new Command({
+export default new Command({
     name: 'interval',
-    keys: [
-        "interval",
-    ],
+    keys: [],
     help: [
         {
             argument: null,
@@ -21,15 +16,15 @@ module.exports = new Command({
             effect: "I'll tell what you want after a every **delay** seconds",
         },
     ],
-    visibility: 'dev', 
-    action: async function (msg, args) {
-        if (args[0] && S.getList('clear').includes(args[0])) {
+    visibility: 'dev',
+    async action(msg, args) {
+        if (args[0] && this.getList('clear').includes(args[0])) {
             if (! INTERVALS[msg.guild.id]) {
                 throw new error.EmptyObject("interval");
             }
             clearInterval(INTERVALS[msg.guild.id]);
 
-            S.embed(msg, { title: "Interval cleared", type: 'success' });
+            this.embed(msg, { title: "Interval cleared", type: 'success' });
         } else {
             if (! args[0]) {
                 throw new error.MissingArg("delay");
@@ -40,7 +35,7 @@ module.exports = new Command({
             if (! args[1]) {
                 throw new error.MissingArg("message");
             }
-            let delay = parseInt(args.shift()) * 1000;
+            const delay = parseInt(args.shift()) * 1000;
 
             msg.delete().catch();
 
@@ -48,7 +43,7 @@ module.exports = new Command({
                 clearInterval(INTERVALS[msg.guild.id]);
             }
             INTERVALS[msg.guild.id] = setInterval(() => {
-                S.msg(msg, args.join(" "));
+                this.msg(msg, args.join(" "));
             }, delay);
         }
     },

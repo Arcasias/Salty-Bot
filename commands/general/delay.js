@@ -1,15 +1,11 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'delay',
     keys: [
-        "delay",
-        "sleep",
         "later",
+        "sleep",
     ],
     help: [
         {
@@ -21,19 +17,20 @@ module.exports = new Command({
             effect: "I'll tell what you want after a provided delay",
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
+    visibility: 'public',
+    async action(msg, args) {
+		if (!args[0]) {
+            throw new error.MissingArg("anything");
+        }
 
-		if (! args[0]) throw new error.MissingArg("anything");
+        const delay = args[1] && !isNaN(args[0]) ?
+        parseInt(args.shift()) * 1000 :
+            5000;
 
-		let delay = 5000;
-
-		if (args[1] && ! isNaN(args[0])) delay = parseInt(args.shift()) * 1000;
-
-		msg.delete().catch();
+        msg.delete().catch();
 
 		setTimeout(() => {
-			S.msg(msg, args.join(" "));
+			this.msg(msg, args.join(" "));
 		}, delay);
     },
 });

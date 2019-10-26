@@ -1,13 +1,9 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'purge',
     keys: [
-        "purge",
         "prune",
     ],
     help: [
@@ -28,14 +24,14 @@ module.exports = new Command({
             effect: "Recursively deletes every message one by one. This feature is still experimental and might cause issues. Use carefully"
         },
     ],
-    visibility: 'admin', 
-    action: async function (msg, args) {
-        if (args[0] && S.getList('bot').includes(args[0])) {
+    visibility: 'admin',
+    async action(msg, args) {
+        if (args[0] && this.getList('bot').includes(args[0])) {
             const messages = await msg.channel.fetchMessages();
             let messagesToDelete = messages.filter(message => message.author.bot);
             try {
                 await msg.channel.bulkDelete(messagesToDelete);
-                await S.embed(msg, { title: "most recent bot messages have been deleted", type: 'success' });
+                await this.embed(msg, { title: "most recent bot messages have been deleted", type: 'success' });
             } catch (err) {
                 LOG.error(err);
             }
@@ -59,7 +55,7 @@ module.exports = new Command({
 
             try {
                 await msg.channel.bulkDelete(toDelete, true);
-                await S.embed(msg, { title: `${ toDelete } messages have been successfully deleted`, type: 'success' });
+                await this.embed(msg, { title: `${ toDelete } messages have been successfully deleted`, type: 'success' });
             } catch (err) {
                 LOG.error(err);
             }

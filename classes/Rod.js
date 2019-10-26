@@ -1,28 +1,22 @@
-'use strict';
-
-const Multiton = require('./Multiton');
+import Multiton from './Multiton.js';
 
 class Rod extends Multiton {
-    constructor(values) {
-        super(...arguments);
-    }
+     static table = 'rods';
+     static fields = {
+        name: 0,
+        description: "",
+        quality: "",
+        price: 0,
+        time_min: 0,
+        time_max: 0,
+        chance_common: 0,
+        chance_uncommon: 0,
+        chance_rare: 0,
+        chance_epic: 0,
+        chance_legendary: 0,
+        chance_mythic: 0,
+        chance_forgotten: 0,
+    };
 }
 
-Rod.table = 'rods';
-Rod.fields = {
-    name: 0,
-    description: "",
-    quality: "",
-    price: 0,
-    time_min: 0,
-    time_max: 0,
-    chance_common: 0,
-    chance_uncommon: 0,
-    chance_rare: 0,
-    chance_epic: 0,
-    chance_legendary: 0,
-    chance_mythic: 0,
-    chance_forgotten: 0,
-};
-
-module.exports = Rod;
+export default Rod;

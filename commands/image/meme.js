@@ -1,12 +1,10 @@
-'use strict';
-
-const Command = require('../../classes/Command');
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const path = require('path');
-const PImage = require('pureimage');
-const S = require('../../classes/Salty');
+import Command from '../../classes/Command.js';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import path from 'path';
+import PImage from 'pureimage';
+import { config } from '../../classes/Salty.js';
 
 const defaultWidth = 450;
 const maxTempImages = 5;
@@ -16,12 +14,12 @@ const baseLineSpace = 30;
 const baseBorder = 10;
 
 let imgIndex = 1;
-let imgPath = path.join(S.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+let imgPath = path.join(config.tempImageFolder, `meme_temp_${imgIndex}.png`);
 
-module.exports = new Command({
+export default new Command({
     name: 'meme',
     keys: [
-        "meme",
+        "memes",
     ],
     help: [
         {
@@ -31,7 +29,7 @@ module.exports = new Command({
     ],
     visibility: 'public',
     mode: 'local',
-    action: async function (msg, args) {
+    async action(msg, args) {
         let canvas, canvasImg, canvasTxt, c, fontSize, border, lineSpace;
         let imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? args.join(" ").split("\\").map(line => UTIL.title(line)) : null;
@@ -96,7 +94,7 @@ module.exports = new Command({
                     imgText.forEach(line => {
                         let metrics = c.measureText(line);
                         while (metrics.width > canvas.width * 0.9) {
-                            
+
                             fontSize -= 2;
 
                             c.font = `${ fontSize }pt ${ fontFamily }`;
@@ -119,11 +117,11 @@ module.exports = new Command({
         // Last step : send canvas.
         function sendCanvas() {
             PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath)).then(()=>{
-                S.msg(msg, null, imgPath).then(() => {
+                this.msg(msg, null, imgPath).then(() => {
                     msg.delete();
 
                     imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                    imgPath = path.join(S.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+                    imgPath = path.join(config.tempImageFolder, `meme_temp_${imgIndex}.png`);
                 });
             }).catch(LOG.error);
         }

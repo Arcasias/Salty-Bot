@@ -1,19 +1,15 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import packageJson from '../../package.json';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const packageJson = require('../../package.json');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'help',
     keys: [
-        "help",
-        "halp",
-        "wtf",
         "commands",
-        "infos",
+        "halp",
         "info",
+        "infos",
+        "wtf",
         "?",
     ],
     help: [
@@ -30,71 +26,81 @@ module.exports = new Command({
             effect: "Shows a detailed usage of a specific ***command***"
         }
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
-        var { author } = msg;
-        let options = {
+    visibility: 'public',
+    async action(msg, args) {
+        const { author } = msg;
+        const options = {
             color: 0xFFFFFF,
             fields: [],
         };
-        let help = S.commands.help;
-        let categories = Object.keys(help);
-        let commands = Object.keys(S.commands.keys);
+        const help = this.commands.help;
+        const categories = Object.keys(help);
+        const commands = Object.keys(this.commands.keys);
 
         while (["+", ">", "->", ">>", "=>"].includes(args[0])) {
             args.shift();
         }
         if (args[0]) {
-            let arg = args[0].toLowerCase();
+            const arg = args[0].toLowerCase();
 
             if (categories.includes(arg)) {
-                let category = arg;
-                let desc = [];
+                // arg === category
+                options.title = `${arg} commands`;
+                options.description = `these are the ${arg} commands. To get more information about a specific command, use the command \`$help command_name\``;
 
-                options.title = `${category} commands`;
-
-                help[category].forEach(cmd => {
+                help[arg].forEach(cmd => {
                     if ('public' === cmd.visibility ||
-                            ('admin' === cmd.visibility && S.isAdmin(author, msg.guild)) ||
-                            ('dev' === cmd.visibility && S.isDev(author)) ||
-                            ('owner' === cmd.visibility && S.isOwner(author))) {
-                        desc.push(cmd.name);
+                            ('admin' === cmd.visibility && this.isAdmin(author, msg.guild)) ||
+                            ('dev' === cmd.visibility && this.isDev(author)) ||
+                            ('owner' === cmd.visibility && this.isOwner(author))) {
+                        const alternate = cmd.keys.length ?
+                            ` (*${cmd.keys.join("*, *")}*)` :
+                            "";
+                        options.fields.push({
+                            title: `**${UTIL.title(cmd.name)}**${alternate}`,
+                            description: `>> \`${this.config.prefix}help ${cmd.name}\``,
+                        });
                     }
                 });
-                options.description = desc.join("\n");
             } else if (commands.includes(arg)) {
-                let command = S.commands.list.get(S.commands.keys[arg]);
-                let keys = command.keys.filter(key => command.name != key);
-                let category = categories.find(cat => help[cat].find(cmd => cmd.name === command.name));
-
+                // arg === command
+                const command = this.commands.list.get(this.commands.keys[arg]);
+                const category = categories.find(cat => help[cat].find(cmd => cmd.name === command.name));
                 options.title = `**${command.name.toUpperCase()}**`;
                 options.url = `${packageJson.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
-                if (0 < keys.length) {
-                    options.description = `Alternative usage: ${ keys.join(", ") }`;
+                if (0 < command.keys.length) {
+                    options.description = `Alternative usage: ${command.keys.join(", ")}`;
                 }
                 if (command.example) {
                     options.footer = `Example: ${command.example}`;
                 }
+                if (command.deprecated) {
+                    options.title = '[DEPRECATED] ' + options.title;
+                    options.description += "\n*This command is deprecated and can no longer be used*";
+                    options.color = 13107200;
+                }
                 command.help.forEach(usage => {
                     if (usage.effect)  {
-                        options.fields.push({ title: `${ S.config.prefix }${ command.name }${ usage.argument ? " " + usage.argument: "" }`, description: usage.effect });
+                        options.fields.push({
+                            title: `${this.config.prefix}${command.name} ${usage.argument || "" }`,
+                            description: usage.effect,
+                        });
                     }
                 });
             } else {
                 throw new error.IncorrectValue("second argument", "command or a category");
             }
         } else {
-            let description = [];
-
-            Object.keys(help).forEach(category => {
-
-                options.fields.push({ title: `${ category }`, description: `>> \`${ S.config.prefix }help ${ category }\`` });
-            });
-
             options.title = "list of commands";
-            options.description = "these are the commands categories. To access a specific category's commands, use the command \`$help category_name\`";
+            options.description = "these are the commands categories. To get more information about a specific category, use the command \`$help category_name\`";
+            for (let category in help) {
+                options.fields.push({
+                    title: `**${category}**  (${help[category].length} commands)`,
+                    description: `>> \`${this.config.prefix}help ${category}\``,
+                });
+            }
         }
-        await S.embed(msg, options);
+        await this.embed(msg, options);
     },
 });
 

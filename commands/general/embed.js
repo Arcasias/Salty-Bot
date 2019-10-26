@@ -1,14 +1,10 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Discord from 'discord.js';
+import * as error from '../../classes/Exception.js';
 
-const Command = require('../../classes/Command');
-const Discord = require('discord.js');
-const S = require('../../classes/Salty');
-const error = require('../../classes/Exception');
-
-module.exports = new Command({
+export default new Command({
     name: 'embed',
     keys: [
-        "embed",
         "embeds",
         "json",
         "parse",
@@ -23,9 +19,9 @@ module.exports = new Command({
             effect: "Parses the provided JSON as a Discord embed"
         },
     ],
-    visibility: 'public', 
-    action: async function (msg, args) {
-        let parsed, embed, populatedEmbed;
+    visibility: 'public',
+    async action(msg, args) {
+        let parsed;
         try {
             parsed = JSON.parse(args.join(" "));
         } catch (error) {
@@ -34,7 +30,7 @@ module.exports = new Command({
         if (0 === Object.keys(parsed).length) {
             throw new error.MissingArg("JSON");
         }
-        await msg.channel.send({ embed: new Discord.RichEmbed(parsed) });
+        await this.msg(msg, null, { embed: new Discord.RichEmbed(parsed) });
     },
 });
 

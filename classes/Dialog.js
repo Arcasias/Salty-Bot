@@ -1,10 +1,8 @@
-'use strict';
+import Multiton from './Multiton.js';
 
-const Multiton = require('./Multiton');
 const DIALOG_TIMEOUT = 300000;
 
 class Dialog extends Multiton {
-
     constructor(origin, response, actions={}) {
         super(...arguments);
 
@@ -26,4 +24,4 @@ class Dialog extends Multiton {
     }
 }
 
-module.exports = Dialog;
+export default Dialog;

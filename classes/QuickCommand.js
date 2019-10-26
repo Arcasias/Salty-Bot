@@ -1,18 +1,12 @@
-'use strict';
-
-const Multiton = require('./Multiton');
+import Multiton from './Multiton.js';
 
 class QuickCommand extends Multiton {
-    constructor(values) {
-        super(...arguments);
-    }
+	static table = 'commands';
+	static fields = {
+	    keys: "",
+	    effect: "",
+	    name: ""
+	};
 }
 
-QuickCommand.table = 'commands';
-QuickCommand.fields = {
-    keys: "",
-    effect: "",
-    name: ""
-};
-
-module.exports = QuickCommand;
+export default QuickCommand;

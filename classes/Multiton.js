@@ -1,8 +1,7 @@
-'use strict';
-
-const Database = require('./Database');
+import * as Database from './Database.js';
 
 class Multiton {
+    static _instances = {};
 
     constructor(values) {
         const fields = this.constructor.fields;
@@ -18,7 +17,6 @@ class Multiton {
             }
         }
     }
-
     destroy() {
         const newInstances = [];
         const instances = Multiton._instances[this.constructor.name];
@@ -46,9 +44,9 @@ class Multiton {
 
     static async load() {
         const rows = await Database.read(this.table);
-        Multiton._instances[this.name] = rows;
+        const objects = rows.map(rowData => new this(rowData));
         LOG.info(`${UTIL.title(this.name)} data loaded`);
-        return rows;
+        return objects;
     }
 
     static async create(...allValues) {
@@ -67,7 +65,7 @@ class Multiton {
         const instances = Multiton._instances[this.name];
         for (let i = 0; i < instances.length; i ++) {
             if (ids.includes(instances[i].id)) {
-                await Database.delete(this.table, instances[i].id);
+                await Database.remove(this.table, instances[i].id);
             } else {
                 newInstances.push(instances[i]);
             }
@@ -109,6 +107,4 @@ class Multiton {
     static reduce(fn) { return Array.prototype.reduce.apply(Multiton._instances[this.name], arguments); }
 }
 
-Multiton._instances = {};
-
-module.exports = Multiton;
+export default Multiton;

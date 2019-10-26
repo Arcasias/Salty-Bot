@@ -1,13 +1,10 @@
-'use strict';
+import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
 
-const Command = require('../../classes/Command');
-const Guild = require('../../classes/Guild');
-const S = require('../../classes/Salty');
-
-module.exports = new Command({
+export default new Command({
     name: 'repeat',
     keys: [
-        "repeat",
+        "loop",
         "rep",
         "replay",
     ],
@@ -29,21 +26,21 @@ module.exports = new Command({
             effect: "Disables repeat"
         }
     ],
-    visibility: 'public', 
+    visibility: 'public',
     action: function (msg, args) {
         let { playlist } = Guild.get(msg.guild.id);
 
         const single = () => {
             playlist.repeat = 'single';
-            S.embed(msg, { title: "I will now repeat the current song", type: 'success', react: '🔂' });
+            this.embed(msg, { title: "I will now repeat the current song", type: 'success', react: '🔂' });
         };
         const all = () => {
             playlist.repeat = 'all';
-            S.embed(msg, { title: "I will now repeat the whole queue", type: 'success', react: '🔁' });
+            this.embed(msg, { title: "I will now repeat the whole queue", type: 'success', react: '🔁' });
         };
         const off = () => {
             playlist.repeat = 'off';
-            S.embed(msg, { title: "repeat disabled", type: 'success', react: '❎' });
+            this.embed(msg, { title: "repeat disabled", type: 'success', react: '❎' });
         };
 
         if (['single', '1', 'one', 'this'].includes(args[0])) {
