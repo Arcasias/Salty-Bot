@@ -12,7 +12,7 @@ class Fish extends Multiton {
         image: "",
     };
 
-    constructor(values) {
+    constructor() {
         super(...arguments);
 
         this.weight = UTIL.randRange(this.min_weight, this.max_weight);

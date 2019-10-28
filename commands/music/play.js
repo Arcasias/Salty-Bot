@@ -39,127 +39,81 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    action: function (msg, args) {
+    action: async function (msg, args) {
         if (! msg.member.voiceChannel) {
             throw new error.SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild.get(msg.guild.id);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
-            if (! playlist.queue[0]) {
+            if (!playlist.queue[0]) {
                 throw new error.EmptyObject("queue");
             }
-            if (! msg.guild.voiceConnection) {
-                return msg.member.voiceChannel.join().then(connection => {
-                    playlist.play(connection, true);
-                });
-            } else {
+            if (playlist.connection) {
                 throw new error.SaltyException("I'm already playing");
             }
+            playlist.start(msg.member.voiceChannel);
         }
-        if (['favorite', 'favorites', 'fav', 'favs'].includes(arg)) {
-            return playFavorites.call(this);
+        if (arg.match(youtubeRegex)) {
+            return addSong(arg);
         }
-        let validURL = arg.match(youtubeRegex);
-        let directPlay = ['first', 'direct', '1'].includes(args[0]);
+        const directPlay = ['first', 'direct', '1'].includes(args[0]);
+        if (directPlay) {
+            args.shift();
+        }
 
-        if (directPlay) args.shift();
+        const results = await UTIL.promisify(
+            youtube.search.list.bind(youtube.search, generateQuery(args.join(" ")))
+        );
 
-        if (!validURL) {
-            youtube.search.list({
-                key: process.env.GOOGLE_API,
-                maxResults: 5,
-                part: 'snippet',
-                q: args.join(" "),
-                type: 'video',
-            }, (err, results) => {
-                if (err) {
-                    return LOG.error(err);
-                }
-                let options = {
-                    title: "search results",
-                    fields: [],
-                };
-                let searchResults = [];
-
-                if (results.data.items.length == 0) {
-                    throw new error.SaltyException("no results found");
-                }
-                if (directPlay) {
-                    const url = youtubeURL + results.data.items[0].id.videoId;
-                    addSong.call(this, url, { msg });
-                } else {
-                    options.actions = {};
-                    results.data.items.forEach((video, i) => {
-                        let videoURL = youtubeURL + video.id.videoId;
-                        searchResults.push(videoURL);
-                        options.fields.push({
-                            title: (i + 1) + ") " + video.snippet.title,
-                            description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
-                        });
-                        options.actions[SYMBOLS[i]] = addSong.bind(this, searchResults[i], { msg });
-                    });
-                    this.embed(msg, options);
-                }
+        if (results.data.items.length == 0) {
+            throw new error.SaltyException("no results found");
+        }
+        if (directPlay) {
+            return addSong(youtubeURL + results.data.items[0].id.videoId);
+        }
+        const searchResults = [];
+        const options = {
+            actions: {},
+            fields: [],
+            title: "search results",
+        };
+        results.data.items.forEach((video, i) => {
+            let videoURL = youtubeURL + video.id.videoId;
+            searchResults.push(videoURL);
+            options.fields.push({
+                title: (i + 1) + ") " + video.snippet.title,
+                description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
             });
-        } else {
-            addSong.call(this, arg, { msg });
+            options.actions[SYMBOLS[i]] = addSong.bind(this, searchResults[i], { msg });
+        });
+        this.embed(msg, options);
+
+        async function addSong(songURL) {
+            if (UTIL.generate(3)) {
+                songURL = UTIL.choice(this.getList('surpriseSong'));
+            }
+            const { length_seconds, title } = await UTIL.promisify(ytdl.getInfo.bind(ytdl, songURL));
+            this.embed(msg, { title: `**${msg.member.displayName}** added **${title}** to the queue`, type: 'success' });
+            msg.delete();
+            playlist.add({
+                duration: length_seconds * 1000,
+                title: title,
+                url: songURL,
+            });
+            if (!playlist.connection) {
+                playlist.start(msg.member.voiceChannel);
+            }
         }
     },
 });
 
-function addSong(songURL, parameters) {
-    let { msg, guild, channel } = parameters;
-    if (msg) {
-        guild = msg.guild;
-        channel = msg.member.voiceChannel;
-    }
-    const playlist = Guild.get(guild.id).playlist;
-    if (UTIL.generate(3)) {
-        songURL = UTIL.choice(this.getList('surpriseSong'));
-    }
-    ytdl.getInfo(songURL, (err, info) => {
-        if (err) {
-            if (msg) this.embed(msg, { title: "that video doesn't exist", type: 'error' });
-        } else {
-            if (msg) {
-                this.embed(msg, { title: `**${msg.member.displayName}** added **${info.title}** to the queue`, type: 'success' });
-                msg.delete();
-            }
-            playlist.addSong(info.title, info.length_seconds * 1000, songURL);
-            LOG.log(`Added song to the queue: ${info.title} at ${songURL}`);
-            if (! guild.voiceConnection) {
-                channel.join().then(connection => {
-                    playlist.play(connection, true);
-                });
-            }
-        }
-    });
+function generateQuery(q) {
+    return {
+        key: process.env.GOOGLE_API,
+        maxResults: 5,
+        part: 'snippet',
+        q,
+        type: 'video',
+    };
 }
-
-function playFavorites(data) {
-    let { msg, guild, channel } = data;
-
-    if (msg) {
-        guild = msg.guild;
-        channel = msg.member.voiceChannel;
-        if (! Guild.get(guild.id).favS.Playlist[0]) {
-            throw new error.EmptyObject("favorite playlist");
-        }
-        this.embed(msg, { title: `**${msg.member.displayName}** started the favorites playlist ! Rock on baby !`, type: 'success' });
-    }
-    const playlist = Guild.get(guild.id).playlist;
-    UTIL.shuffle(Guild.get(guild.id).favS.Playlist).forEach(song => {
-        playlist.addSong(song.title, song.duration - 0, song.url);
-        LOG.log(`Added song to the queue: ${ song.title } at ${ song.url }`);
-
-        playlist.repeat = 'all';
-
-        if (! guild.voiceConnection) {
-            channel.join().then(connection => {
-                playlist.play(connection, true);
-            });
-        }
-    });
-}
-

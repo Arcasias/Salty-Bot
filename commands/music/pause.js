@@ -14,11 +14,15 @@ export default new Command({
     ],
     visibility: 'public',
     action: function (msg, args) {
-        const vcon = msg.guild.voiceConnection;
+        const { playlist } = Guild.get(msg.guild.id);
 
-        if (vcon) {
-            this.embed(msg, { title: `paused **${Guild.get(msg.guild.id).playlist.getPlaying().title}**`, type: 'success', react: '⏸' });
-            vcon.dispatcher.pause();
+        if (playlist.connection) {
+            try {
+                playlist.pause();
+                this.embed(msg, { title: `paused **${playlist.playing.title}**`, type: 'success', react: '⏸' });
+            } catch (err) {
+                this.embed(msg, { title: "the song is already paused", type: 'error' });
+            }
         } else {
             this.embed(msg, { title: "there's nothing playing", type: 'error' });
         }

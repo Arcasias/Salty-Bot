@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import Guild from '../../classes/Guild.js';
 
 export default new Command({
     name: 'leave',
@@ -14,10 +15,10 @@ export default new Command({
     ],
     visibility: 'admin',
     action: function (msg, args) {
-        const vcon = msg.guild.voiceConnection;
-        if (vcon) {
-            const chanName = vcon.channel.name;
-            vcon.channel.leave();
+        const { playlist } = Guild.get(msg.guild.id);
+
+        if (playlist.connection) {
+            playlist.end();
             this.embed(msg, { title: `leaving **${chanName}**`, type: 'success' });
         } else {
             this.embed(msg, { title: "I'm not in a voice channel", type: 'error' });

@@ -14,9 +14,9 @@ export default new Command({
     ],
     visibility: 'public',
     action: function (msg, args) {
-        let { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild.id);
 
-        if (2 < playlist.queue.length) {
+        if (playlist.queue.length > 2) {
             playlist.shuffle();
             this.embed(msg, { title: "queue shuffled !", type: 'success', react: '🔀' });
         } else {

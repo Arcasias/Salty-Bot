@@ -17,7 +17,7 @@ class Dialog extends Multiton {
     }
 
     run(react) {
-        if (this.actions[react]) {
+        if (react in this.actions) {
             this.actions[react]();
             this.destroy();
         }

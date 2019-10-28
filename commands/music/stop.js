@@ -12,24 +12,13 @@ export default new Command({
     ],
     visibility: 'admin',
     action: function (msg, args) {
-        let { playlist } = Guild.get(msg.guild.id);
-        let vcon = msg.guild.voiceConnection;
+        const { playlist } = Guild.get(msg.guild.id);
 
-        if (playlist.queue[0]) {
-            if (vcon) {
-                vcon.channel.leave();
-            }
-            playlist.queueClear();
-            this.embed(msg, {
-                title: UTIL.choice(this.getList('answers')['bye']),
-                type: 'success',
-                react: '⏹',
-            });
+        if (playlist.connection) {
+            playlist.stop();
+            this.embed(msg, { title: UTIL.choice(this.getList('answers')['bye']), type: 'success', react: '⏹' });
         } else {
-            this.embed(msg, {
-                title: "I'm not in a voice channel",
-                type: 'error',
-            });
+            this.embed(msg, { title: "I'm not in a voice channel", type: 'error' });
         }
     },
 });

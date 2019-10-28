@@ -100,11 +100,12 @@ class Multiton {
 
     // Array functions applied to all current instances
 
-    static filter(fn) { return Array.prototype.filter.apply(Multiton._instances[this.name], arguments); }
-    static find(fn) { return Array.prototype.find.apply(Multiton._instances[this.name], arguments); }
-    static forEach(fn) { return Array.prototype.forEach.apply(Multiton._instances[this.name], arguments); }
-    static map(fn) { return Array.prototype.map.apply(Multiton._instances[this.name], arguments); }
-    static reduce(fn) { return Array.prototype.reduce.apply(Multiton._instances[this.name], arguments); }
+    static filter() { return Array.prototype.filter.apply(Multiton._instances[this.name], arguments); }
+    static find() { return Array.prototype.find.apply(Multiton._instances[this.name], arguments); }
+    static forEach() { return Array.prototype.forEach.apply(Multiton._instances[this.name], arguments); }
+    static map() { return Array.prototype.map.apply(Multiton._instances[this.name], arguments); }
+    static reduce() { return Array.prototype.reduce.apply(Multiton._instances[this.name], arguments); }
+    static sort() { return Array.prototype.sort.apply(Multiton._instances[this.name], arguments); }
 }
 
 export default Multiton;

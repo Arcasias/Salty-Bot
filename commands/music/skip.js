@@ -14,20 +14,11 @@ export default new Command({
     ],
     visibility: 'public',
     action: function (msg, args) {
-        let { playlist } = Guild.get(msg.guild.id);
-        let vcon = msg.guild.voiceConnection;
+        const { playlist } = Guild.get(msg.guild.id);
 
-        if (vcon) {
-            if (this.isAdmin(msg.author, msg.guild) || playlist.pointer + 1 in playlist.queue) {
-                this.embed(msg, { title: `skipped **${playlist.getPlaying().title}**, but it was trash anyway`, type: 'success', react: '⏩' });
-
-                if ('single' === playlist.repeat) {
-                    playlist.pointer ++;
-                }
-                vcon.dispatcher.end();
-            } else {
-                this.embed(msg, { title: "you're not in the admin list", type: 'error' });
-            }
+        if (playlist.connection) {
+            playlist.skip();
+            this.embed(msg, { title: `skipped **${playlist.getPlaying().title}**, but it was trash anyway`, type: 'success', react: '⏩' });
         } else {
             this.embed(msg, { title: "I'm not connected to a voice channel", type: 'error' });
         }

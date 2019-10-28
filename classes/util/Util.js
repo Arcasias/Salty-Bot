@@ -31,6 +31,18 @@ function possessive(text) {
     return 's' === text[text.length - 1] ? `${ text }'`: `${ text }'s`;
 }
 
+function promisify(fn) {
+    return new Promise((resolve, reject) => {
+        fn((error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+
 function randRange(array) {
     if (array[1] !== 0 && ! array[1]) {
         throw new Error("Invalid Array content");
