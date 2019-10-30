@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 const MESSAGES = [
     "nearly perfect !",
@@ -29,7 +30,7 @@ export default new Command({
     async action(msg, args) {
         // If too much salt, skips the latency test
         if (UTIL.generate(3)) {
-            await this.embed(msg, { title: "pong, and I don't give a fuck about your latency", type: 'error' });
+            await Salty.error(msg, "pong, and I don't give a fuck about your latency");
         } else {
             // Sends another message and displays the difference between the first and the second
             const sentMsg = await msg.channel.send("Pinging...");
@@ -37,7 +38,7 @@ export default new Command({
             const message = MESSAGES[Math.floor((latency) / 100)] || "lol wat";
 
             await sentMsg.delete();
-            await this.embed(msg, { title: `pong ! Latency is ${latency}. ${UTIL.title(message)}`, type: 'success' });
+            await Salty.success(msg, `pong ! Latency is ${latency}. ${UTIL.title(message)}`);
         }
     },
 });

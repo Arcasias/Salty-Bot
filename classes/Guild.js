@@ -12,7 +12,7 @@ class Guild extends Multiton {
 	constructor() {
 		super(...arguments);
 
-		this.playlist = new Playlist();
+		this.playlist = new Playlist({});
 	}
 
     static get(id) {

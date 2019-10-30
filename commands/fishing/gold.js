@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import User from '../../classes/User.js';
 
 export default new Command({
@@ -23,7 +24,7 @@ export default new Command({
     visibility: 'public',
     async action(msg, args) {
 
-        await this.embed(msg, { title: msg.mentions.users.first() ?
+        await Salty.embed(msg, { title: msg.mentions.users.first() ?
             `${ msg.mentions.members.first().nickname } currently has ${ User.get(msg.mentions.users.first().id).gold } gold` :
             `you have ${ User.get(msg.author.id).gold } gold` });
     },

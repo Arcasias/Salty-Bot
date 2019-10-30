@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import PromiseManager from '../../classes/PromiseManager.js';
 import * as error from '../../classes/Exception.js';
 
@@ -28,8 +29,8 @@ export default new Command({
         const particle = args.slice(1).join(" ");
         const particleRegex = new RegExp(particle, 'g');
 
-        const addList = this.getList('add');
-        const removeList = this.getList('delete');
+        const addList = Salty.getList('add');
+        const removeList = Salty.getList('delete');
 
         if (!args[0]) {
             throw new error.MissingArg("add or delete + particle");
@@ -50,7 +51,7 @@ export default new Command({
 
 async function changeNames(msg, transformation) {
     const members = msg.guild.members.array();
-    const progressMsg = await this.msg(msg, `changing nicknames: 0/${members.length}`);
+    const progressMsg = await Salty.message(msg, `changing nicknames: 0/${members.length}`);
     const pm = new PromiseManager();
     for (let i = 0; i < members.length; i ++) {
         const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
@@ -68,5 +69,5 @@ async function changeNames(msg, transformation) {
         }
     }
     pm.add(progressMsg.delete.bind(progressMsg));
-    this.embed(msg, { title: "nicknames successfully changed", type: 'success' });
+    Salty.success(msg, "nicknames successfully changed");
 }

@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 import User from '../../classes/User.js';
 
@@ -33,7 +34,7 @@ export default new Command({
         const angler = User.get(msg.author.id);
         const { gold, inventory } = angler;
 
-        if (args[0] && this.getList('buy').includes(args[0])) {
+        if (args[0] && Salty.getList('buy').includes(args[0])) {
             let itemIds = Object.keys(items).filter(itemId => items[itemId].price);
             let marketItems = itemIds.map(id => Object.assign(items[id], { id }));
             let options = {
@@ -55,7 +56,7 @@ export default new Command({
             let item = marketItems[parseInt(args[1] - 1)];
 
             if (gold < item.price) {
-                return this.embed(msg, { title: "you don't have enough money for that item", type: 'error' });
+                return Salty.error(msg,"you don't have enough money for that item");
             }
             if (inventory.includes(marketItems[args[1]].id)) {
                 throw new error.SaltyException("you already have one of these. Why buy another ?");
@@ -66,11 +67,11 @@ export default new Command({
 
             options.title = "transaction successful";
             options.description = `**${ msg.member.displayName }** successfully bought **${ item.name }** for ${ item.price } gold`;
-            options.footer = UTIL.choice(this.getList('transactionSuccess'));
+            options.footer = UTIL.choice(Salty.getList('transactionSuccess'));
 
-            this.embed(msg, options);
+            Salty.embed(msg, options);
 
-        } else if (args[0] && this.getList('sell').includes(args[0])) {
+        } else if (args[0] && Salty.getList('sell').includes(args[0])) {
             let { inventory } = angler;
 
             if (! args[1]) {
@@ -87,18 +88,18 @@ export default new Command({
             let item = items[inventory[itemIndex]];
 
             if (! item.price) {
-                return this.embed(msg, { title: "you can't sell that", type: 'error' });
+                return Salty.error(msg, "you can't sell that");
             }
             angler.inventory.splice(itemIndex, 1);
             angler.gold += item.price * repurchase;
 
-            this.embed(msg, {
+            Salty.embed(msg, {
                 title: "transaction successful",
                 description: `**${ msg.member.displayName }** successfully sold **${ item.name }** for ${ item.price * repurchase } gold`,
                 color: 0xFFFFFF,
                 inline: true,
                 fields: [],
-                footer: UTIL.choice(this.getList('transactionSuccess')),
+                footer: UTIL.choice(Salty.getList('transactionSuccess')),
             });
         } else {
             let itemIds = Object.keys(items).filter(itemId => items[itemId].price);
@@ -110,10 +111,10 @@ export default new Command({
                 }
                 let item = marketItems[parseInt(args[0]) - 1];
 
-                this.embed(msg, {
+                Salty.embed(msg, {
                     title: item.name,
                     description: item.description,
-                    color: this.config.quality[item.quality].color,
+                    color: Salty.config.quality[item.quality].color,
                     footer: `Price: ${ item.price }`,
                 });
 
@@ -123,7 +124,7 @@ export default new Command({
                 marketItems.forEach((marketItem, i) => {
                     fields.push({ title: `${ i + 1 }) ${ marketItem.name }`, description: `Cost: ${ marketItem.price }` });
                 });
-                this.embed(msg, {
+                Salty.embed(msg, {
                     title: "sea market",
                     description: "welcome, customer ! Have a look on my beautiful wares !",
                     color: 0xFFFFFF,

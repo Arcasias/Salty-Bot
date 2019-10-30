@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import imgur from 'imgur';
 import * as error from '../../classes/Exception.js';
 
@@ -6,9 +7,8 @@ imgur.setClientId();
 imgur.setAPIUrl('https://api.imgur.com/3/');
 
 export default new Command({
-    name: 'image',
+    name: 'imgur',
     keys: [
-        "image",
         "img",
         "imgur",
     ],
@@ -36,9 +36,9 @@ export default new Command({
             }
             const { title, link, images } = UTIL.choice(json.data);
             const image = images ? images[0].link : link;
-            this.embed(msg, { title, url: link, image });
+            Salty.embed(msg, { title, url: link, image });
         } catch (err) {
-            this.embed(msg, { title: "no result", type: 'error' });
+            Salty.error(msg, "no result");
         }
     },
 });

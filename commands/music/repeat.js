@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 
 export default new Command({
@@ -32,15 +33,15 @@ export default new Command({
 
         const single = () => {
             playlist.repeat = 'single';
-            this.embed(msg, { title: "I will now repeat the current song", type: 'success', react: '🔂' });
+            Salty.success(msg, "I will now repeat the current song", { react: '🔂' });
         };
         const all = () => {
             playlist.repeat = 'all';
-            this.embed(msg, { title: "I will now repeat the whole queue", type: 'success', react: '🔁' });
+            Salty.success(msg, "I will now repeat the whole queue", { react: '🔁' });
         };
         const off = () => {
             playlist.repeat = 'off';
-            this.embed(msg, { title: "repeat disabled", type: 'success', react: '❎' });
+            Salty.success(msg, "repeat disabled", { react: '❎' });
         };
 
         if (['single', '1', 'one', 'this'].includes(args[0])) {

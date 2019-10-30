@@ -3,12 +3,13 @@ import ytdl from 'ytdl-core';
 
 class Playlist extends Multiton {
     static fields = {
-        connection = null,
-        continue = false,
+        connection: null,
+        continue: false,
         queue: [],
         pointer: -1,
         repeat: 'off',
     };
+
     /**
      * @returns {Song}
      */

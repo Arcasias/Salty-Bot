@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 const STATUSINFO = {
@@ -24,34 +25,34 @@ export default new Command({
     ],
     visibility: 'dev',
     async action(msg, args) {
-        if (args[0] && this.getList('delete').includes(args[0])) {
-            await this.bot.user.setPresence({
+        if (args[0] && Salty.getList('delete').includes(args[0])) {
+            await Salty.bot.user.setPresence({
                 game: null,
-                status: this.bot.user.presence.status,
+                status: Salty.bot.user.presence.status,
             });
-            this.embed(msg, { title: 'current presence removed', type: "success" });
+            Salty.embed(msg, { title: 'current presence removed', type: "success" });
         } else if (args[0]) {
             const status = args[0];
             if (status in STATUSINFO) {
                 // status
-                await this.bot.user.setStatus(status);
-                this.embed(msg, {
+                await Salty.bot.user.setStatus(status);
+                Salty.embed(msg, {
                     color: STATUSINFO[status].color,
                     title: `changed my status to **${STATUSINFO[status].title}**`,
                     type: "success",
                 });
             } else {
                 // game
-                await this.bot.user.setPresence({
+                await Salty.bot.user.setPresence({
                     game: { name: status },
-                    status: this.bot.user.presence.status,
+                    status: Salty.bot.user.presence.status,
                 });
-                this.embed(msg, { title: `changed my presence to **${status}**`, type: "success" });
+                Salty.embed(msg, { title: `changed my presence to **${status}**`, type: "success" });
             }
         } else {
-            const { color, title } = STATUSINFO[this.bot.user.presence.status];
-            const description = this.bot.user.presence.game && this.bot.user.presence.game.name;
-            this.embed(msg, { color, title, description });
+            const { color, title } = STATUSINFO[Salty.bot.user.presence.status];
+            const description = Salty.bot.user.presence.game && Salty.bot.user.presence.game.name;
+            Salty.embed(msg, { color, title, description });
         }
     },
 });

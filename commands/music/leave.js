@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 
 export default new Command({
@@ -19,9 +20,9 @@ export default new Command({
 
         if (playlist.connection) {
             playlist.end();
-            this.embed(msg, { title: `leaving **${chanName}**`, type: 'success' });
+            Salty.success(msg, `leaving **${chanName}**`);
         } else {
-            this.embed(msg, { title: "I'm not in a voice channel", type: 'error' });
+            Salty.error(msg, "I'm not in a voice channel");
         }
     },
 });

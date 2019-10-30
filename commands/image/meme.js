@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -117,7 +118,7 @@ export default new Command({
         // Last step : send canvas.
         function sendCanvas() {
             PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath)).then(()=>{
-                this.msg(msg, null, imgPath).then(() => {
+                Salty.message(msg, null, imgPath).then(() => {
                     msg.delete();
 
                     imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;

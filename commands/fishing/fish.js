@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Fish from '../../classes/Fish.js';
 import * as error from '../../classes/Exception.js';
 import User from '../../classes/User.js';
@@ -7,7 +8,6 @@ export default new Command({
     name: 'fish',
     keys: [
         "fishes",
-        "fishing",
     ],
     help: [
         {
@@ -20,34 +20,34 @@ export default new Command({
         let authorId = msg.author.id;
         let angler = User.get(msg.author.id);
 
-        if (this.fishing[authorId]) {
-            throw new error.SaltyException(`you're already fishing for ${ Math.floor((Date.now() - this.fishing[authorId].time) / 1000) } seconds`);
+        if (Salty.fishing[authorId]) {
+            throw new error.SaltyException(`you're already fishing for ${ Math.floor((Date.now() - Salty.fishing[authorId].time) / 1000) } seconds`);
         }
         let fishingTime = UTIL.randRange(items[angler.equipped.rod].time);
         let options = {
-            title: UTIL.choice(this.getList('fishingStart')),
-            description: UTIL.choice(this.getList('fishingStartDescription')),
+            title: UTIL.choice(Salty.getList('fishingStart')),
+            description: UTIL.choice(Salty.getList('fishingStartDescription')),
             color: 0x284680,
-            react: UTIL.choice(this.getList('fishes')),
+            react: UTIL.choice(Salty.getList('fishes')),
         };
-        this.fishing[authorId] = {
+        Salty.fishing[authorId] = {
             rod: items[angler.equipped.rod],
             time: Date.now(),
             bait: null,
             msg: null,
         };
-        this.embed(msg, options).then(fishMsg => {
+        Salty.embed(msg, options).then(fishMsg => {
 
-            this.fishing[authorId].msg = fishMsg;
+            Salty.fishing[authorId].msg = fishMsg;
 
             setTimeout(() => {
-                let rod = this.fishing[authorId].rod;
-                let bait = this.fishing[authorId].bait;
+                let rod = Salty.fishing[authorId].rod;
+                let bait = Salty.fishing[authorId].bait;
                 let time = fishingTime / 1000;
                 let quality, fish;
 
-                this.fishing[authorId].msg.delete(() => {
-                    delete this.fishing[authorId];
+                Salty.fishing[authorId].msg.delete(() => {
+                    delete Salty.fishing[authorId];
                 }).catch(err => {
                     LOG.error(err);
                 });
@@ -73,7 +73,7 @@ export default new Command({
 
                     fish = new Fish(UTIL.choice(fishPool));
                 }
-                let qualityProps = this.config.quality[quality];
+                let qualityProps = Salty.config.quality[quality];
                 let xp = qualityProps.xp;
                 let gold = Math.ceil(fish.weight || 1 * fish.value || 0);
 
@@ -83,7 +83,7 @@ export default new Command({
                 angler.fishCount ++;
 
                 if (angler.bestFish) {
-                    let bestFishRank = this.config.quality[angler.bestFish.quality].rank;
+                    let bestFishRank = Salty.config.quality[angler.bestFish.quality].rank;
                     if (bestFishRank < qualityProps.rank || (bestFishRank == qualityProps.rank && angler.bestFish.weight < fish.weight)) {
                         angler.bestFish = fish;
                     }
@@ -102,22 +102,22 @@ export default new Command({
                     content: msg.author,
                     inline: true,
                 };
-                this.embed(msg, options);
+                Salty.embed(msg, options);
 
                 let currentRank = angler.rank;
-                let newRank = this.getXpInfos(authorId).rank;
+                let newRank = Salty.getXpInfos(authorId).rank;
 
                 if (currentRank < newRank) {
                     angler.rank = newRank;
-                    let rank = this.config.rank[newRank];
-                    let rankProps = this.config.quality[rank.quality];
+                    let rank = Salty.config.rank[newRank];
+                    let rankProps = Salty.config.quality[rank.quality];
                     let options = {
                         title: "RANK UP !",
                         color: rankProps.color,
                         description: `Congratulations ! You're now a ${ rank.name } !`,
                         react: '⏫',
                     };
-                    this.embed(msg, options);
+                    Salty.embed(msg, options);
                 }
             }, fishingTime);
         });

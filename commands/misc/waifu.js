@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 export default new Command({
     name: 'waifu',
@@ -13,8 +14,8 @@ export default new Command({
     ],
     visibility: 'public',
     async action(msg, args) {
-        const { name, anime, image } = UTIL.choice(this.getList('waifus'));
-        await this.embed(msg, {
+        const { name, anime, image } = UTIL.choice(Salty.getList('waifus'));
+        await Salty.embed(msg, {
             title: name,
             description: `anime: ${anime}`,
             image: UTIL.choice(image),

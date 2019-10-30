@@ -1,10 +1,10 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
     name: 'help',
     keys: [
-        "commands",
         "halp",
         "info",
         "infos",
@@ -32,43 +32,49 @@ export default new Command({
             color: 0xFFFFFF,
             fields: [],
         };
-        const help = this.commands.help;
-        const categories = Object.keys(help);
-        const commands = Object.keys(this.commands.keys);
-
-        while (["+", ">", "->", ">>", "=>"].includes(args[0])) {
-            args.shift();
+        const help = Salty.commands.help;
+        const categories = {};
+        // map name and technical name for enhanced search
+        for (let category in help) {
+            categories[category] = category;
+            categories[help[category].info.name] = category;
         }
+        const commands = Object.keys(Salty.commands.keys);
+
         if (args[0]) {
             const arg = args[0].toLowerCase();
 
-            if (categories.includes(arg)) {
+            // query is a category name
+            if (arg in categories) {
+                const { name, description, icon } = help[categories[arg]].info;
                 // arg === category
-                options.title = `${arg} commands`;
-                options.description = `these are the ${arg} commands. To get more information about a specific command, use the command \`$help command_name\``;
+                options.title = `${icon} ${UTIL.title(name)} commands`;
+                options.description = `${description}. To get more information about a specific command, use the command \`$help command_name\``;
 
-                help[arg].forEach(cmd => {
+                help[categories[arg]].commands.forEach(cmd => {
                     if ('public' === cmd.visibility ||
-                            ('admin' === cmd.visibility && this.isAdmin(author, msg.guild)) ||
-                            ('dev' === cmd.visibility && this.isDev(author)) ||
-                            ('owner' === cmd.visibility && this.isOwner(author))) {
+                            ('admin' === cmd.visibility && Salty.isAdmin(author, msg.guild)) ||
+                            ('dev' === cmd.visibility && Salty.isDev(author)) ||
+                            ('owner' === cmd.visibility && Salty.isOwner(author))) {
                         const alternate = cmd.keys.length ?
-                            ` (*${cmd.keys.join("*, *")}*)` :
+                            ` (or ***${cmd.keys.join("***, ***")}***)` :
                             "";
                         options.fields.push({
                             title: `**${UTIL.title(cmd.name)}**${alternate}`,
-                            description: `>> \`${this.config.prefix}help ${cmd.name}\``,
+                            description: `> \`${Salty.config.prefix}help ${cmd.name}\``,
                         });
                     }
                 });
+            // query is a command name
             } else if (commands.includes(arg)) {
                 // arg === command
-                const command = this.commands.list.get(this.commands.keys[arg]);
-                const category = categories.find(cat => help[cat].find(cmd => cmd.name === command.name));
+                const command = Salty.commands.list.get(Salty.commands.keys[arg]);
+                const category = Object.values(categories).find(cat => help[cat].commands.find(cmd => cmd.name === command.name));
                 options.title = `**${command.name.toUpperCase()}**`;
-                options.url = `${this.config.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
+                options.url = `${Salty.config.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
+                options.description = `> ${UTIL.title(category)}`;
                 if (0 < command.keys.length) {
-                    options.description = `Alternative usage: ${command.keys.join(", ")}`;
+                    options.description += `\nAlternative usage: **${command.keys.join("**, **")}**`;
                 }
                 if (command.example) {
                     options.footer = `Example: ${command.example}`;
@@ -81,7 +87,7 @@ export default new Command({
                 command.help.forEach(usage => {
                     if (usage.effect)  {
                         options.fields.push({
-                            title: `${this.config.prefix}${command.name} ${usage.argument || "" }`,
+                            title: `${Salty.config.prefix}${command.name} ${usage.argument || "" }`,
                             description: usage.effect,
                         });
                     }
@@ -89,17 +95,19 @@ export default new Command({
             } else {
                 throw new error.IncorrectValue("second argument", "command or a category");
             }
+        // no query: displays all commands
         } else {
             options.title = "list of commands";
             options.description = "these are the commands categories. To get more information about a specific category, use the command \`$help category_name\`";
             for (let category in help) {
+                const { name, icon } = help[category].info;
                 options.fields.push({
-                    title: `**${category}**  (${help[category].length} commands)`,
-                    description: `>> \`${this.config.prefix}help ${category}\``,
+                    title: `${icon} **${UTIL.title(name)}**  (${help[category].commands.length} commands)`,
+                    description: `> \`${Salty.config.prefix}help ${category}\``,
                 });
             }
         }
-        await this.embed(msg, options);
+        await Salty.embed(msg, options);
     },
 });
 

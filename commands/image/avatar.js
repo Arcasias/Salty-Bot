@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -33,16 +34,16 @@ export default new Command({
         // If there is someone in the mention list, sets that user as new default then generates random color for the swag
         if (askedUser.bot) {
             desc = "That's just a crappy bot";         // bot
-        } else if (askedUser.id == this.config.owner.id) {
+        } else if (askedUser.id == Salty.config.owner.id) {
             desc = "He's the coolest guy i know ^-^";  // owner
-        } else if (this.isAdmin(askedUser, msg.guild)) {
+        } else if (Salty.isAdmin(askedUser, msg.guild)) {
             desc = "It's a cute piece of shit";        // admin
         }
 
         // Creates embed message
         const options = { title: `this is ${UTIL.possessive(name)} profile pic` };
 
-        if (askedUser.id == this.bot.user.id) { // if Salty
+        if (askedUser.id == Salty.bot.user.id) { // if Salty
             const files = fs.readdirSync("assets/img/salty");
             const pics = files.filter(f => f.split(".").pop() === "png");
             options.title = `how cute, you asked for my profile pic ^-^`;
@@ -52,7 +53,7 @@ export default new Command({
             options.color = parseInt(color);
             options.description = desc;
         }
-        await this.embed(msg, options);
+        await Salty.embed(msg, options);
     },
 });
 

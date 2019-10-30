@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 
 export default new Command({
@@ -16,9 +17,9 @@ export default new Command({
 
         if (playlist.connection) {
             playlist.stop();
-            this.embed(msg, { title: UTIL.choice(this.getList('answers')['bye']), type: 'success', react: '⏹' });
+            Salty.success(msg, UTIL.choice(Salty.getList('answers')['bye']), { react: '⏹' });
         } else {
-            this.embed(msg, { title: "I'm not in a voice channel", type: 'error' });
+            Salty.error(msg, "I'm not in a voice channel");
         }
     },
 });

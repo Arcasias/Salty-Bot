@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 
 export default new Command({
@@ -18,9 +19,9 @@ export default new Command({
 
         if (playlist.connection) {
             playlist.skip();
-            this.embed(msg, { title: `skipped **${playlist.getPlaying().title}**, but it was trash anyway`, type: 'success', react: '⏩' });
+            Salty.success(msg, `skipped **${playlist.getPlaying().title}**, but it was trash anyway`, { react: '⏩' });
         } else {
-            this.embed(msg, { title: "I'm not connected to a voice channel", type: 'error' });
+            Salty.error(msg, "I'm not connected to a voice channel");
         }
     },
 });

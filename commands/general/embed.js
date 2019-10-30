@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Discord from 'discord.js';
 import * as error from '../../classes/Exception.js';
 
@@ -30,7 +31,7 @@ export default new Command({
         if (0 === Object.keys(parsed).length) {
             throw new error.MissingArg("JSON");
         }
-        await this.msg(msg, null, { embed: new Discord.RichEmbed(parsed) });
+        await Salty.message(msg, null, { embed: new Discord.RichEmbed(parsed) });
     },
 });
 

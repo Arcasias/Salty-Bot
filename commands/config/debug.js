@@ -1,7 +1,7 @@
 import Command from '../../classes/Command.js';
 import Guild from '../../classes/Guild.js';
-import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
+import * as Salty from '../../classes/Salty.js';
 import User from '../../classes/User.js';
 
 const MAXDEPTH = 3;
@@ -24,7 +24,7 @@ export default new Command({
         const res = eval(args.join(" "));
         const message = `${args.join(" ")} = /*${typeof res}*/ ${getFormat(res, 0)}`;
 
-        this.msg(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
+        Salty.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
         LOG.log(message);
     },
 });

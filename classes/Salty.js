@@ -37,7 +37,7 @@ function destroy() {
     return _destroy(false);
 }
 
-async function embed(msg, options) {
+async function embed(msg, options={}) {
     // Embed options that might change
     let title = options.title || "";
     let description = options.description || "";
@@ -47,27 +47,19 @@ async function embed(msg, options) {
     let footer = options.footer || "";
 
     // Other options that might change
-    let { react, actions, type } = options;
+    let { react, actions } = options;
     const inline = options.inline || false;
     const content = options.content || "";
 
-    switch (type) {
-        case 'error':
-            if (! title) title = "error";
-            if (! react) react = '❌';
-            if (0xFFFFFF === color) color = 0xAA0000;
-            break;
-        case 'success':
-            if (! title) title = "success";
-            if (! react) react = '✅';
-            if (0xFFFFFF === color) color = 0x32a032;
-            break;
-        default:
-            break;
+    if (title) {
+        title = UTIL.title(title);
     }
-    if (title) title = UTIL.title(title);
-    if (description) description = UTIL.title(description);
-    if (footer) footer = UTIL.title(footer);
+    if (description) {
+        description = UTIL.title(description);
+    }
+    if (footer) {
+        footer = UTIL.title(footer);
+    }
 
     const embed = new Discord.RichEmbed()
         .setTitle(replacer(title, msg))
@@ -85,7 +77,7 @@ async function embed(msg, options) {
             embed.addField(UTIL.title(options.fields[i].title), replacer(UTIL.title(options.fields[i].description), msg), inline);
         }
     }
-    const newMessage = await this.msg(msg, content, { embed, file: options.file });
+    const newMessage = await message(msg, content, { embed, file: options.file });
 
     if (react && ! msg.deleted) {
         msg.react(react).catch();
@@ -98,6 +90,14 @@ async function embed(msg, options) {
 
         await newMessage.react(reactions[i]);
     }
+}
+
+function error(msg, text="error", options={}) {
+    return embed(msg, Object.assign({
+        title: text,
+        react: '❌',
+        color: 0xAA0000,
+    }, options));
 }
 
 
@@ -150,8 +150,8 @@ function isOwner(user) {
     return user.id == config.owner.id;
 }
 
-function msg (msg, message, options) {
-    return msg.channel.send(message && replacer(UTIL.title(message), msg), options);
+function message(msg, text, options) {
+    return msg.channel.send(text && replacer(UTIL.title(text), msg), options);
 }
 
 function replacer(string, msg) {
@@ -175,6 +175,14 @@ function setQuickCommand(command) {
             eval(command.effect);
         },
     });
+}
+
+function success(msg, text="success", options={}) {
+    return embed(msg, Object.assign({
+        title: text,
+        react: '✅',
+        color: 0x32a032,
+    }, options));
 }
 
 function unsetQuickCommand(command) {
@@ -214,6 +222,14 @@ function _getCommands(...paths) {
                 // If the file is a directory, execute the function inside
                 if (stats.isDirectory(fullpath)) {
                     _getCommands(dirpath, file);
+                // If the file is a category info file, extract its data
+                } else if (file === '__category__.json') {
+                    const category = dirpath.split(path.sep).pop();
+                    const { name, description, icon } = JSON.parse(fs.readFileSync(fullpath));
+                    commands.help[category] = {
+                        info: {name, description, icon},
+                        commands: [],
+                    };
                 // If the file is a .js, add it as a command
                 } else if (['js', 'cjs', 'mjs'].includes(ext)) {
                     try {
@@ -223,6 +239,20 @@ function _getCommands(...paths) {
 
                         const { name, keys, visibility } = command;
 
+                        if (process.env.DEBUG === 'true') {
+                            for (let key of [name, ...keys]) {
+                                if (commands.list.get(key)) {
+                                    throw new Error(`Key "${key}" of command ${name} conflicts with command of the same name`);
+                                }
+                                if (key in commands.keys) {
+                                    throw new Error(`Duplicate key "${key}" in command "${name}"`);
+                                }
+                                if (key in commands.help || category === key) {
+                                    throw new Error(`Key "${key}" of command "${name}" is already a category`);
+                                }
+                            }
+                        }
+
                         // Registers command
                         commands.list.set(name, command);
                         commands.keys[name] = name;
@@ -231,11 +261,8 @@ function _getCommands(...paths) {
                         keys.forEach(key => {
                             commands.keys[key] = name;
                         });
-                        if (!commands.help[category]) {
-                            commands.help[category] = [];
-                        }
                         // Sets help content
-                        commands.help[category].push({ name, keys, visibility });
+                        commands.help[category].commands.push({ name, keys, visibility });
                     } catch (err) {
                         LOG.error(`Could not load file "${file}:"`, err.stack);
                     }
@@ -287,7 +314,7 @@ async function _onGuildMemberAdd(member) {
 }
 
 async function _onGuildMemberRemove(member) {
-    const guild = Guild.find(guild.id);
+    const guild = Guild.find(member.guild.id);
     if (guild.default_channel) {
         bot.channels.get(guild.default_channel).send(`Well, looks like ${member.user.username} got bored of us:c`);
     }
@@ -298,7 +325,9 @@ async function _onMessage(msg) {
     const user = User.get(author.id);
 
     // Ignore all bots
-    if (author.bot) return;
+    if (author.bot) {
+        return;
+    }
 
     const mention = msg.mentions.users.first();
     const nickname = msg.guild.members.get(bot.user.id).nickname;
@@ -320,17 +349,19 @@ async function _onMessage(msg) {
     const msgArray = msg.content.split(' ').filter(word => word.trim() != '');
 
     // Need an interraction passed point. Everything else is a "normal" message.
-    if (! interraction) {
+    if (!interraction) {
         return;
     }
 
     // Warning if blacklisted
     if (user && user.black_listed) {
-        return embed(msg, { title: "you seem to be blacklisted. To find out why, ask my glorious creator", type: 'error' });
+        return error(msg, "you seem to be blacklisted. To find out why, ask my glorious creator");
     }
 
-    if (0 === msgArray.length) {
-        return msg(msg, "yes ?");
+    LOG.request(msg.guild.name, author.username, msg.content);
+
+    if (!msgArray.length) {
+        return message(msg, "yes ?");
     }
 
     // Ensures the user and all mentions are already registered
@@ -345,7 +376,11 @@ async function _onMessage(msg) {
         const commandName = commands.keys[UTIL.clean(msgArray[i])];
         const command = commands.list.get(commandName);
         if (command) {
-            return command.run(msg, args);
+            if (args[0] && list.help.includes(args[0])) {
+                return commands.list.get('help').run(msg, [commandName]);
+            } else {
+                return command.run(msg, args);
+            }
         }
     }
     return commands.list.get('talk').run(msg, msgArray);
@@ -376,7 +411,7 @@ async function _onReady() {
         if (guild) {
             if (guild.default_channel) {
                 bot.channels.get(guild.default_channel)
-                    .send(UTIL.title(UTIL.choice(getList('intro'))));
+                    .send(UTIL.title(UTIL.choice(list.intro)));
             }
         } else {
             guildCreates.push({ discord_id: discordGuild.id });
@@ -403,14 +438,16 @@ export {
     restart,
     destroy,
     embed,
+    error,
     getList,
     getXpInfos,
     init,
     isAdmin,
     isDev,
     isOwner,
-    msg,
+    message,
     replacer,
     setQuickCommand,
+    success,
     unsetQuickCommand,
 };

@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 export default new Command({
     name: 'coffee',
@@ -27,24 +28,24 @@ export default new Command({
             color: 0x523415,
         };
         if (mention) {
-            if (mention.id == this.bot.user.id) {
+            if (mention.id == Salty.bot.user.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
                 desc = `Made with ♥ by **${ author.username }** for **${ mention.username }**`;
             }
         } else {
-            if (this.fishing[author.id]) {
-                if ('coffee' == this.fishing[author.id].bait) {
+            if (Salty.fishing[author.id]) {
+                if ('coffee' == Salty.fishing[author.id].bait) {
                     options.title = "<author> threw another coffee into the sea";
                     options.description = "you already did that, such a waste:c";
                 } else {
-                    this.fishing[author.id].bait = 'coffee';
+                    Salty.fishing[author.id].bait = 'coffee';
                     options.title = "<author> just threw a coffee into the sea !";
                     options.description = "what could possibly happen ?";
                 }
             }
         }
-        await this.embed(msg, options);
+        await Salty.embed(msg, options);
     },
 });
 

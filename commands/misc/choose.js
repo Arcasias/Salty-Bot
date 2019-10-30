@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
@@ -23,7 +24,7 @@ export default new Command({
         if (! args[0] || ! args[1]) {
             throw new error.MissingArg("choices");
         }
-        await this.msg(msg, `I choose ${UTIL.choice(args.join(" ").split('/'))}`);
+        await Salty.message(msg, `I choose ${UTIL.choice(args.join(" ").split('/'))}`);
     },
 });
 

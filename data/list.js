@@ -21,7 +21,16 @@ export default {
         "clear",
         "cls",
         "empty",
-        "cancel"
+        "cancel",
+        "stop"
+    ],
+    "help": [
+        "help",
+        "halp",
+        "info",
+        "infos",
+        "wtf",
+        "?"
     ],
     "list": [
         "list",

@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import { getList } from '../../classes/Salty.js';
 
 const meanList = getList('meaning');
@@ -35,9 +36,9 @@ export default new Command({
                     answers.push(UTIL.choice(getList('answers')[meanList[meanFound[i]].answers[j]]));
                 }
             }
-            await this.msg(msg, answers.join(", "));
+            await Salty.message(msg, answers.join(", "));
         } else {
-            await this.msg(msg, UTIL.choice(getList('answers')['rand']));
+            await Salty.message(msg, UTIL.choice(getList('answers')['rand']));
         }
     },
 });

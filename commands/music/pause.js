@@ -19,12 +19,12 @@ export default new Command({
         if (playlist.connection) {
             try {
                 playlist.pause();
-                this.embed(msg, { title: `paused **${playlist.playing.title}**`, type: 'success', react: '⏸' });
+                Salty.success(msg, `paused **${playlist.playing.title}**`, { react: '⏸' });
             } catch (err) {
-                this.embed(msg, { title: "the song is already paused", type: 'error' });
+                Salty.error(msg, "the song is already paused");
             }
         } else {
-            this.embed(msg, { title: "there's nothing playing", type: 'error' });
+            Salty.error(msg, "there's nothing playing");
         }
     },
 });

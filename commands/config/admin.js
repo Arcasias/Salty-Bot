@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 export default new Command({
     name: 'admin',
@@ -20,22 +21,31 @@ export default new Command({
     visibility: 'public',
     async action(msg, args) {
         const mention = msg.mentions.users.first();
-        const isReqAdmin = this.isAdmin(mention || msg.author, msg.guild);
+        const isRequestedUserAdmin = Salty.isAdmin(mention || msg.author, msg.guild);
 
-        // Yes, it's horrendous, I just wanted to have a bit of fun with ternary operators :)
-        await this.is.msg(msg, mention ?
-            mention.bot ?
-                mention.id !== bot.user.id ?
-                    "that's just a bot you know, who cares ?"
-                    : isReqAdmin ?
-                        "of course I'm an admin ;)"
-                        : "nope, I'm not an admin on this server :c"
-                : isReqAdmin ?
-                    "<mention> is a wise and powerful admin"
-                    : "<mention> is not an admin"
-            : isReqAdmin ?
-                "you have been granted the administrators permissions. May your deeds be blessed forever !"
-                : "nope, you're not an admin");
+        // Fuck else if structures, long live ternary operators
+        await Salty.message(msg,
+            mention ?
+                // mention
+                mention.id === bot.user.id ?
+                    // mention is Salty
+                    isRequestedUserAdmin ?
+                        // mention is Salty and is admin
+                        "of course I'm an admin ;)" :
+                        // mention is Salty and not admin
+                        "nope, I'm not an admin on this server :c" :
+                    // mention is not Salty
+                    isRequestedUserAdmin ?
+                        // mention is not Salty and is admin
+                        "<mention> is a wise and powerful admin" :
+                        // mention is not Salty and is not admin
+                        "<mention> is not an admin" :
+                // author
+                isRequestedUserAdmin ?
+                    // author is admin
+                    "you have been granted the administrators permissions. May your deeds be blessed forever !" :
+                    // author is not admin
+                    "nope, you're not an admin");
     },
 });
 

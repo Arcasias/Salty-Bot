@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 export default new Command({
     name: 'joke',
@@ -17,7 +18,7 @@ export default new Command({
     ],
     visibility: 'public',
     async action(msg, args) {
-        await this.msg(msg, UTIL.choice(this.getList('jokes')));
+        await Salty.message(msg, UTIL.choice(Salty.getList('jokes')));
     },
 });
 

@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 import User from '../../classes/User.js';
 
@@ -20,14 +21,14 @@ export default new Command({
     async action(msg, args) {
         const options = {
             title: `Salty Bot`,
-            url: this.config.homepage,
-            description: `Last started on ${this.startTime.toString().split(' GMT')[0]}`,
+            url: Salty.config.homepage,
+            description: `Last started on ${Salty.startTime.toString().split(' GMT')[0]}`,
             fields: [
                 { title: `Hosted on`, description: process.env.MODE === 'server' ? 'Server' : 'Local instance' },
-                { title: `Owner`, description: this.config.owner.username },
+                { title: `Owner`, description: Salty.config.owner.username },
                 { title: `Servers`, description: `Running on ${Guild.size} servers` },
                 { title: `Users`, description: `Handling ${User.size} users` },
-                { title: `Developers`, description: `${this.config.devs.length} contributors` },
+                { title: `Developers`, description: `${Salty.config.devs.length} contributors` },
                 { title: `Blacklist`, description: `${User.filter(u => u.black_listed).length} troublemakers` },
             ],
             inline: true,
@@ -35,6 +36,6 @@ export default new Command({
         if (process.env.DEBUG === 'true') {
             options.footer = `Debug mode active`;
         }
-        await this.embed(msg, options);
+        await Salty.embed(msg, options);
     },
 });

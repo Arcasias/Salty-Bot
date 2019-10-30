@@ -13,6 +13,16 @@ const PERM_SET = 1;
 const PERM_DEL = 2;
 const PERM_CLS = 3;
 
+const MEANING_ACTIONS = [
+    'add',
+    'delete',
+    'clear',
+    'list',
+    'bot',
+    'buy',
+    'sell',
+];
+
 class Command extends Multiton {
     static fields = {
         action: () => {},
@@ -21,7 +31,7 @@ class Command extends Multiton {
         keys: [],
         name: "",
         visibility: 'public',
-        env: 'server',
+        env: null,
     };
 
     /**
@@ -42,13 +52,21 @@ class Command extends Multiton {
                 LOG.debug(this.name, this.env)
                 throw new error.SaltyException('WrongEnvironment', "it looks like I'm not in the right environment to do that");
             }
-            await this.action.call(Salty, msg, args);
+            await this.action(msg, args);
         } catch (err) {
             if (err instanceof error.SaltyException) {
-                await Salty.embed(msg, { title: err.message, type: 'error' });
+                return Salty.error(msg, err.message);
             } else {
                 LOG.error(err.stack);
             }
+        }
+    }
+
+    meaning(word) {
+        if (word && word.length) {
+            return MEANING_ACTIONS.find(w => Salty.getList(w).includes(word)) || 'string';
+        } else {
+            return 'noarg';
         }
     }
 }

@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -83,8 +84,8 @@ export default new Command({
                     for (let i = 0; i < Math.min(imgText.length, 2); i ++) {
                         const metrics = c.measureText(imgText[i]);
                         const txtHeight = imgText.length > 1 ?
-                            this.centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
-                            : this.centerTxtVertical(canvas.height / 2, metrics);
+                            Salty.centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
+                            : Salty.centerTxtVertical(canvas.height / 2, metrics);
 
                         c.fillStyle = "#ffffff";
                         c.fillText(imgText[i].trim(), canvas.width / 2 - metrics.width / 2, txtHeight);
@@ -102,7 +103,7 @@ export default new Command({
         // Last step : send canvas.
         function sendCanvas() {
             PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath)).then(()=>{
-                this.msg(msg, null, imgPath).then(() => {
+                Salty.message(msg, null, imgPath).then(() => {
 
                     msg.delete();
 

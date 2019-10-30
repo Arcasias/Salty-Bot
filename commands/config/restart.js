@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 
 export default new Command({
     name: 'restart',
@@ -13,8 +14,8 @@ export default new Command({
     ],
     visibility: 'dev',
     async action(msg, args) {
-    	await this.embed(msg, { title: "Restarting ...", type: 'success' });
-        await this.restart();
+    	await Salty.success(msg, "Restarting ...");
+        await Salty.restart();
     },
 });
 

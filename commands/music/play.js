@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 import google from 'googleapis';
 import * as error from '../../classes/Exception.js';
@@ -15,7 +16,6 @@ export default new Command({
     keys: [
         "sing",
         "song",
-        "music",
         "video",
         "youtube",
         "yt",
@@ -87,14 +87,14 @@ export default new Command({
             });
             options.actions[SYMBOLS[i]] = addSong.bind(this, searchResults[i], { msg });
         });
-        this.embed(msg, options);
+        Salty.embed(msg, options);
 
         async function addSong(songURL) {
             if (UTIL.generate(3)) {
-                songURL = UTIL.choice(this.getList('surpriseSong'));
+                songURL = UTIL.choice(Salty.getList('surpriseSong'));
             }
             const { length_seconds, title } = await UTIL.promisify(ytdl.getInfo.bind(ytdl, songURL));
-            this.embed(msg, { title: `**${msg.member.displayName}** added **${title}** to the queue`, type: 'success' });
+            Salty.success(msg, `**${msg.member.displayName}** added **${title}** to the queue`);
             msg.delete();
             playlist.add({
                 duration: length_seconds * 1000,

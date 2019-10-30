@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import fs from 'fs';
 
 const emojiPath = './assets/img/saltmoji';
@@ -44,7 +45,7 @@ export default new Command({
                     return msg.channel.send({ files: [`${ emojiPath }/${ emoji }.png`] });
                 }
             }
-            this.embed(msg, {
+            Salty.embed(msg, {
                 title: "list of saltmojis",
                 description: emojiNames.join('\n'),
             });

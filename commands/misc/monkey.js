@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
@@ -30,12 +31,12 @@ export default new Command({
             throw new error.IncorrectValue("length", "number between 1 and 10");
         }
 
-        const runningMsg = await this.msg(msg, "monkey sorting ...");
+        const runningMsg = await Salty.message(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(args[0], 10);
         let list = [];
 
-        const sortingTime = await new Promise((resolve, reject) => {
+        const sortingTime = await new Promise(resolve => {
             for (let i = 0; i < length; i ++) {
                 list.push(i);
             }
@@ -52,7 +53,7 @@ export default new Command({
         });
 
         runningMsg.delete();
-        await this.embed(msg, { title: `monkey sort on a **${ length }** elements list took **${ sortingTime }** seconds in **${ tests }** tests`, type: 'success', react: '🐒' });
+        await Salty.success(msg, `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`, { react: '🐒' });
     },
 });
 

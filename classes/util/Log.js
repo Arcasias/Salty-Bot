@@ -43,9 +43,11 @@ function log(...log) {
     console.log(...log);
 }
 
-function success(...log) {
+function request(guild, user,  msg) {
+    const content = msg ? `${colors.GREEN}"${msg}"${colors.RESET}` : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
+    const log = [`${colors.YELLOW + guild + colors.RESET} > ${colors.YELLOW + user + colors.RESET} : ${content}`];
     if (process.env.MODE === 'local') {
-        log.unshift(`${colors.RESET + UTIL.formatDuration()} ${colors.GREEN}SUCCESS${colors.RESET}:`);
+        log.unshift(`${colors.RESET + UTIL.formatDuration()}`);
     }
     console.log(...log);
 }
@@ -62,6 +64,6 @@ global.LOG = {
     error,
     info,
     log,
-    success,
+    request,
     warn,
 };

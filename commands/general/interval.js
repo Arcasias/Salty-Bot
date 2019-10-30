@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 const INTERVALS = {};
@@ -18,13 +19,13 @@ export default new Command({
     ],
     visibility: 'dev',
     async action(msg, args) {
-        if (args[0] && this.getList('clear').includes(args[0])) {
+        if (args[0] && Salty.getList('clear').includes(args[0])) {
             if (! INTERVALS[msg.guild.id]) {
                 throw new error.EmptyObject("interval");
             }
             clearInterval(INTERVALS[msg.guild.id]);
 
-            this.embed(msg, { title: "Interval cleared", type: 'success' });
+            Salty.success(msg, "Interval cleared");
         } else {
             if (! args[0]) {
                 throw new error.MissingArg("delay");
@@ -43,7 +44,7 @@ export default new Command({
                 clearInterval(INTERVALS[msg.guild.id]);
             }
             INTERVALS[msg.guild.id] = setInterval(() => {
-                this.msg(msg, args.join(" "));
+                Salty.message(msg, args.join(" "));
             }, delay);
         }
     },

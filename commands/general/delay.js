@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
@@ -30,7 +31,7 @@ export default new Command({
         msg.delete().catch();
 
 		setTimeout(() => {
-			this.msg(msg, args.join(" "));
+			Salty.message(msg, args.join(" "));
 		}, delay);
     },
 });

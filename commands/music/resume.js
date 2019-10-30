@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 
 export default new Command({
@@ -19,12 +20,12 @@ export default new Command({
         if (playlist.connection) {
             try {
                 playlist.resume();
-                this.embed(msg, { title: `resumed **${playlist.playing.title}**`, type: 'success', react: '▶' });
+                Salty.success(msg, `resumed **${playlist.playing.title}**`, { react: '▶' });
             } catch (err) {
-                this.embed(msg, { title: "the song isn't paused", type: 'error' });
+                Salty.error(msg, "the song isn't paused");
             }
         } else {
-            this.embed(msg, { title: "there's nothing playing", type: 'error' });
+            Salty.error(msg, "there's nothing playing");
         }
     },
 });

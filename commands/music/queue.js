@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
 import * as error from '../../classes/Exception.js';
 
@@ -28,7 +29,7 @@ export default new Command({
     action: function (msg, args) {
         const { playlist } = Guild.get(msg.guild.id);
 
-        if (args[0] && this.getList('delete').includes(args[0])) {
+        if (args[0] && Salty.getList('delete').includes(args[0])) {
             if (!playlist.queue[0]) {
                 throw new error.EmptyObject("queue");
             }
@@ -58,11 +59,11 @@ export default new Command({
                 `Songs n°${songs.map(s => s + 1)} removed from the queue` :
                 `Song n°${songs[0] + 1} - **${removed[0].title}** removed from the queue`;
 
-            this.embed(msg, { title: message, type: 'success' });
-        } else if (args[0] && this.getList('clear').includes(args[0])) {
+            Salty.success(msg, message);
+        } else if (args[0] && Salty.getList('clear').includes(args[0])) {
             playlist.empty();
 
-            this.embed(msg, { title: "queue cleared", type: 'success' });
+            Salty.success(msg, "queue cleared");
         } else {
             if (! playlist.queue[0]) {
                 throw new error.EmptyObject("queue");
@@ -91,7 +92,7 @@ export default new Command({
                     playlistTitle;
                 options.description += ". Currently playing: " + title;
             }
-            this.embed(msg, options);
+            Salty.embed(msg, options);
         }
     },
 });

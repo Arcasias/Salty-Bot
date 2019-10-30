@@ -1,4 +1,5 @@
 import Command from '../../classes/Command.js';
+import * as Salty from '../../classes/Salty.js';
 import { config } from '../../classes/Salty.js';
 
 const specialActions = [
@@ -35,7 +36,7 @@ export default new Command({
     visibility: 'public',
     async action(msg, args) {
         if (!args[0]) {
-            return this.commands.list.get('talk').run(msg, args);
+            return Salty.commands.list.get('talk').run(msg, args);
         }
         let message;
         for (let sa of specialActions) {
@@ -47,7 +48,7 @@ export default new Command({
             msg.delete();
             message = args.join(" ");
         }
-        await this.msg(msg, message);
+        await Salty.message(msg, message);
     },
 });
 

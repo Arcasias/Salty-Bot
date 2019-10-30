@@ -11,10 +11,12 @@ async function load() {
         process.env.MODE = 'local';
         await import('./local.js');
     }
+    LOG.info(`Running on ${process.env.MODE} environment`);
 
     const { config, init } = await import('./classes/Salty.js');
 
     process.env.DEBUG = config.debug;
+    LOG.debug(`Debug is active`);
 
     // Empty temp images folder
     fs.readdir(config.tempImageFolder, (error, files) => {
