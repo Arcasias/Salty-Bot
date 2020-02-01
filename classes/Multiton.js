@@ -12,11 +12,16 @@ class Multiton {
         Multiton._instances[this.constructor.name].push(this);
 
         if (fields) {
+            // Database ID
+            if ('id' in values) {
+                this.id = values.id;
+            }
             for (let fieldName in fields) {
                 this[fieldName] = values[fieldName] || fields[fieldName];
             }
         }
     }
+
     destroy() {
         const newInstances = [];
         const instances = Multiton._instances[this.constructor.name];

@@ -1,5 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+
+import initLocalEnv from './local.js';
+import { config, init } from './classes/Salty.js';
+
 import './classes/util/Log.js';
 import './classes/util/Util.js';
 
@@ -9,11 +13,9 @@ async function load() {
         process.env.MODE = 'server';
     } else {
         process.env.MODE = 'local';
-        await import('./local.js');
+        initLocalEnv();
     }
     LOG.info(`Running on ${process.env.MODE} environment`);
-
-    const { config, init } = await import('./classes/Salty.js');
 
     process.env.DEBUG = config.debug;
     LOG.debug(`Debug is active`);

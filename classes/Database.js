@@ -1,9 +1,23 @@
 import pg from 'pg';
 
-// Exported
+let client;
 let connected = false;
 
+function _sanitizeTable(table) {
+    return table.toLowerCase().replace(/[^a-z_]/g, '');
+}
+
 async function connect() {
+    if (!client) {
+        client = new pg.Client({
+            database: process.env.DATABASE_DATABASE,
+            host: process.env.DATABASE_HOST,
+            password: process.env.DATABASE_PASSWORD,
+            port: process.env.DATABASE_PORT,
+            user: process.env.DATABASE_USER,
+            ssl: true,
+        });
+    }
     try {
         await client.connect();
         connected = true;
@@ -11,6 +25,16 @@ async function connect() {
         LOG.error(err);
     }
 }
+
+async function disconnect() {
+    try {
+        await client.end();
+        connected = false;
+    } catch (err) {
+        LOG.error(err);
+    }
+}
+
 /**
  * @param  {string} table
  * @param  {Object} values
@@ -40,14 +64,7 @@ async function create(table, ...allValues) {
     const results = await client.query(queryString.join(" "), variables);
     return results.rows;
 }
-async function disconnect() {
-    try {
-        await client.end();
-        connected = false;
-    } catch (err) {
-        LOG.error(err);
-    }
-}
+
 /**
  * @param  {string} table
  * @param  {number[]} ids
@@ -73,6 +90,7 @@ async function remove(table, ids) {
     const results = await client.query(queryString.join(" "), variables);
     return results.rows;
 }
+
 /**
  * @param  {string} table
  * @param  {number[]} ids
@@ -110,6 +128,7 @@ async function read(table, ids, fields) {
     const results = await client.query(queryString.join(" "), variables);
     return results.rows;
 }
+
 /**
  * @param  {string} table
  * @param  {number[]} id
@@ -143,20 +162,6 @@ async function update(table, ids, values) {
 
     const results = await client.query(queryString.join(" "), variables);
     return results.rows;
-}
-
-// Not exported
-const client = new pg.Client({
-    database: process.env.DATABASE_DATABASE,
-    host: process.env.DATABASE_HOST,
-    password: process.env.DATABASE_PASSWORD,
-    port: process.env.DATABASE_PORT,
-    user: process.env.DATABASE_USER,
-    ssl: true,
-});
-
-function _sanitizeTable(table) {
-    return table.toLowerCase().replace(/[^a-z_]/g, '');
 }
 
 export {
