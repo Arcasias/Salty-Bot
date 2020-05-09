@@ -28,7 +28,7 @@ function isSorted(array) {
 }
 
 function possessive(text) {
-    return 's' === text[text.length - 1] ? `${ text }'`: `${ text }'s`;
+    return 's' === text[text.length - 1] ? `${text}'`: `${text}'s`;
 }
 
 function promisify(fn) {

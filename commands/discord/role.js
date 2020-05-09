@@ -1,7 +1,6 @@
 import Command from '../../classes/Command.js';
 import * as Salty from '../../classes/Salty.js';
 import Guild from '../../classes/Guild.js';
-import * as S from '../../classes/Salty.js';
 import * as error from '../../classes/Exception.js';
 
 export default new Command({
