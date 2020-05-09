@@ -3,7 +3,7 @@ import * as Database from './Database.js';
 class Multiton {
     static _instances = {};
 
-    constructor(values) {
+    constructor(values={}) {
         const fields = this.constructor.fields;
         if (!Multiton._instances[this.constructor.name]) {
             Multiton._instances[this.constructor.name] = [];
