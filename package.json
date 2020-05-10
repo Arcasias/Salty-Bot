@@ -5,7 +5,8 @@
     "main": "main.js",
     "scripts": {
         "start": "node index.js",
-        "test": "node test.js"
+        "test": "node test.js",
+        "pretty": "prettier --write \"./**/*.{js,jsx,json}\""
     },
     "type": "module",
     "repository": {
@@ -24,7 +25,9 @@
         "imgur": "^0.3.1",
         "npm": "^6.14.5",
         "pg": "^8.1.0",
+        "prettier": "^2.0.5",
         "pureimage": "^0.2.1",
+        "qunit": "^2.10.0",
         "ytdl-core": "^2.1.2"
     },
     "devDependencies": {}

@@ -9,3 +9,4 @@ local.js
 
 # Config
 .jshintrc
+.prettierrc
