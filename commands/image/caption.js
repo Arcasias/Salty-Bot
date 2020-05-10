@@ -1,11 +1,13 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import path from 'path';
-import PImage from 'pureimage';
-import { config } from '../../classes/Salty.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const { config } = require('../../classes/Salty.js');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const path = require('path');
+const PImage = require('pureimage');
+const Salty = require('../../classes/Salty.js');
 
 const defaultDim = [450, 300];
 const maxTempImages = 5;
@@ -14,7 +16,7 @@ const fontFamily = 'impact';
 let imgIndex = 1;
 let imgPath = path.join(config.tempImageFolder, `caption_temp_${imgIndex}.png`);
 
-export default new Command({
+module.exports = new Command({
     name: 'caption',
     keys: [
         "cap",
@@ -28,7 +30,7 @@ export default new Command({
     visibility: 'public',
     mode: 'local',
     async action(msg, args) {
-        let canvas, canvasImg, canvasTxt, c;
+        let canvas, c;
         let imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? UTIL.title(args.join(" ").split("\\")) : null;
 
@@ -110,8 +112,7 @@ export default new Command({
                     imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
                     imgPath = path.join(config.tempImageFolder, `caption_temp_${imgIndex}.png`);
                 });
-            }).catch(LOG.error(err));
+            }).catch(LOG.error);
         }
     },
 });
-

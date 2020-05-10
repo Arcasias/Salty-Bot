@@ -1,10 +1,12 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import Fish from '../../classes/Fish.js';
-import * as error from '../../classes/Exception.js';
-import User from '../../classes/User.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Fish = require('../../classes/Fish.js');
+const Salty = require('../../classes/Salty.js');
+const User = require('../../classes/User.js');
+
+module.exports = new Command({
     name: 'fish',
     keys: [
         "fishes",
@@ -16,7 +18,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         let authorId = msg.author.id;
         let angler = User.get(msg.author.id);
 
@@ -123,4 +125,3 @@ export default new Command({
         });
     },
 });
-

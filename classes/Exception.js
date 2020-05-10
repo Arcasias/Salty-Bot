@@ -1,3 +1,5 @@
+'use strict';
+
 class SaltyException extends Error {
     constructor(name='SaltyException', message=false, ...args) {
         if (name && !message) {
@@ -52,7 +54,7 @@ class PermissionDenied extends SaltyException {
 }
 
 
-export {
+module.exports = {
     SaltyException,
     DeprecatedCommand,
     EmptyObject,

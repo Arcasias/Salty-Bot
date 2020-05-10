@@ -1,14 +1,9 @@
-import Multiton from './Multiton.js';
-import Playlist from './Playlist.js';
+'use strict';
+
+const Multiton = require('./Multiton.js');
+const Playlist = require('./Playlist.js');
 
 class Guild extends Multiton {
-	 static table = 'guilds';
-	 static fields = {
-	    discord_id: 0,
-	    default_channel: null,
-	    default_role: null,
-	};
-
 	constructor() {
 		super(...arguments);
 
@@ -19,5 +14,11 @@ class Guild extends Multiton {
         return this.find(guild => parseInt(guild.discord_id, 10) === parseInt(id));
     }
 }
+Guild.table = 'guilds';
+Guild.fields = {
+   discord_id: 0,
+   default_channel: null,
+   default_role: null,
+};
 
-export default Guild;
+module.exports = Guild;

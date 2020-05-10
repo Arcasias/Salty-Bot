@@ -1,7 +1,9 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'admin',
     keys: [
         "admins",
@@ -19,7 +21,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         const mention = msg.mentions.users.first();
         const isRequestedUserAdmin = Salty.isAdmin(mention || msg.author, msg.guild);
 
@@ -27,7 +29,7 @@ export default new Command({
         await Salty.message(msg,
             mention ?
                 // mention
-                mention.id === bot.user.id ?
+                mention.id === Salty.bot.user.id ?
                     // mention is Salty
                     isRequestedUserAdmin ?
                         // mention is Salty and is admin
@@ -48,4 +50,3 @@ export default new Command({
                     "nope, you're not an admin");
     },
 });
-

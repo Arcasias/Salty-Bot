@@ -1,10 +1,12 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import fs from 'fs';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+const fs = require('fs');
 
 const emojiPath = './assets/img/saltmoji';
 
-export default new Command({
+module.exports = new Command({
     name: 'emoji',
     keys: [
         "emojis",
@@ -52,4 +54,3 @@ export default new Command({
         });
     },
 });
-

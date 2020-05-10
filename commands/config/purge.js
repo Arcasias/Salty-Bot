@@ -1,10 +1,21 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
 
 let purging = false;
 
-export default new Command({
+async function purgeEndless(channel) {
+    const messages = await channel.fetchMessages({ limit: 1 });
+    if (!purging) {
+        return;
+    }
+    await messages.first().delete();
+    return purgeEndless(channel);
+}
+
+module.exports = new Command({
     name: 'purge',
     keys: [
         "prune",
@@ -57,6 +68,7 @@ export default new Command({
                     purging = true;
                     return purgeEndless(msg.channel);
                 }
+                /* falls through */
             default:
                 if (isNaN(args[0])) {
                     throw new error.IncorrectValue("length", "number");
@@ -74,12 +86,3 @@ export default new Command({
         }
     },
 });
-
-async function purgeEndless(channel) {
-    const messages = await channel.fetchMessages({ limit: 1 });
-    if (!purging) {
-        return;
-    }
-    await messages.first().delete();
-    return purgeEndless(channel);
-};

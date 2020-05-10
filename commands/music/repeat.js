@@ -1,8 +1,10 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import Guild from '../../classes/Guild.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Guild = require('../../classes/Guild.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'repeat',
     keys: [
         "loop",
@@ -28,7 +30,7 @@ export default new Command({
         }
     ],
     visibility: 'public',
-    action: function (msg, args) {
+    action(msg, args) {
         let { playlist } = Guild.get(msg.guild.id);
 
         const single = () => {
@@ -55,4 +57,3 @@ export default new Command({
         }
     },
 });
-

@@ -1,8 +1,10 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'delay',
     keys: [
         "later",
@@ -35,4 +37,3 @@ export default new Command({
 		}, delay);
     },
 });
-

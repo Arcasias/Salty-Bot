@@ -1,11 +1,13 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
-import User from '../../classes/User.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
+const User = require('../../classes/User.js');
 
 const repurchase = 0.5;
 
-export default new Command({
+module.exports = new Command({
     name: 'market',
     keys: [
         "shop",
@@ -136,4 +138,3 @@ export default new Command({
         }
     },
 });
-

@@ -1,5 +1,7 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
 
 const MESSAGES = [
     "nearly perfect !",
@@ -14,7 +16,7 @@ const MESSAGES = [
     "get off of this world you fucking chinese",
 ];
 
-export default new Command({
+module.exports = new Command({
     name: 'ping',
     keys: [
         "latency",
@@ -27,7 +29,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         // If too much salt, skips the latency test
         if (UTIL.generate(3)) {
             await Salty.error(msg, "pong, and I don't give a fuck about your latency");
@@ -42,4 +44,3 @@ export default new Command({
         }
     },
 });
-

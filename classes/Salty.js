@@ -1,13 +1,15 @@
-import config from '../data/config.js';
-import * as Database from './Database.js';
-import Discord from 'discord.js';
-import Dialog from './Dialog.js';
-import fs from 'fs';
-import Guild from './Guild.js';
-import list from '../data/list.js';
-import path from 'path';
-import QuickCommand from './QuickCommand.js';
-import User from './User.js';
+'use strict';
+
+const config = require('../data/config.js');
+const Database = require('./Database.js');
+const Dialog = require('./Dialog.js');
+const Discord = require('discord.js');
+const fs = require('fs');
+const Guild = require('./Guild.js');
+const list = require('../data/list.js');
+const path = require('path');
+const QuickCommand = require('./QuickCommand.js');
+const User = require('./User.js');
 
 // Exported
 const bot = new Discord.Client();
@@ -37,7 +39,7 @@ function destroy() {
     return _destroy(false);
 }
 
-async function embed(msg, options={}) {
+async function embed(msg, options = {}) {
     // Embed options that might change
     let title = options.title || "";
     let description = options.description || "";
@@ -61,7 +63,7 @@ async function embed(msg, options={}) {
         footer = UTIL.title(footer);
     }
 
-    const embed = new Discord.RichEmbed()
+    const embed = new Discord.MessageEmbed()
         .setTitle(replacer(title, msg))
         .setDescription(replacer(description, msg))
         .setURL(options.url)
@@ -73,26 +75,27 @@ async function embed(msg, options={}) {
         .setFooter(footer);
 
     if (options.fields) {
-        for (let i = 0; i < options.fields.length; i ++) {
+        for (let i = 0; i < options.fields.length; i++) {
             embed.addField(UTIL.title(options.fields[i].title), replacer(UTIL.title(options.fields[i].description), msg), inline);
         }
     }
     const newMessage = await message(msg, content, { embed, file: options.file });
 
-    if (react && ! msg.deleted) {
+    if (react && !msg.deleted) {
         msg.react(react).catch();
     }
     const dialog = new Dialog(msg, newMessage, actions);
     const reactions = Object.keys(dialog.actions);
 
-    for (let i = 0; i < reactions.length; i ++) {
-        if (newMessage.deleted) break;
-
+    for (let i = 0; i < reactions.length; i++) {
+        if (newMessage.deleted) {
+            break;
+        }
         await newMessage.react(reactions[i]);
     }
 }
 
-function error(msg, text="error", options={}) {
+function error(msg, text = "error", options = {}) {
     return embed(msg, Object.assign({
         title: text,
         react: '❌',
@@ -109,12 +112,12 @@ function getXpInfos(id) {
     let xp = User.get(id).xp;
     let newRank = 0;
 
-    for (let i = 0; i < config.rank.length; i ++) {
+    for (let i = 0; i < config.rank.length; i++) {
         if (xp < config.rank[i].xp) {
             break;
         }
         xp -= config.rank[i].xp;
-        newRank ++;
+        newRank++;
     }
     return { rank: newRank, xp };
 }
@@ -127,7 +130,7 @@ async function init() {
         QuickCommand.load().then(commandData => commandData.forEach(setQuickCommand)),
         Guild.load(),
         User.load(),
-        _getCommands('./commands').then(() => LOG.info('Commands loaded')),
+        _loadCommands('./commands').then(() => LOG.info('Commands loaded')),
     ]);
     await bot.login(process.env.DISCORD_API);
 }
@@ -171,13 +174,11 @@ function setQuickCommand(command) {
         commands.keys[key] = command.name;
     });
     commands.list.set(command.name, {
-        run: (msg, args) => {
-            eval(command.effect);
-        },
+        run: () => eval(command.effect),
     });
 }
 
-function success(msg, text="success", options={}) {
+function success(msg, text = "success", options = {}) {
     return embed(msg, Object.assign({
         title: text,
         react: '✅',
@@ -192,13 +193,16 @@ function unsetQuickCommand(command) {
     commands.list.delete(command.name);
 }
 
+//-----------------------------------------------------------------------------
 // Not exported
+//-----------------------------------------------------------------------------
+
 async function _destroy(restart) {
     LOG.info("Disconnecting ...");
     await bot.destroy();
 
     if (restart) {
-        await _getCommands('./commands').then(() => LOG.info('Commands loaded'));
+        await _loadCommands('./commands').then(() => LOG.info('Commands loaded'));
         await bot.login(process.env.DISCORD_API);
     } else {
         await Database.disconnect();
@@ -206,69 +210,68 @@ async function _destroy(restart) {
     }
 }
 
-function _getCommands(...paths) {
+function _loadCommand(commandPath, category) {
+    const command = require(commandPath);
+    const { name, keys, visibility } = command;
+
+    if (process.env.DEBUG === 'true') {
+        for (let key of [name, ...keys]) {
+            if (commands.list.get(key)) {
+                throw new Error(`Key "${key}" of command ${name} conflicts with command of the same name.`);
+            }
+            if (key in commands.keys) {
+                throw new Error(`Duplicate key "${key}" in command "${name}".`);
+            }
+            if (key in commands.help || category === key) {
+                throw new Error(`Key "${key}" of command "${name}" is already a category.`);
+            }
+        }
+    }
+    // Registers command
+    commands.list.set(name, command);
+    commands.keys[name] = name;
+    // Links each key to the command name in command keys
+    keys.forEach(key => {
+        commands.keys[key] = name;
+    });
+    // Sets help content
+    commands.help[category].commands.push({ name, keys, visibility });
+}
+
+function _loadCommands(...paths) {
     const dirpath = path.join(...paths);
     return new Promise((resolve, reject) => {
         fs.readdir(dirpath, async (err, files) => {
             if (err) {
                 reject(err);
             }
-
-            const filesLoading = files.map(async file => {
+            const category = dirpath.split(path.sep).pop();
+            if (files.includes('__category__.json')) {
+                const categoryInfoPath = path.join(dirpath, '__category__.json');
+                const categoryInfo = JSON.parse(fs.readFileSync(categoryInfoPath));
+                commands.help[category] = {
+                    info: categoryInfo,
+                    commands: [],
+                };
+            }
+            files.forEach(file => {
                 const fullpath = path.join(dirpath, file);
                 const stats = fs.statSync(fullpath);
                 const ext = file.split('.').pop();
 
                 // If the file is a directory, execute the function inside
                 if (stats.isDirectory(fullpath)) {
-                    _getCommands(dirpath, file);
-                // If the file is a category info file, extract its data
-                } else if (file === '__category__.json') {
-                    const category = dirpath.split(path.sep).pop();
-                    const { name, description, icon } = JSON.parse(fs.readFileSync(fullpath));
-                    commands.help[category] = {
-                        info: {name, description, icon},
-                        commands: [],
-                    };
-                // If the file is a .js, add it as a command
+                    _loadCommands(dirpath, file);
+                    // If the file is a category info file, extract its data
                 } else if (['js', 'cjs', 'mjs'].includes(ext)) {
+                    const relativePath = path.join('..', fullpath).replace(path.sep, '/');
                     try {
-                        const relativePath = path.join('..', fullpath).replace(path.sep, '/');
-                        const { default: command } = await import(relativePath);
-                        const category = dirpath.split(path.sep).pop();
-
-                        const { name, keys, visibility } = command;
-
-                        if (process.env.DEBUG === 'true') {
-                            for (let key of [name, ...keys]) {
-                                if (commands.list.get(key)) {
-                                    throw new Error(`Key "${key}" of command ${name} conflicts with command of the same name`);
-                                }
-                                if (key in commands.keys) {
-                                    throw new Error(`Duplicate key "${key}" in command "${name}"`);
-                                }
-                                if (key in commands.help || category === key) {
-                                    throw new Error(`Key "${key}" of command "${name}" is already a category`);
-                                }
-                            }
-                        }
-
-                        // Registers command
-                        commands.list.set(name, command);
-                        commands.keys[name] = name;
-
-                        // Links each key to the command name in command keys
-                        keys.forEach(key => {
-                            commands.keys[key] = name;
-                        });
-                        // Sets help content
-                        commands.help[category].commands.push({ name, keys, visibility });
+                        _loadCommand(relativePath, category);
                     } catch (err) {
                         LOG.error(`Could not load file "${file}:"`, err.stack);
                     }
                 }
             });
-            await Promise.all(filesLoading);
             resolve();
         });
     });
@@ -276,7 +279,7 @@ function _getCommands(...paths) {
 
 async function _onChannelDelete(channel) {
     Guild.forEach(guild => {
-        if (guild.default_channel == channel.id) {
+        if (guild.default_channel === channel.id) {
             const guildDBId = Guild.get(guild.id).id;
             Guild.update(guildDBId, { default_channel: false });
         }
@@ -330,7 +333,7 @@ async function _onMessage(msg) {
     }
 
     const mention = msg.mentions.users.first();
-    const nickname = msg.guild.members.get(bot.user.id).nickname;
+    const nickname = msg.guild.members.cache.get(bot.user.id).nickname;
     const botNameRegex = bot.user.username + (nickname ? `|${UTIL.clean(nickname)}` : '');
 
     // Look for username/nickname match or a mention if in a guild, else (DM) interraction is always true.
@@ -346,7 +349,7 @@ async function _onMessage(msg) {
     }
 
     // Clean the message of any undesired spaces
-    const msgArray = msg.content.split(' ').filter(word => word.trim() != '');
+    const msgArray = msg.content.split(' ').filter(word => word.trim() !== '');
 
     // Need an interraction passed point. Everything else is a "normal" message.
     if (!interraction) {
@@ -371,7 +374,7 @@ async function _onMessage(msg) {
     if (mention && !mention.bot && !User.get(mention.id)) {
         await User.create({ discord_id: mention.id });
     }
-    for (let i = 0; i < msgArray.length; i ++) {
+    for (let i = 0; i < msgArray.length; i++) {
         const args = msgArray.slice(i + 1);
         const commandName = commands.keys[UTIL.clean(msgArray[i])];
         const command = commands.list.get(commandName);
@@ -393,7 +396,7 @@ async function _onMessageReactionAdd(msgReact, author) {
     const { _emoji, message } = msgReact;
     const dialog = Dialog.all.find(d => d.author === author);
 
-    if (! dialog || message != dialog.response) {
+    if (!dialog || message !== dialog.response) {
         return;
     }
     try {
@@ -406,7 +409,7 @@ async function _onMessageReactionAdd(msgReact, author) {
 async function _onReady() {
     const guildCreates = [];
     bot.user.setStatus('online'); // dnd , online , idle
-    bot.guilds.forEach(discordGuild => {
+    bot.guilds.cache.forEach(discordGuild => {
         const guild = Guild.get(discordGuild.id);
         if (guild) {
             if (guild.default_channel) {
@@ -424,10 +427,10 @@ async function _onReady() {
     const loadingTime = Math.floor((Date.now() - startTime.getTime()) / 100) / 10;
 
     LOG.info(`${commands.list.array().length} commands and ${QuickCommand.size} generic commands loaded. ${Object.keys(commands.keys).length} keys in total.`);
-    LOG.info(`Salty loaded in ${loadingTime} second${loadingTime == 1 ? '' : 's'} and ready to salt the chat :D`);
+    LOG.info(`Salty loaded in ${loadingTime} second${loadingTime === 1 ? '' : 's'} and ready to salt the chat :D`);
 }
 
-export {
+module.exports = {
     // Props
     bot,
     commands,

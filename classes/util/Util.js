@@ -1,3 +1,5 @@
+'use strict';
+
 function choice(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
@@ -131,6 +133,7 @@ global.UTIL = {
     generate,
     isSorted,
     possessive,
+    promisify,
     randRange,
     randStat,
     shuffle,

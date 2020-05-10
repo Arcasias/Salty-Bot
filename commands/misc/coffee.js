@@ -1,7 +1,9 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'coffee',
     keys: [
         "cof",
@@ -18,7 +20,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         const { author } = msg;
         const mention = msg.mentions.users.first() ? msg.mentions.users.first() : null;
         const options = {
@@ -28,14 +30,14 @@ export default new Command({
             color: 0x523415,
         };
         if (mention) {
-            if (mention.id == Salty.bot.user.id) {
+            if (mention.id === Salty.bot.user.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
-                desc = `Made with ♥ by **${ author.username }** for **${ mention.username }**`;
+                options.description = `Made with ♥ by **${ author.username }** for **${ mention.username }**`;
             }
         } else {
             if (Salty.fishing[author.id]) {
-                if ('coffee' == Salty.fishing[author.id].bait) {
+                if ('coffee' === Salty.fishing[author.id].bait) {
                     options.title = "<author> threw another coffee into the sea";
                     options.description = "you already did that, such a waste:c";
                 } else {
@@ -48,4 +50,3 @@ export default new Command({
         await Salty.embed(msg, options);
     },
 });
-

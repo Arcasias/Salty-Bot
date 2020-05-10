@@ -1,7 +1,8 @@
-import pg from 'pg';
+'use strict';
+
+const pg = require('pg');
 
 let client;
-let connected = false;
 
 function _sanitizeTable(table) {
     return table.toLowerCase().replace(/[^a-z_]/g, '');
@@ -15,12 +16,11 @@ async function connect() {
             password: process.env.DATABASE_PASSWORD,
             port: process.env.DATABASE_PORT,
             user: process.env.DATABASE_USER,
-            ssl: true,
+            ssl: { rejectUnauthorized: false },
         });
     }
     try {
         await client.connect();
-        connected = true;
     } catch (err) {
         LOG.error(err);
     }
@@ -29,7 +29,6 @@ async function connect() {
 async function disconnect() {
     try {
         await client.end();
-        connected = false;
     } catch (err) {
         LOG.error(err);
     }
@@ -164,9 +163,8 @@ async function update(table, ids, values) {
     return results.rows;
 }
 
-export {
+module.exports = {
     connect,
-    connected,
     create,
     disconnect,
     remove,

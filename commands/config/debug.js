@@ -1,33 +1,12 @@
-import Command from '../../classes/Command.js';
-import Guild from '../../classes/Guild.js';
-import * as error from '../../classes/Exception.js';
-import * as Salty from '../../classes/Salty.js';
-import User from '../../classes/User.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Guild = require('../../classes/Guild.js'); // Added to the scope
+const Salty = require('../../classes/Salty.js');
+const User = require('../../classes/User.js'); // Added to the scope
 
 const MAXDEPTH = 3;
-
-export default new Command({
-    name: 'debug',
-    keys: [],
-    help: [
-        {
-            argument: "***JS code***",
-            effect: "Executes a ***JS code*** within Salty context",
-        },
-    ],
-    visibility: 'dev',
-    async action(msg, args) {
-        if (! args[0]) {
-            throw new error.MissingArg("instructions");
-        }
-
-        const res = eval(args.join(" "));
-        const message = `${args.join(" ")} = /*${typeof res}*/ ${getFormat(res, 0)}`;
-
-        Salty.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
-        LOG.log(message);
-    },
-});
 
 function getFormat(variable, depth) {
     if (depth > MAXDEPTH) {
@@ -59,3 +38,26 @@ function getFormat(variable, depth) {
     }
     return res;
 }
+
+module.exports = new Command({
+    name: 'debug',
+    keys: [],
+    help: [
+        {
+            argument: "***JS code***",
+            effect: "Executes a ***JS code*** within Salty context",
+        },
+    ],
+    visibility: 'dev',
+    async action(msg, args) {
+        if (! args[0]) {
+            throw new error.MissingArg("instructions");
+        }
+
+        const res = eval(args.join(" "));
+        const message = `${args.join(" ")} = /*${typeof res}*/ ${getFormat(res, 0)}`;
+
+        Salty.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
+        LOG.log(message);
+    },
+});

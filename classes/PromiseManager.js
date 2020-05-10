@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Allows to execute promises in the right order
  * Also drops any non-started promises inserted during the execution
@@ -49,4 +51,4 @@ class PromiseManager {
     }
 }
 
-export default PromiseManager;
+module.exports = PromiseManager;

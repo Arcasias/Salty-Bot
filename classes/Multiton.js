@@ -1,15 +1,15 @@
-import * as Database from './Database.js';
+'use strict';
+
+const Database = require('./Database.js');
 
 class Multiton {
-    static _instances = {};
-
     constructor(values={}) {
         const fields = this.constructor.fields;
-        if (!Multiton._instances[this.constructor.name]) {
-            Multiton._instances[this.constructor.name] = [];
+        if (!Multiton.__instances[this.constructor.name]) {
+            Multiton.__instances[this.constructor.name] = [];
         }
 
-        Multiton._instances[this.constructor.name].push(this);
+        Multiton.__instances[this.constructor.name].push(this);
 
         if (fields) {
             // Database ID
@@ -24,24 +24,24 @@ class Multiton {
 
     destroy() {
         const newInstances = [];
-        const instances = Multiton._instances[this.constructor.name];
+        const instances = Multiton.__instances[this.constructor.name];
         for (let i = 0; i < instances.length; i ++) {
             if (instances[i] !== this) {
                 newInstances.push(instances[i]);
             }
         }
-        Multiton._instances[this.constructor.name] = newInstances;
+        Multiton.__instances[this.constructor.name] = newInstances;
     }
 
     static get all() {
-        return Multiton._instances[this.name];
+        return Multiton.__instances[this.name];
     }
     static set all(instances) {
-        Multiton._instances[this.name] = instances;
+        Multiton.__instances[this.name] = instances;
     }
 
     static get size() {
-        return Multiton._instances[this.name].length;
+        return Multiton.__instances[this.name].length;
     }
     static set size(val) {
         throw new TypeError(`Cannot assign to read only property 'size' of function '${this.name}'`);
@@ -67,7 +67,7 @@ class Multiton {
 
     static async remove(...ids) {
         const newInstances = [];
-        const instances = Multiton._instances[this.name];
+        const instances = Multiton.__instances[this.name];
         for (let i = 0; i < instances.length; i ++) {
             if (ids.includes(instances[i].id)) {
                 await Database.remove(this.table, instances[i].id);
@@ -75,7 +75,7 @@ class Multiton {
                 newInstances.push(instances[i]);
             }
         }
-        Multiton._instances[this.name] = newInstances;
+        Multiton.__instances[this.name] = newInstances;
     }
 
     static async update(ids, values) {
@@ -105,12 +105,13 @@ class Multiton {
 
     // Array functions applied to all current instances
 
-    static filter() { return Array.prototype.filter.apply(Multiton._instances[this.name], arguments); }
-    static find() { return Array.prototype.find.apply(Multiton._instances[this.name], arguments); }
-    static forEach() { return Array.prototype.forEach.apply(Multiton._instances[this.name], arguments); }
-    static map() { return Array.prototype.map.apply(Multiton._instances[this.name], arguments); }
-    static reduce() { return Array.prototype.reduce.apply(Multiton._instances[this.name], arguments); }
-    static sort() { return Array.prototype.sort.apply(Multiton._instances[this.name], arguments); }
+    static filter() { return Array.prototype.filter.apply(Multiton.__instances[this.name], arguments); }
+    static find() { return Array.prototype.find.apply(Multiton.__instances[this.name], arguments); }
+    static forEach() { return Array.prototype.forEach.apply(Multiton.__instances[this.name], arguments); }
+    static map() { return Array.prototype.map.apply(Multiton.__instances[this.name], arguments); }
+    static reduce() { return Array.prototype.reduce.apply(Multiton.__instances[this.name], arguments); }
+    static sort() { return Array.prototype.sort.apply(Multiton.__instances[this.name], arguments); }
 }
+Multiton.__instances = {};
 
-export default Multiton;
+module.exports = Multiton;

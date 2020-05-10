@@ -1,11 +1,13 @@
-import fs from 'fs';
-import path from 'path';
+'use strict';
 
-import initLocalEnv from './local.js';
-import { config, init } from './classes/Salty.js';
+const fs = require('fs');
+const path = require('path');
 
-import './classes/util/Log.js';
-import './classes/util/Util.js';
+const { config, init } = require('./classes/Salty.js');
+const initLocalEnv = require('./local.js');
+
+require('./classes/util/Log.js');
+require('./classes/util/Util.js');
 
 async function load() {
     // Set ENV according to the presence of a SERVER env variable
@@ -18,7 +20,9 @@ async function load() {
     LOG.info(`Running on ${process.env.MODE} environment`);
 
     process.env.DEBUG = config.debug;
-    LOG.debug(`Debug is active`);
+    if (process.env.DEBUG) {
+        LOG.debug(`Debug is active`);
+    }
 
     // Empty temp images folder
     fs.readdir(config.tempImageFolder, (error, files) => {

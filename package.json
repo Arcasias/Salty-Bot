@@ -4,7 +4,7 @@
     "description": "A crude and useful bot",
     "main": "main.js",
     "scripts": {
-        "start": "node --experimental-modules index.js",
+        "start": "node index.js",
         "test": "node test.js"
     },
     "type": "module",
@@ -19,17 +19,13 @@
     },
     "homepage": "https://github.com/Arcasias/Salty-Bot",
     "dependencies": {
-        "body-parser": "^1.19.0",
-        "discord.js": "^11.5.1",
-        "express": "^4.17.1",
-        "googleapis": "^44.0.0",
+        "discord.js": "^12.2.0",
+        "googleapis": "^50.0.0",
         "imgur": "^0.3.1",
-        "js-sha256": "^0.9.0",
-        "node-opus": "^0.3.3",
-        "npm": "^6.13.7",
-        "pg": "^7.18.1",
-        "pureimage": "^0.1.6",
-        "ytdl-core": "^1.0.7"
+        "npm": "^6.14.5",
+        "pg": "^8.1.0",
+        "pureimage": "^0.2.1",
+        "ytdl-core": "^2.1.2"
     },
     "devDependencies": {}
 }

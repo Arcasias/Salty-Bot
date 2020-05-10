@@ -1,9 +1,11 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import Guild from '../../classes/Guild.js';
-import google from 'googleapis';
-import * as error from '../../classes/Exception.js';
-import ytdl from 'ytdl-core';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+const Guild = require('../../classes/Guild.js');
+const google = require('googleapis');
+const error = require('../../classes/Exception.js');
+const ytdl = require('ytdl-core');
 
 const youtube = new google.youtube_v3.Youtube();
 const youtubeURL = 'https://www.youtube.com/watch?v=';
@@ -11,7 +13,34 @@ const youtubeRegex = new RegExp(youtubeURL, 'i');
 
 const SYMBOLS = ['1⃣', '2⃣', '3⃣' ,'4⃣' ,'5⃣'];
 
-export default new Command({
+async function addSong(msg, playlist, songURL) {
+    if (UTIL.generate(3)) {
+        songURL = UTIL.choice(Salty.getList('surpriseSong'));
+    }
+    const { length_seconds, title } = await UTIL.promisify(ytdl.getInfo.bind(ytdl, songURL));
+    Salty.success(msg, `**${msg.member.displayName}** added **${title}** to the queue`);
+    msg.delete();
+    playlist.add({
+        duration: length_seconds * 1000,
+        title: title,
+        url: songURL,
+    });
+    if (!playlist.connection) {
+        playlist.start(msg.member.voiceChannel);
+    }
+}
+
+function generateQuery(q) {
+    return {
+        key: process.env.GOOGLE_API,
+        maxResults: 5,
+        part: 'snippet',
+        q,
+        type: 'video',
+    };
+}
+
+module.exports = new Command({
     name: 'play',
     keys: [
         "sing",
@@ -39,11 +68,12 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    action: async function (msg, args) {
+    async action(msg, args) {
         if (! msg.member.voiceChannel) {
             throw new error.SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild.get(msg.guild.id);
+        const addSongBound = addSong.bind(this, msg, playlist);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
@@ -55,7 +85,7 @@ export default new Command({
             playlist.start(msg.member.voiceChannel);
         }
         if (arg.match(youtubeRegex)) {
-            return addSong(arg);
+            return addSongBound(arg);
         }
         const directPlay = ['first', 'direct', '1'].includes(args[0]);
         if (directPlay) {
@@ -66,11 +96,11 @@ export default new Command({
             youtube.search.list.bind(youtube.search, generateQuery(args.join(" ")))
         );
 
-        if (results.data.items.length == 0) {
+        if (results.data.items.length === 0) {
             throw new error.SaltyException("no results found");
         }
         if (directPlay) {
-            return addSong(youtubeURL + results.data.items[0].id.videoId);
+            return addSongBound(youtubeURL + results.data.items[0].id.videoId);
         }
         const searchResults = [];
         const options = {
@@ -85,35 +115,8 @@ export default new Command({
                 title: (i + 1) + ") " + video.snippet.title,
                 description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
             });
-            options.actions[SYMBOLS[i]] = addSong.bind(this, searchResults[i], { msg });
+            options.actions[SYMBOLS[i]] = addSong.bind(this, msg, playlist, searchResults[i]);
         });
         Salty.embed(msg, options);
-
-        async function addSong(songURL) {
-            if (UTIL.generate(3)) {
-                songURL = UTIL.choice(Salty.getList('surpriseSong'));
-            }
-            const { length_seconds, title } = await UTIL.promisify(ytdl.getInfo.bind(ytdl, songURL));
-            Salty.success(msg, `**${msg.member.displayName}** added **${title}** to the queue`);
-            msg.delete();
-            playlist.add({
-                duration: length_seconds * 1000,
-                title: title,
-                url: songURL,
-            });
-            if (!playlist.connection) {
-                playlist.start(msg.member.voiceChannel);
-            }
-        }
     },
 });
-
-function generateQuery(q) {
-    return {
-        key: process.env.GOOGLE_API,
-        maxResults: 5,
-        part: 'snippet',
-        q,
-        type: 'video',
-    };
-}

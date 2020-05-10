@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     "add": [
         "add",
         "append",

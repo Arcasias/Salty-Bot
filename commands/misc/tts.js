@@ -1,8 +1,9 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+
+module.exports = new Command({
     name: 'tts',
     keys: [
         "speak",
@@ -28,4 +29,3 @@ export default new Command({
         await msg.channel.send(args.join(" "), { tts: true });
     },
 });
-

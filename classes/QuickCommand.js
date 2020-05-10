@@ -1,12 +1,13 @@
-import Multiton from './Multiton.js';
+'use strict';
 
-class QuickCommand extends Multiton {
-	static table = 'commands';
-	static fields = {
-	    keys: "",
-	    effect: "",
-	    name: ""
-	};
-}
+const Multiton = require('./Multiton.js');
 
-export default QuickCommand;
+class QuickCommand extends Multiton { }
+QuickCommand.table = 'commands';
+QuickCommand.fields = {
+    keys: "",
+    effect: "",
+    name: ""
+};
+
+module.exports = QuickCommand;

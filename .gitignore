@@ -1,4 +1,4 @@
-#modules
+# Modules
 node_modules/
 
 # Env. variables
@@ -6,3 +6,6 @@ local.js
 
 # sql scripts
 *.sql
+
+# Config
+.jshintrc

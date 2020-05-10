@@ -1,6 +1,6 @@
-import Multiton from './Multiton.js';
-import * as Salty from './Salty.js';
-import * as error from './Exception.js';
+const Multiton = require('./Multiton.js');
+const Salty = require('./Salty.js');
+const error = require('./Exception.js');
 
 const permissions = {
     public: null,
@@ -24,16 +24,6 @@ const MEANING_ACTIONS = [
 ];
 
 class Command extends Multiton {
-    static fields = {
-        action: () => {},
-        deprecated: false,
-        help: [],
-        keys: [],
-        name: "",
-        visibility: 'public',
-        env: null,
-    };
-
     /**
      * Runs the command action
      * @param  {Object}  msg
@@ -70,6 +60,16 @@ class Command extends Multiton {
         }
     }
 }
+Command.fields = {
+    action: () => {},
+    deprecated: false,
+    help: [],
+    keys: [],
+    name: "",
+    visibility: 'public',
+    env: null,
+};
+
 
 /** Class representing an object-related command. */
 class ObjectCommand extends Command {
@@ -195,4 +195,4 @@ class ObjectCommand extends Command {
     }
 }
 
-export default Command;
+module.exports = Command;

@@ -1,10 +1,12 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
 
 const INTERVALS = {};
 
-export default new Command({
+module.exports = new Command({
     name: 'interval',
     keys: [],
     help: [
@@ -49,4 +51,3 @@ export default new Command({
         }
     },
 });
-

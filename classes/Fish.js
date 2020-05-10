@@ -1,17 +1,8 @@
-import Multiton from './Multiton.js';
+'use strict';
+
+const Multiton = require('./Multiton.js');
 
 class Fish extends Multiton {
-    static table = 'fishes';
-    static fields = {
-        name: "",
-        description: "",
-        quality: "",
-        min_weight: 0,
-        max_weight: 0,
-        value: 0,
-        image: "",
-    };
-
     constructor() {
         super(...arguments);
 
@@ -19,5 +10,15 @@ class Fish extends Multiton {
         this.value = this.weight * this.value;
     }
 }
+Fish.table = 'fishes';
+Fish.fields = {
+    name: "",
+    description: "",
+    quality: "",
+    min_weight: 0,
+    max_weight: 0,
+    value: 0,
+    image: "",
+};
 
-export default Fish;
+module.exports = Fish;

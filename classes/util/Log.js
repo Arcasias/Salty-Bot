@@ -1,3 +1,5 @@
+'use strict';
+
 const colors = {
     BLACK: "\x1b[30m",
     RED: "\x1b[31m",

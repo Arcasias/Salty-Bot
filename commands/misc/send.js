@@ -1,6 +1,8 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import { config } from '../../classes/Salty.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const { config } = require('../../classes/Salty.js');
+const Salty = require('../../classes/Salty.js');
 
 const specialActions = [
     {
@@ -17,7 +19,7 @@ const specialActions = [
     },
 ];
 
-export default new Command({
+module.exports = new Command({
     name: 'send',
     keys: [
         "say",
@@ -51,4 +53,3 @@ export default new Command({
         await Salty.message(msg, message);
     },
 });
-

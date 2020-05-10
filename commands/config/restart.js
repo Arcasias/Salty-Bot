@@ -1,7 +1,9 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'restart',
     keys: [
         "reset",
@@ -13,9 +15,8 @@ export default new Command({
         }
     ],
     visibility: 'dev',
-    async action(msg, args) {
+    async action(msg) {
     	await Salty.success(msg, "Restarting ...");
         await Salty.restart();
     },
 });
-

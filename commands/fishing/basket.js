@@ -1,9 +1,11 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
-import User from '../../classes/User.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
+const User = require('../../classes/User.js');
+
+module.exports = new Command({
     name: 'basket',
     keys: [
         "bucket",
@@ -21,7 +23,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         let mention = msg.mentions.users.first();
         let reqUserId = null;
         let title = "";
@@ -59,4 +61,3 @@ export default new Command({
         await Salty.embed(msg, options);
     },
 });
-

@@ -1,9 +1,11 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import Discord from 'discord.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const { MessageEmbed } = require('discord.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'embed',
     keys: [
         "embeds",
@@ -31,7 +33,6 @@ export default new Command({
         if (0 === Object.keys(parsed).length) {
             throw new error.MissingArg("JSON");
         }
-        await Salty.message(msg, null, { embed: new Discord.RichEmbed(parsed) });
+        await Salty.message(msg, null, { embed: new MessageEmbed(parsed) });
     },
 });
-

@@ -1,23 +1,15 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
 
 const STATUSINFO = {
-    dnd: {
-        title: "do not disturb",
-        color: 15746887,
-    },
-    idle: {
-        title: "idle",
-        color: 16426522,
-    },
-    online: {
-        title: "online",
-        color: 4437378,
-    },
+    dnd: { title: "do not disturb", color: 15746887 },
+    idle: { title: "idle", color: 16426522 },
+    online: { title: "online", color: 4437378 },
 };
 
-export default new Command({
+module.exports = new Command({
     name: 'presence',
     keys: [
         "game",

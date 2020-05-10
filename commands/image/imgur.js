@@ -1,12 +1,14 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import imgur from 'imgur';
-import * as error from '../../classes/Exception.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const imgur = require('imgur');
+const Salty = require('../../classes/Salty.js');
 
 imgur.setClientId();
 imgur.setAPIUrl('https://api.imgur.com/3/');
 
-export default new Command({
+module.exports = new Command({
     name: 'imgur',
     keys: [
         "img",
@@ -42,4 +44,3 @@ export default new Command({
         }
     },
 });
-

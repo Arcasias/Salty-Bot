@@ -1,9 +1,11 @@
-import Command from '../../classes/Command.js';
-import QuickCommand from '../../classes/QuickCommand.js';
-import * as error from '../../classes/Exception.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const QuickCommand = require('../../classes/QuickCommand.js');
+const error = require('../../classes/Exception.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'command',
     keys: [
         "cmd",
@@ -75,4 +77,3 @@ export default new Command({
         }
     },
 });
-

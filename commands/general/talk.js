@@ -1,10 +1,12 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import { getList } from '../../classes/Salty.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const { getList } = require('../../classes/Salty.js');
+const Salty = require('../../classes/Salty.js');
 
 const meanList = getList('meaning');
 
-export default new Command({
+module.exports = new Command({
     name: 'talk',
     keys: [],
     help: [
@@ -42,4 +44,3 @@ export default new Command({
         }
     },
 });
-

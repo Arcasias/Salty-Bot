@@ -1,11 +1,13 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import Guild from '../../classes/Guild.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const error = require('../../classes/Exception.js');
+const Guild = require('../../classes/Guild.js');
+const Salty = require('../../classes/Salty.js');
 
 const DISPLAY_LIMIT = 25;
 
-export default new Command({
+module.exports = new Command({
     name: 'queue',
     keys: [
         "playlist",
@@ -26,7 +28,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    action: function (msg, args) {
+    async action(msg, args) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (args[0] && Salty.getList('delete').includes(args[0])) {
@@ -55,7 +57,7 @@ export default new Command({
             }
 
             const removed = playlist.remove(...songs);
-            const message = requestIsArray ?
+            const message = Array.isArray(songs) ?
                 `Songs n°${songs.map(s => s + 1)} removed from the queue` :
                 `Song n°${songs[0] + 1} - **${removed[0].title}** removed from the queue`;
 
@@ -96,4 +98,3 @@ export default new Command({
         }
     },
 });
-

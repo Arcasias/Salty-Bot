@@ -1,7 +1,9 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'fault',
     keys: [
         "overwatch",
@@ -14,7 +16,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         const fault = Salty.getList('fault');
         const text = (UTIL.choice(fault.start) + UTIL.choice(fault.sentence))
             .replace(/<subject>/g, UTIL.choice(fault.subject))
@@ -24,4 +26,3 @@ export default new Command({
         await Salty.message(msg, text);
     },
 });
-

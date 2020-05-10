@@ -1,11 +1,13 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import path from 'path';
-import PImage from 'pureimage';
-import { config } from '../../classes/Salty.js';
+'use strict';
+
+const Command = require('../../classes/Command.js');
+const { config } = require('../../classes/Salty.js');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const path = require('path');
+const PImage = require('pureimage');
+const Salty = require('../../classes/Salty.js');
 
 const defaultWidth = 450;
 const maxTempImages = 5;
@@ -17,7 +19,7 @@ const baseBorder = 10;
 let imgIndex = 1;
 let imgPath = path.join(config.tempImageFolder, `meme_temp_${imgIndex}.png`);
 
-export default new Command({
+module.exports = new Command({
     name: 'meme',
     keys: [
         "memes",
@@ -31,7 +33,7 @@ export default new Command({
     visibility: 'public',
     mode: 'local',
     async action(msg, args) {
-        let canvas, canvasImg, canvasTxt, c, fontSize, border, lineSpace;
+        let canvas, c, fontSize, border, lineSpace;
         const imgURL = msg.attachments.first() ? msg.attachments.first().url : null;
         let imgText = args.length > 0 ? args.join(" ").split("\\").map(line => UTIL.title(line)) : null;
 
@@ -128,4 +130,3 @@ export default new Command({
         }
     },
 });
-

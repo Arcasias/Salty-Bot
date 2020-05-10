@@ -1,8 +1,10 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import User from '../../classes/User.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+const User = require('../../classes/User.js');
+
+module.exports = new Command({
     name: 'level',
     keys: [
         "exp",
@@ -18,7 +20,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    async action(msg, args) {
+    async action(msg) {
         const authorId = msg.author.id;
         const rank = Salty.config.rank[User.get(authorId).rank];
         const rankProps = Salty.config.quality[rank.quality];
@@ -32,4 +34,3 @@ export default new Command({
         await Salty.embed(msg, options);
     },
 });
-

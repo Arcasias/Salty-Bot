@@ -1,15 +1,9 @@
-import Multiton from './Multiton.js';
-import ytdl from 'ytdl-core';
+'use strict';
+
+const Multiton = require('./Multiton.js');
+const ytdl = require('ytdl-core');
 
 class Playlist extends Multiton {
-    static fields = {
-        connection: null,
-        continue: false,
-        queue: [],
-        pointer: -1,
-        repeat: 'off',
-    };
-
     /**
      * @returns {Song}
      */
@@ -130,6 +124,13 @@ class Playlist extends Multiton {
         }
     }
 }
+Playlist.fields = {
+    connection: null,
+    continue: false,
+    queue: [],
+    pointer: -1,
+    repeat: 'off',
+};
 
 class Song {
     constructor(duration=0, title="", url="") {
@@ -139,4 +140,4 @@ class Song {
     }
 }
 
-export default Playlist;
+module.exports = Playlist;

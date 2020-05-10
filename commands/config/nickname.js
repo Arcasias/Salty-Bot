@@ -1,9 +1,34 @@
-import Command from '../../classes/Command.js';
-import * as Salty from '../../classes/Salty.js';
-import PromiseManager from '../../classes/PromiseManager.js';
-import * as error from '../../classes/Exception.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Salty = require('../../classes/Salty.js');
+const PromiseManager = require('../../classes/PromiseManager.js');
+const error = require('../../classes/Exception.js');
+
+async function changeNames(msg, transformation) {
+    const members = msg.guild.members.array();
+    const progressMsg = await Salty.message(msg, `changing nicknames: 0/${members.length}`);
+    const pm = new PromiseManager();
+    for (let i = 0; i < members.length; i ++) {
+        const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
+        if (newNick !== members[i].nickname) {
+            try {
+                await members[i].setNickname(newNick);
+                pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
+            } catch (err) {
+                if (err.name !== 'DiscordAPIError' || err.message !== 'Missing Permissions') {
+                    throw err;
+                }
+            }
+        } else {
+            pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
+        }
+    }
+    pm.add(progressMsg.delete.bind(progressMsg));
+    Salty.success(msg, "nicknames successfully changed");
+}
+
+module.exports = new Command({
     name: 'nickname',
     keys: [
         "name",
@@ -48,26 +73,3 @@ export default new Command({
         }
     },
 });
-
-async function changeNames(msg, transformation) {
-    const members = msg.guild.members.array();
-    const progressMsg = await Salty.message(msg, `changing nicknames: 0/${members.length}`);
-    const pm = new PromiseManager();
-    for (let i = 0; i < members.length; i ++) {
-        const newNick = transformation(members[i].nickname ? members[i].nickname : members[i].user.username);
-        if (newNick !== members[i].nickname) {
-            try {
-                await members[i].setNickname(newNick);
-                pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
-            } catch (err) {
-                if (err.name !== 'DiscordAPIError' || err.message !== 'Missing Permissions') {
-                    throw err;
-                }
-            }
-        } else {
-            pm.add(progressMsg.edit.bind(progressMsg, `changing nicknames: ${i ++}/${members.length}`));
-        }
-    }
-    pm.add(progressMsg.delete.bind(progressMsg));
-    Salty.success(msg, "nicknames successfully changed");
-}

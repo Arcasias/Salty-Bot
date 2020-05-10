@@ -1,7 +1,10 @@
-import Command from '../../classes/Command.js';
-import Guild from '../../classes/Guild.js';
+'use strict';
 
-export default new Command({
+const Command = require('../../classes/Command.js');
+const Guild = require('../../classes/Guild.js');
+const Salty = require('../../classes/Salty.js');
+
+module.exports = new Command({
     name: 'pause',
     keys: [
         "freeze",
@@ -13,7 +16,7 @@ export default new Command({
         },
     ],
     visibility: 'public',
-    action: function (msg, args) {
+    action(msg) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.connection) {
@@ -28,4 +31,3 @@ export default new Command({
         }
     },
 });
-

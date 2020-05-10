@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     "owner": {
         "username": "Arcasias",
         "id": "205030241670922240"
