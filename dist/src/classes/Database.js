@@ -1,12 +1,14 @@
-import { Client } from "pg";
-import { debug, error } from "../utils";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const pg_1 = require("pg");
+const utils_1 = require("../utils");
 let client;
 function _sanitizeTable(table) {
     return table.toLowerCase().replace(/[^a-z_]/g, "");
 }
 async function connect() {
     if (!client) {
-        client = new Client({
+        client = new pg_1.Client({
             database: process.env.DATABASE_DATABASE,
             host: process.env.DATABASE_HOST,
             password: process.env.DATABASE_PASSWORD,
@@ -19,7 +21,7 @@ async function connect() {
         await client.connect();
     }
     catch (err) {
-        error(err);
+        utils_1.error(err);
     }
 }
 async function disconnect() {
@@ -27,14 +29,13 @@ async function disconnect() {
         await client.end();
     }
     catch (err) {
-        error(err);
+        utils_1.error(err);
     }
 }
 async function create(table, ...allValues) {
     const queryString = ["INSERT INTO", _sanitizeTable(table)];
     const variables = [];
     let varCount = 0;
-    // column names should come from Model and should be safe to use.
     queryString.push(`(${Object.keys(allValues[0]).join()}) VALUES`);
     const allFormattedValues = [];
     allValues.forEach((values) => {
@@ -45,8 +46,9 @@ async function create(table, ...allValues) {
     });
     queryString.push(allFormattedValues.join());
     queryString.push("RETURNING *;");
-    debug({ query: queryString.join(" ") }, variables);
+    utils_1.debug({ query: queryString.join(" ") }, variables);
     const result = await client.query(queryString.join(" "), variables);
+    utils_1.log(`${result.rows.length} record(s) of type "${table}" created.`);
     return result.rows;
 }
 async function remove(table, ids) {
@@ -58,8 +60,9 @@ async function remove(table, ids) {
     }
     queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
     variables.push(...ids);
-    debug({ query: queryString.join(" ") }, variables);
+    utils_1.debug({ query: queryString.join(" ") }, variables);
     const result = await client.query(queryString.join(" "), variables);
+    utils_1.log(`${result.rows.length} record(s) of type "${table}" removed.`);
     return result.rows;
 }
 async function read(table, ids, fields) {
@@ -84,7 +87,7 @@ async function read(table, ids, fields) {
         queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)});`);
         variables.push(...ids);
     }
-    debug({ query: queryString.join(" ") }, variables);
+    utils_1.debug({ query: queryString.join(" ") }, variables);
     const result = await client.query(queryString.join(" "), variables);
     return result.rows;
 }
@@ -103,11 +106,12 @@ async function update(table, ids, values) {
     queryString.push(valuesArray.join());
     queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
     variables.push(...ids);
-    debug({ query: queryString.join(" ") }, variables);
+    utils_1.debug({ query: queryString.join(" ") }, variables);
     const result = await client.query(queryString.join(" "), variables);
+    utils_1.log(`${result.rows.length} record(s) of type "${table}" updated.`);
     return result.rows;
 }
-export default {
+exports.default = {
     connect,
     create,
     disconnect,

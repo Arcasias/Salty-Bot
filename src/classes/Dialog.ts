@@ -12,6 +12,14 @@ class Dialog extends Model {
     public actions: Actions;
     public timeOut: number | null;
 
+    protected static readonly fields = [
+        "origin",
+        "author",
+        "response",
+        "actions",
+        "timeOut",
+    ];
+
     constructor(origin: Message, response: Message, actions: Actions = {}) {
         super(...arguments);
 

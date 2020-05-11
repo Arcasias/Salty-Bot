@@ -6,8 +6,9 @@ import {
     OutOfRange,
 } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 import { formatDuration } from "../../utils";
+import { clear, remove } from "../../data/list";
 
 const DISPLAY_LIMIT = 25;
 
@@ -34,7 +35,7 @@ export default new Command({
     async action(msg, args) {
         const { playlist } = Guild.get(msg.guild.id);
 
-        if (args[0] && Salty.getList("delete").includes(args[0])) {
+        if (args[0] && remove.includes(args[0])) {
             if (!playlist.queue[0]) {
                 throw new EmptyObject("queue");
             }
@@ -67,7 +68,7 @@ export default new Command({
                   }** removed from the queue`;
 
             Salty.success(msg, message);
-        } else if (args[0] && Salty.getList("clear").includes(args[0])) {
+        } else if (args[0] && clear.includes(args[0])) {
             playlist.empty();
 
             Salty.success(msg, "queue cleared");
@@ -77,10 +78,10 @@ export default new Command({
             }
             // Returns an embed message displaying all songs
             let totalDuration = 0;
-            const options = {
+            const options: EmbedOptions = {
                 title: "current queue",
                 fields: [],
-                footer: `repeat: ${playlist.repeat}`,
+                footer: { text: `repeat: ${playlist.repeat}` },
             };
             options.fields = playlist.queue
                 .slice(0, DISPLAY_LIMIT)
@@ -91,8 +92,8 @@ export default new Command({
                     )} - [Open in browser](${url})`;
                     totalDuration += duration;
                     return {
-                        title: playlist.pointer === i ? "> " + name : name,
-                        description,
+                        name: playlist.pointer === i ? "> " + name : name,
+                        value: description,
                     };
                 });
             options.description = `total duration: ${formatDuration(

@@ -5,19 +5,20 @@
         "declaration": false,
         "alwaysStrict": true,
         "pretty": false,
-        "module": "ES2020",
-        "target": "ES2019",
+        "module": "commonjs",
+        "target": "es2019",
         "lib": [
-            "ESNext",
-            "ESNext.Array",
-            "ESNext.AsyncIterable",
-            "ESNext.Intl",
-            "ESNext.Symbol"
+            "esnext",
+            "esnext.array",
+            "esnext.asynciterable",
+            "esnext.intl",
+            "esnext.symbol"
         ],
+        "removeComments": true,
         "sourceMap": false,
         "outDir": "dist",
         "esModuleInterop": true
     },
-    "include": ["index.ts", "test.ts", "src/**/*"],
+    "include": ["index.ts", "local.ts", "test.ts", "src/**/*"],
     "exclude": ["node_modules"]
 }

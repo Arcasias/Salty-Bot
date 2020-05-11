@@ -1,6 +1,11 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+exports.default = new Command_1.default({
     name: "admin",
     keys: ["admins", "administrator", "administrators"],
     help: [
@@ -16,28 +21,27 @@ export default new Command({
     visibility: "public",
     async action(msg) {
         const mention = msg.mentions.users.first();
-        const isRequestedUserAdmin = Salty.isAdmin(mention || msg.author, msg.guild);
-        // Fuck if/else structures, long live ternary operators
-        await Salty.message(msg, mention
-            ? // mention
-                mention.id === Salty.bot.user.id
-                    ? // mention is Salty
+        const isRequestedUserAdmin = Salty_1.default.isAdmin(mention || msg.author, msg.guild);
+        await Salty_1.default.message(msg, mention
+            ?
+                mention.id === Salty_1.default.bot.user.id
+                    ?
                         isRequestedUserAdmin
-                            ? // mention is Salty and is admin
+                            ?
                                 "of course I'm an admin ;)"
-                            : // mention is Salty and not admin
+                            :
                                 "nope, I'm not an admin on this server :c"
-                    : // mention is not Salty
+                    :
                         isRequestedUserAdmin
-                            ? // mention is not Salty and is admin
+                            ?
                                 "<mention> is a wise and powerful admin"
-                            : // mention is not Salty and is not admin
+                            :
                                 "<mention> is not an admin"
-            : // author
+            :
                 isRequestedUserAdmin
-                    ? // author is admin
+                    ?
                         "you have been granted the administrators permissions. May your deeds be blessed forever !"
-                    : // author is not admin
+                    :
                         "nope, you're not an admin");
     },
 });

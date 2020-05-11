@@ -3,15 +3,19 @@ import Playlist from "./Playlist";
 
 class Guild extends Model {
     public playlist: Playlist = new Playlist({});
-    public discord_id: string = "0";
-    public default_channel: number = null;
-    public default_role: number = null;
-    protected stored: boolean = true;
+    public discord_id: string = "";
+    public default_channel: string = "";
+    public default_role: string = "";
 
-    protected static table: string = "guilds";
+    protected static readonly fields = [
+        "discord_id",
+        "default_channel",
+        "default_role",
+    ];
+    protected static readonly table: string = "guilds";
 
     public static get(id: string): Guild {
-        return this.find((guild: Guild): boolean => guild.discord_id === id);
+        return this.find((guild: Guild) => guild.discord_id === id);
     }
 }
 

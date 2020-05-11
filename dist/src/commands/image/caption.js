@@ -1,17 +1,25 @@
-import fs from "fs";
-import http from "http";
-import https from "https";
-import path from "path";
-import PImage from "pureimage";
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { error, title } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const http_1 = __importDefault(require("http"));
+const https_1 = __importDefault(require("https"));
+const path_1 = __importDefault(require("path"));
+const pureimage_1 = __importDefault(require("pureimage"));
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
 const defaultDim = [450, 300];
 const maxTempImages = 5;
 const fontFamily = "impact";
 let imgIndex = 1;
-let imgPath = path.join(Salty.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
-export default new Command({
+let imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+function centerTxtVertical(y, metrics) {
+    return y;
+}
+exports.default = new Command_1.default({
     name: "caption",
     keys: ["cap"],
     help: [
@@ -27,37 +35,34 @@ export default new Command({
         let imgURL = msg.attachments.first()
             ? msg.attachments.first().url
             : null;
-        let imgText = args.length > 0 ? title(args.join(" ").split("\\")) : null;
+        let imgText = args.length > 0 ? utils_1.title(args.join(" ").split("\\")) : null;
         if (!Array.isArray(imgText)) {
             imgText = [imgText];
         }
-        // First step : find an image and create a canvas from it, or a blank canvas if no image is found.
         if (imgURL) {
             function urlDecode(res) {
-                PImage.decodePNGFromStream(res).then((img) => {
-                    canvas = PImage.make(img.width, img.height);
+                pureimage_1.default.decodePNGFromStream(res).then((img) => {
+                    canvas = pureimage_1.default.make(img.width, img.height);
                     c = canvas.getContext("2d");
                     c.drawImage(img, 0, 0);
                     textHandler();
                 });
             }
-            // Chooses from http or https
             imgURL.startsWith("https")
-                ? https.get(imgURL, urlDecode)
-                : http.get(imgURL, urlDecode);
+                ? https_1.default.get(imgURL, urlDecode)
+                : http_1.default.get(imgURL, urlDecode);
         }
         else {
-            canvas = PImage.make(defaultDim[0], defaultDim[1]);
+            canvas = pureimage_1.default.make(defaultDim[0], defaultDim[1]);
             c = canvas.getContext("2d");
             c.fillStyle = "#ffffff";
             c.fillRect(0, 0, defaultDim[0], defaultDim[1]);
             textHandler();
         }
-        // Second step : apply text on canvas if needed.
         function textHandler() {
             if (imgText[0]) {
                 let fontSize = 64;
-                let font = PImage.registerFont(`assets/fonts/${fontFamily}.ttf`, fontFamily);
+                let font = pureimage_1.default.registerFont(`assets/fonts/${fontFamily}.ttf`, fontFamily);
                 font.load(() => {
                     c.font = `${fontSize}pt ${fontFamily}`;
                     imgText.forEach((line) => {
@@ -71,8 +76,8 @@ export default new Command({
                     for (let i = 0; i < Math.min(imgText.length, 2); i++) {
                         const metrics = c.measureText(imgText[i]);
                         const txtHeight = imgText.length > 1
-                            ? Salty.centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
-                            : Salty.centerTxtVertical(canvas.height / 2, metrics);
+                            ? centerTxtVertical((i == 0 ? 0.1 : 0.9) * canvas.height, metrics)
+                            : centerTxtVertical(canvas.height / 2, metrics);
                         c.fillStyle = "#ffffff";
                         c.fillText(imgText[i].trim(), canvas.width / 2 - metrics.width / 2, txtHeight);
                         c.strokeStyle = "#000000";
@@ -85,18 +90,17 @@ export default new Command({
                 sendCanvas();
             }
         }
-        // Last step : send canvas.
-        function sendCanvas() {
-            PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath))
-                .then(() => {
-                Salty.message(msg, null, imgPath).then(() => {
-                    msg.delete();
-                    imgIndex =
-                        imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                    imgPath = path.join(Salty.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
-                });
-            })
-                .catch(error);
+        async function sendCanvas() {
+            try {
+                await pureimage_1.default.encodePNGToStream(canvas, fs_1.default.createWriteStream(imgPath));
+                await Salty_1.default.message(msg, "", { files: [imgPath] });
+                msg.delete();
+                imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
+                imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+            }
+            catch (err) {
+                utils_1.error(err);
+            }
         }
     },
 });

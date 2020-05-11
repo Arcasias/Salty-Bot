@@ -1,6 +1,11 @@
-import Command from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+exports.default = new Command_1.default({
     name: "tts",
     keys: ["speak"],
     help: [
@@ -15,9 +20,8 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg, args) {
-        // Just sends the arguments as a TTS message
         if (!args[0]) {
-            throw new MissingArg("message");
+            throw new Exception_1.MissingArg("message");
         }
         msg.delete();
         await msg.channel.send(args.join(" "), { tts: true });

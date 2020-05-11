@@ -1,6 +1,7 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
+import { add, remove } from "../../data/list";
 
 export default new Command({
     name: "channel",
@@ -23,13 +24,13 @@ export default new Command({
     async action(msg, args) {
         const guild = Guild.get(msg.guild.id);
 
-        if (args[0] && Salty.getList("add").includes(args[0])) {
+        if (args[0] && add.includes(args[0])) {
             await Guild.update(guild.id, { default_channel: msg.channel.id });
             await Salty.success(
                 msg,
                 `channel **${msg.channel.name}** has been successfuly set as default bot channel for **${msg.guild.name}**`
             );
-        } else if (args[0] && Salty.getList("delete").includes(args[0])) {
+        } else if (args[0] && remove.includes(args[0])) {
             if (!guild.default_channel) {
                 return Salty.message(msg, "no default bot channel set");
             }
@@ -42,15 +43,15 @@ export default new Command({
             if (!guild.default_channel) {
                 return Salty.message(msg, "no default bot channel set");
             }
-            const chanName = Salty.bot.channels.get(guild.default_channel).name;
-            if (parseInt(msg.channel.id) === parseInt(guild.default_channel)) {
+            const { name } = Salty.getTextChannel(guild.default_channel);
+            if (msg.channel.id === guild.default_channel) {
                 await Salty.embed(msg, {
                     title: "this is the current default channel",
                     description: "I'll speak right here when I need to",
                 });
             } else {
                 await Salty.embed(msg, {
-                    title: `default bot channel is **${chanName}**`,
+                    title: `default bot channel is **${name}**`,
                     description: "this is where I'll speak when I need to",
                 });
             }

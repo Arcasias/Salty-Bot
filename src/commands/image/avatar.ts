@@ -39,7 +39,7 @@ export default new Command({
         }
 
         // Creates embed message
-        const options = {
+        const options: any = {
             title: `this is ${possessive(name)} profile pic`,
         };
 

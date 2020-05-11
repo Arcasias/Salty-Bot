@@ -5,6 +5,7 @@ import {
     MissingArg,
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
+import { clear } from "../../data/list";
 
 const INTERVALS = {};
 
@@ -23,7 +24,7 @@ export default new Command({
     ],
     visibility: "dev",
     async action(msg, args) {
-        if (args[0] && Salty.getList("clear").includes(args[0])) {
+        if (args[0] && clear.includes(args[0])) {
             if (!INTERVALS[msg.guild.id]) {
                 throw new EmptyObject("interval");
             }

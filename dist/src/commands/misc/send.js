@@ -1,5 +1,10 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
 const specialActions = [
     {
         keywords: ["nude", "nudes"],
@@ -14,9 +19,9 @@ const specialActions = [
         response: "NOOT NOOT",
     },
 ];
-export default new Command({
+exports.default = new Command_1.default({
     name: "send",
-    keys: ["say", Salty.config.prefix],
+    keys: ["say", Salty_1.default.config.prefix],
     help: [
         {
             argument: null,
@@ -30,7 +35,7 @@ export default new Command({
     visibility: "public",
     async action(msg, args) {
         if (!args[0]) {
-            return Salty.commands.list.get("talk").run(msg, args);
+            return Salty_1.default.commands.list.get("talk").run(msg, args);
         }
         let message;
         for (let sa of specialActions) {
@@ -42,6 +47,6 @@ export default new Command({
             msg.delete();
             message = args.join(" ");
         }
-        await Salty.message(msg, message);
+        await Salty_1.default.message(msg, message);
     },
 });

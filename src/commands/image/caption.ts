@@ -17,6 +17,13 @@ let imgPath = path.join(
     `caption_temp_${imgIndex}.png`
 );
 
+function centerTxtVertical(
+    y: number,
+    metrics: { x: number; y: number }
+): number {
+    return y;
+}
+
 export default new Command({
     name: "caption",
     keys: ["cap"],
@@ -91,14 +98,11 @@ export default new Command({
                         const metrics = c.measureText(imgText[i]);
                         const txtHeight =
                             imgText.length > 1
-                                ? Salty.centerTxtVertical(
+                                ? centerTxtVertical(
                                       (i == 0 ? 0.1 : 0.9) * canvas.height,
                                       metrics
                                   )
-                                : Salty.centerTxtVertical(
-                                      canvas.height / 2,
-                                      metrics
-                                  );
+                                : centerTxtVertical(canvas.height / 2, metrics);
 
                         c.fillStyle = "#ffffff";
                         c.fillText(
@@ -122,21 +126,23 @@ export default new Command({
         }
 
         // Last step : send canvas.
-        function sendCanvas() {
-            PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath))
-                .then(() => {
-                    Salty.message(msg, null, imgPath).then(() => {
-                        msg.delete();
+        async function sendCanvas() {
+            try {
+                await PImage.encodePNGToStream(
+                    canvas,
+                    fs.createWriteStream(imgPath)
+                );
+                await Salty.message(msg, "", { files: [imgPath] });
+                msg.delete();
 
-                        imgIndex =
-                            imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                        imgPath = path.join(
-                            Salty.config.tempImageFolder,
-                            `caption_temp_${imgIndex}.png`
-                        );
-                    });
-                })
-                .catch(error);
+                imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
+                imgPath = path.join(
+                    Salty.config.tempImageFolder,
+                    `caption_temp_${imgIndex}.png`
+                );
+            } catch (err) {
+                error(err);
+            }
         }
     },
 });

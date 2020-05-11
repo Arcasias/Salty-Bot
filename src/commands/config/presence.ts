@@ -1,5 +1,6 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
+import { remove } from "../../data/list";
 
 interface StatusInfo {
     title: string;
@@ -19,11 +20,8 @@ export default new Command({
     keys: ["game", "status"],
     visibility: "dev",
     async action(msg, args) {
-        if (args[0] && Salty.getList("delete").includes(args[0])) {
-            await Salty.bot.user.setPresence({
-                game: null,
-                status: Salty.bot.user.presence.status,
-            });
+        if (args[0] && remove.includes(args[0])) {
+            await Salty.bot.user.setPresence({ activity: null });
             Salty.success(msg, "current presence removed");
         } else if (args[0]) {
             const status = args[0];
@@ -38,16 +36,13 @@ export default new Command({
             } else {
                 // game
                 await Salty.bot.user.setPresence({
-                    game: { name: status },
-                    status: Salty.bot.user.presence.status,
+                    activity: { name: status },
                 });
                 Salty.success(msg, `changed my presence to **${status}**`);
             }
         } else {
             const { color, title } = STATUSINFO[Salty.bot.user.presence.status];
-            const description =
-                Salty.bot.user.presence.game &&
-                Salty.bot.user.presence.game.name;
+            const description = Salty.bot.user.presence.status;
             Salty.embed(msg, { color, title, description });
         }
     },

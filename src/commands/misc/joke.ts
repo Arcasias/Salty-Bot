@@ -1,6 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
+import { jokes } from "../../data/list";
 
 export default new Command({
     name: "joke",
@@ -13,6 +14,6 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg) {
-        await Salty.message(msg, choice(Salty.getList("jokes")));
+        await Salty.message(msg, choice(jokes));
     },
 });

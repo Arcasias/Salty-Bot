@@ -1,7 +1,13 @@
-import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const list_1 = require("../../data/list");
+exports.default = new Command_1.default({
     name: "channel",
     keys: ["chan"],
     help: [
@@ -20,32 +26,32 @@ export default new Command({
     ],
     visibility: "admin",
     async action(msg, args) {
-        const guild = Guild.get(msg.guild.id);
-        if (args[0] && Salty.getList("add").includes(args[0])) {
-            await Guild.update(guild.id, { default_channel: msg.channel.id });
-            await Salty.success(msg, `channel **${msg.channel.name}** has been successfuly set as default bot channel for **${msg.guild.name}**`);
+        const guild = Guild_1.default.get(msg.guild.id);
+        if (args[0] && list_1.add.includes(args[0])) {
+            await Guild_1.default.update(guild.id, { default_channel: msg.channel.id });
+            await Salty_1.default.success(msg, `channel **${msg.channel.name}** has been successfuly set as default bot channel for **${msg.guild.name}**`);
         }
-        else if (args[0] && Salty.getList("delete").includes(args[0])) {
+        else if (args[0] && list_1.remove.includes(args[0])) {
             if (!guild.default_channel) {
-                return Salty.message(msg, "no default bot channel set");
+                return Salty_1.default.message(msg, "no default bot channel set");
             }
-            await Guild.update(guild.id, { default_channel: null });
-            await Salty.success(msg, "default bot channel has been successfuly removed");
+            await Guild_1.default.update(guild.id, { default_channel: null });
+            await Salty_1.default.success(msg, "default bot channel has been successfuly removed");
         }
         else {
             if (!guild.default_channel) {
-                return Salty.message(msg, "no default bot channel set");
+                return Salty_1.default.message(msg, "no default bot channel set");
             }
-            const chanName = Salty.bot.channels.get(guild.default_channel).name;
-            if (parseInt(msg.channel.id) === parseInt(guild.default_channel)) {
-                await Salty.embed(msg, {
+            const { name } = Salty_1.default.getTextChannel(guild.default_channel);
+            if (msg.channel.id === guild.default_channel) {
+                await Salty_1.default.embed(msg, {
                     title: "this is the current default channel",
                     description: "I'll speak right here when I need to",
                 });
             }
             else {
-                await Salty.embed(msg, {
-                    title: `default bot channel is **${chanName}**`,
+                await Salty_1.default.embed(msg, {
+                    title: `default bot channel is **${name}**`,
                     description: "this is where I'll speak when I need to",
                 });
             }

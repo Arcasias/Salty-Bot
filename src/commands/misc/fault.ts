@@ -1,6 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
+import { fault } from "../../data/list";
 
 export default new Command({
     name: "fault",
@@ -13,7 +14,6 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg) {
-        const fault = Salty.getList("fault");
         const text = (choice(fault.start) + choice(fault.sentence))
             .replace(/<subject>/g, choice(fault.subject))
             .replace(/<reason>/g, choice(fault.reason))

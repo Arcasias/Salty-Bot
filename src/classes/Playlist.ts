@@ -15,6 +15,14 @@ class Playlist extends Model {
     public pointer: number = -1;
     public repeat: string = "off";
 
+    protected static readonly fields = [
+        "connection",
+        "continue",
+        "queue",
+        "pointer",
+        "repeat",
+    ];
+
     public get playing(): Song {
         return this.queue[this.pointer];
     }
@@ -68,15 +76,13 @@ class Playlist extends Model {
     }
 
     public play(): void {
-        this.connection.playStream(
-            ytdl(this.playing.url, { filter: "audioonly" })
-        );
+        this.connection.play(ytdl(this.playing.url, { filter: "audioonly" }));
         this.connection.dispatcher.on("end", () => this.onEnd());
     }
 
     public remove(...indices: number[]): void {
         const removed: Song[] = [];
-        for (let i: number = indices.length; i >= 0; i--) {
+        for (let i = indices.length; i >= 0; i--) {
             const [removedSong] = this.queue.splice(indices[i], 1);
             removed.push(removedSong);
             if (this.pointer >= indices[i]) {

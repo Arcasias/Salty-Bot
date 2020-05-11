@@ -1,8 +1,13 @@
-import { MessageEmbed } from "discord";
-import Command from "../../classes/Command";
-import { IncorrectValue, MissingArg } from "../../classes/Exception";
-import Salty from "../../classes/Salty";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+exports.default = new Command_1.default({
     name: "embed",
     keys: ["embeds", "json", "parse"],
     help: [
@@ -22,11 +27,11 @@ export default new Command({
             parsed = JSON.parse(args.join(" "));
         }
         catch (error) {
-            throw new IncorrectValue("JSON", "json formatted string");
+            throw new Exception_1.IncorrectValue("JSON", "json formatted string");
         }
         if (0 === Object.keys(parsed).length) {
-            throw new MissingArg("JSON");
+            throw new Exception_1.MissingArg("JSON");
         }
-        await Salty.message(msg, null, { embed: new MessageEmbed(parsed) });
+        await Salty_1.default.message(msg, null, { embed: new discord_js_1.MessageEmbed(parsed) });
     },
 });

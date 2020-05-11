@@ -1,8 +1,13 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { choice, clean } from "../../utils";
-const meanList = Salty.getList("meaning");
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
+exports.default = new Command_1.default({
     name: "talk",
     keys: [],
     help: [
@@ -17,27 +22,28 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg, args) {
-        let cleanedMsg = " " + args.map((arg) => clean(arg)).join(" ") + " ";
+        let cleanedMsg = " " + args.map((arg) => utils_1.clean(arg)).join(" ") + " ";
         let meanFound = [];
         let answers = [];
-        for (let mean in meanList) {
-            for (let i = 0; i < meanList[mean].list.length; i++) {
+        for (let mean in list_1.meaning) {
+            for (let i = 0; i < list_1.meaning[mean].list.length; i++) {
                 if (!meanFound.includes(mean) &&
-                    cleanedMsg.match(new RegExp(" " + meanList[mean].list[i] + " ", "g"))) {
+                    cleanedMsg.match(new RegExp(" " + list_1.meaning[mean].list[i] + " ", "g"))) {
                     meanFound.push(mean);
                 }
             }
         }
         if (0 < meanFound.length) {
             for (let i = 0; i < meanFound.length; i++) {
-                for (let j = 0; j < meanList[meanFound[i]].answers.length; j++) {
-                    answers.push(choice(Salty.getList("answers")[meanList[meanFound[i]].answers[j]]));
+                for (let j = 0; j < list_1.meaning[meanFound[i]].listAnswers.length; j++) {
+                    answers.push(utils_1.choice(answers[list_1.meaning[meanFound[i]].answers[j]]));
                 }
             }
-            await Salty.message(msg, answers.join(", "));
+            await Salty_1.default.message(msg, answers.join(", "));
         }
         else {
-            await Salty.message(msg, choice(Salty.getList("answers")["rand"]));
+            const random = answers["rand"];
+            await Salty_1.default.message(msg, utils_1.choice(random));
         }
     },
 });

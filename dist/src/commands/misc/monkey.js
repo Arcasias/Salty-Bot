@@ -1,8 +1,13 @@
-import Command from "../../classes/Command";
-import { IncorrectValue, MissingArg } from "../../classes/Exception";
-import Salty from "../../classes/Salty";
-import { isSorted, shuffle } from "../../utils";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+exports.default = new Command_1.default({
     name: "monkey",
     keys: [
         "bogosort",
@@ -25,12 +30,12 @@ export default new Command({
     visibility: "public",
     async action(msg, args) {
         if (!args[0]) {
-            throw new MissingArg("length");
+            throw new Exception_1.MissingArg("length");
         }
         if (args[0] < 1) {
-            throw new IncorrectValue("length", "number between 1 and 10");
+            throw new Exception_1.IncorrectValue("length", "number between 1 and 10");
         }
-        const runningMsg = await Salty.message(msg, "monkey sorting ...");
+        const runningMsg = await Salty_1.default.message(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(args[0], 10);
         let list = [];
@@ -38,16 +43,16 @@ export default new Command({
             for (let i = 0; i < length; i++) {
                 list.push(i);
             }
-            list = shuffle(list);
+            list = utils_1.shuffle(list);
             tests = 0;
             const startTimeStamp = Date.now();
-            while (!isSorted(list)) {
-                list = shuffle(list);
+            while (!utils_1.isSorted(list)) {
+                list = utils_1.shuffle(list);
                 tests++;
             }
             resolve(Math.floor((Date.now() - startTimeStamp) / 100) / 10);
         });
         runningMsg.delete();
-        await Salty.success(msg, `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`, { react: "🐒" });
+        await Salty_1.default.success(msg, `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`, { react: "🐒" });
     },
 });

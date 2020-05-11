@@ -1,12 +1,13 @@
-import google from "googleapis";
+import { youtube_v3 } from "googleapis";
 import ytdl from "ytdl-core";
 import Command from "../../classes/Command";
 import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { choice, generate, promisify } from "../../utils";
+import { surpriseSong } from "../../data/list";
 
-const youtube = new google.youtube_v3.Youtube();
+const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
 const youtubeRegex = new RegExp(youtubeURL, "i");
 
@@ -14,7 +15,7 @@ const SYMBOLS = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"];
 
 async function addSong(msg, playlist, songURL) {
     if (generate(3)) {
-        songURL = choice(Salty.getList("surpriseSong"));
+        songURL = choice(surpriseSong);
     }
     const { length_seconds, title } = await promisify(
         ytdl.getInfo.bind(ytdl, songURL)

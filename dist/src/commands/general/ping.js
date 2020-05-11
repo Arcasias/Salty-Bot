@@ -1,6 +1,11 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { generate, title } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
 const MESSAGES = [
     "nearly perfect !",
     "that's pretty good",
@@ -13,7 +18,7 @@ const MESSAGES = [
     "dear god are you on a safari in the middle of the ocean ?",
     "get off of this world you fucking chinese",
 ];
-export default new Command({
+exports.default = new Command_1.default({
     name: "ping",
     keys: ["latency", "test"],
     help: [
@@ -24,17 +29,15 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg) {
-        // If too much salt, skips the latency test
-        if (generate(3)) {
-            await Salty.error(msg, "pong, and I don't give a fuck about your latency");
+        if (utils_1.generate(3)) {
+            await Salty_1.default.error(msg, "pong, and I don't give a fuck about your latency");
         }
         else {
-            // Sends another message and displays the difference between the first and the second
             const sentMsg = await msg.channel.send("Pinging...");
             const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
             const message = MESSAGES[Math.floor(latency / 100)] || "lol wat";
             await sentMsg.delete();
-            await Salty.success(msg, `pong ! Latency is ${latency}. ${title(message)}`);
+            await Salty_1.default.success(msg, `pong ! Latency is ${latency}. ${utils_1.title(message)}`);
         }
     },
 });

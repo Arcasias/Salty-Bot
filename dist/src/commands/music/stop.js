@@ -1,8 +1,14 @@
-import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
+exports.default = new Command_1.default({
     name: "stop",
     keys: [],
     help: [
@@ -13,15 +19,15 @@ export default new Command({
     ],
     visibility: "admin",
     action(msg) {
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild_1.default.get(msg.guild.id);
         if (playlist.connection) {
             playlist.stop();
-            Salty.success(msg, choice(Salty.getList("answers")["bye"]), {
+            Salty_1.default.success(msg, utils_1.choice(list_1.answers.bye), {
                 react: "⏹",
             });
         }
         else {
-            Salty.error(msg, "I'm not in a voice channel");
+            Salty_1.default.error(msg, "I'm not in a voice channel");
         }
     },
 });

@@ -1,6 +1,11 @@
-import Model from "./Model";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Model_1 = __importDefault(require("./Model"));
 const DIALOG_TIMEOUT = 300000;
-class Dialog extends Model {
+class Dialog extends Model_1.default {
     constructor(origin, response, actions = {}) {
         super(...arguments);
         this.origin = origin;
@@ -20,4 +25,11 @@ class Dialog extends Model {
         }
     }
 }
-export default Dialog;
+Dialog.fields = [
+    "origin",
+    "author",
+    "response",
+    "actions",
+    "timeOut",
+];
+exports.default = Dialog;

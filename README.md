@@ -12,7 +12,7 @@ Created by Arcasias
 What can Salty do :
 - Insult people
 - Play music
-- Make you become a pro fisherman
+- Make you become a pro fisherman [removed]
 - A shitload of useless commands
 
 Just remember it's a work in progress, there may be a few issues with some commands. Fortunately they'll be fixed ASAP ;)

@@ -6,6 +6,7 @@ import {
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
+import { list, remove } from "../../data/list";
 
 export default new Command({
     name: "todo",
@@ -24,7 +25,7 @@ export default new Command({
     async action(msg, args) {
         let user = User.get(msg.author.id);
 
-        if (args[0] && Salty.getList("delete").includes(args[0])) {
+        if (args[0] && remove.includes(args[0])) {
             let todoList = user.todo;
 
             if (0 === todoList.length) {
@@ -39,14 +40,11 @@ export default new Command({
                 msg,
                 `item number **${args[1]}** removed from your todo list`
             );
-        } else if (args[0] && Salty.getList("delete").includes(args[0])) {
+        } else if (args[0] && remove.includes(args[0])) {
             user.todo = [];
             Salty.message(msg, "your todo list has been cleared");
         } else {
-            if (
-                (args[0] && Salty.getList("list").includes(args[0])) ||
-                !args[0]
-            ) {
+            if ((args[0] && list.includes(args[0])) || !args[0]) {
                 if (0 === user.todo.length) {
                     throw new EmptyObject("your todo list");
                 }

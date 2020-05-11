@@ -2,7 +2,7 @@
 node_modules/
 
 # Env. variables
-local.js
+local*
 
 # sql scripts
 *.sql

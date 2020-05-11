@@ -1,7 +1,13 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
+exports.default = new Command_1.default({
     name: "fault",
     keys: ["overwatch", "reason"],
     help: [
@@ -12,11 +18,10 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg) {
-        const fault = Salty.getList("fault");
-        const text = (choice(fault.start) + choice(fault.sentence))
-            .replace(/<subject>/g, choice(fault.subject))
-            .replace(/<reason>/g, choice(fault.reason))
-            .replace(/<punishment>/g, choice(fault.punishment));
-        await Salty.message(msg, text);
+        const text = (utils_1.choice(list_1.fault.start) + utils_1.choice(list_1.fault.sentence))
+            .replace(/<subject>/g, utils_1.choice(list_1.fault.subject))
+            .replace(/<reason>/g, utils_1.choice(list_1.fault.reason))
+            .replace(/<punishment>/g, utils_1.choice(list_1.fault.punishment));
+        await Salty_1.default.message(msg, text);
     },
 });

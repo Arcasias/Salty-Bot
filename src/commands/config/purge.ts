@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { TextChannel } from "discord.js";
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error } from "../../utils";
@@ -6,8 +6,8 @@ import { IncorrectValue, SaltyException } from "../../classes/Exception";
 
 let purging: boolean = false;
 
-async function purgeEndless(channel) {
-    const messages: Message[] = await channel.messages.fetch({ limit: 1 });
+async function purgeEndless(channel: TextChannel): Promise<void> {
+    const messages = await channel.messages.fetch({ limit: 1 });
     if (!purging) {
         return;
     }

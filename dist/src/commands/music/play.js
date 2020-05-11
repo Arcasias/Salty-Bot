@@ -1,20 +1,26 @@
-import google from "googleapis";
-import ytdl from "ytdl-core";
-import Command from "../../classes/Command";
-import { EmptyObject, SaltyException } from "../../classes/Exception";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-import { choice, generate, promisify } from "../../utils";
-const youtube = new google.youtube_v3.Youtube();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const googleapis_1 = require("googleapis");
+const ytdl_core_1 = __importDefault(require("ytdl-core"));
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
+const youtube = new googleapis_1.youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
 const youtubeRegex = new RegExp(youtubeURL, "i");
 const SYMBOLS = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"];
 async function addSong(msg, playlist, songURL) {
-    if (generate(3)) {
-        songURL = choice(Salty.getList("surpriseSong"));
+    if (utils_1.generate(3)) {
+        songURL = utils_1.choice(list_1.surpriseSong);
     }
-    const { length_seconds, title } = await promisify(ytdl.getInfo.bind(ytdl, songURL));
-    Salty.success(msg, `**${msg.member.displayName}** added **${title}** to the queue`);
+    const { length_seconds, title } = await utils_1.promisify(ytdl_core_1.default.getInfo.bind(ytdl_core_1.default, songURL));
+    Salty_1.default.success(msg, `**${msg.member.displayName}** added **${title}** to the queue`);
     msg.delete();
     playlist.add({
         duration: length_seconds * 1000,
@@ -34,7 +40,7 @@ function generateQuery(q) {
         type: "video",
     };
 }
-export default new Command({
+exports.default = new Command_1.default({
     name: "play",
     keys: ["sing", "song", "video", "youtube", "yt"],
     help: [
@@ -58,17 +64,17 @@ export default new Command({
     visibility: "public",
     async action(msg, args) {
         if (!msg.member.voiceChannel) {
-            throw new SaltyException("you're not in a voice channel");
+            throw new Exception_1.SaltyException("you're not in a voice channel");
         }
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild_1.default.get(msg.guild.id);
         const addSongBound = addSong.bind(this, msg, playlist);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+                throw new Exception_1.EmptyObject("queue");
             }
             if (playlist.connection) {
-                throw new SaltyException("I'm already playing");
+                throw new Exception_1.SaltyException("I'm already playing");
             }
             playlist.start(msg.member.voiceChannel);
         }
@@ -79,9 +85,9 @@ export default new Command({
         if (directPlay) {
             args.shift();
         }
-        const results = await promisify(youtube.search.list.bind(youtube.search, generateQuery(args.join(" "))));
+        const results = await utils_1.promisify(youtube.search.list.bind(youtube.search, generateQuery(args.join(" "))));
         if (results.data.items.length === 0) {
-            throw new SaltyException("no results found");
+            throw new Exception_1.SaltyException("no results found");
         }
         if (directPlay) {
             return addSongBound(youtubeURL + results.data.items[0].id.videoId);
@@ -101,6 +107,6 @@ export default new Command({
             });
             options.actions[SYMBOLS[i]] = addSong.bind(this, msg, playlist, searchResults[i]);
         });
-        Salty.embed(msg, options);
+        Salty_1.default.embed(msg, options);
     },
 });

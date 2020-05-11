@@ -1,12 +1,16 @@
-import Command from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-import User from "../../classes/User";
-import { log } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const User_1 = __importDefault(require("../../classes/User"));
+const utils_1 = require("../../utils");
 const MAXDEPTH = 3;
-// Avoid linter to consider these useless
-((a, b) => null)(Guild, User);
+((a, b) => null)(Guild_1.default, User_1.default);
 function getFormat(variable, depth) {
     if (depth > MAXDEPTH) {
         return;
@@ -39,7 +43,7 @@ function getFormat(variable, depth) {
     }
     return res;
 }
-export default new Command({
+exports.default = new Command_1.default({
     name: "debug",
     keys: [],
     help: [
@@ -51,11 +55,11 @@ export default new Command({
     visibility: "dev",
     async action(msg, args) {
         if (!args[0]) {
-            throw new MissingArg("instructions");
+            throw new Exception_1.MissingArg("instructions");
         }
         const res = eval(args.join(" "));
         const message = `${args.join(" ")} = /*${typeof res}*/ ${getFormat(res, 0)}`;
-        Salty.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
-        log(message);
+        Salty_1.default.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
+        utils_1.log(message);
     },
 });

@@ -31,8 +31,7 @@ export default new Command({
                     throw new MissingArg("command");
                 }
                 const command: QuickCommand = QuickCommand.find(
-                    (cmd: QuickCommand): boolean =>
-                        cmd.keys.includes(commandName)
+                    (cmd: QuickCommand) => cmd.keys.includes(commandName)
                 );
                 if (!command) {
                     throw new SaltyException(
@@ -53,7 +52,7 @@ export default new Command({
                 await Salty.embed(msg, {
                     title: "List of commands",
                     description: QuickCommand.map(
-                        (cmd, i) => `${i + 1}) ${cmd.name}`
+                        (cmd: QuickCommand, i) => `${i + 1}) ${cmd.name}`
                     ).join("\n"),
                 });
                 break;

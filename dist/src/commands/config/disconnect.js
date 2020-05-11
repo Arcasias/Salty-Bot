@@ -1,7 +1,13 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
+exports.default = new Command_1.default({
     name: "disconnect",
     keys: [],
     help: [
@@ -11,8 +17,8 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action() {
-        await Salty.success(`${choice(Salty.getList("answers")["bye"])} ♥`);
-        await Salty.destroy();
+    async action(msg) {
+        await Salty_1.default.success(msg, `${utils_1.choice(list_1.answers.bye)} ♥`);
+        await Salty_1.default.destroy();
     },
 });

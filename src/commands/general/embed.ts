@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord";
+import { MessageEmbed } from "discord.js";
 import Command from "../../classes/Command";
 import { IncorrectValue, MissingArg } from "../../classes/Exception";
 import Salty from "../../classes/Salty";

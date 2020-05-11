@@ -1,14 +1,15 @@
 import Model from "./Model";
 
 class User extends Model {
-    public discord_id: string = "0";
-    public black_listed: boolean = false;
-    protected stored: boolean = true;
+    public discord_id: string;
+    public black_listed: boolean;
+    public todo: string[];
 
-    protected static table = "users";
+    protected static readonly fields = ["discord_id", "black_listed", "todo"];
+    protected static readonly table = "users";
 
     public static get(id: string): User {
-        return this.find((user: User): boolean => user.discord_id === id);
+        return this.find((user: User) => user.discord_id === id);
     }
 }
 

@@ -1,5 +1,7 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
-import { debug, error } from "../utils";
+import { debug, error, log } from "../utils";
+
+export type FieldsValues = { [field: string]: any };
 
 let client: Client;
 
@@ -35,7 +37,7 @@ async function disconnect(): Promise<void> {
 
 async function create(
     table: string,
-    ...allValues: any[]
+    ...allValues: FieldsValues[]
 ): Promise<QueryResultRow[]> {
     const queryString: string[] = ["INSERT INTO", _sanitizeTable(table)];
     const variables: string[] = [];
@@ -45,7 +47,7 @@ async function create(
     queryString.push(`(${Object.keys(allValues[0]).join()}) VALUES`);
 
     const allFormattedValues: string[] = [];
-    allValues.forEach((values: object) => {
+    allValues.forEach((values: FieldsValues) => {
         allFormattedValues.push(
             `(${Object.values(values)
                 .map(() => `$${++varCount}`)
@@ -62,15 +64,16 @@ async function create(
         queryString.join(" "),
         variables
     );
+    log(`${result.rows.length} record(s) of type "${table}" created.`);
     return result.rows;
 }
 
 async function remove(
     table: string,
-    ids: string | string[]
+    ids: number | number[]
 ): Promise<QueryResultRow[]> {
     const queryString: string[] = ["DELETE FROM", _sanitizeTable(table)];
-    const variables: string[] = [];
+    const variables: number[] = [];
     let varCount = 0;
 
     if (!Array.isArray(ids)) {
@@ -88,6 +91,7 @@ async function remove(
         queryString.join(" "),
         variables
     );
+    log(`${result.rows.length} record(s) of type "${table}" removed.`);
     return result.rows;
 }
 
@@ -131,8 +135,8 @@ async function read(
 
 async function update(
     table: string,
-    ids: string | string[],
-    values: any
+    ids: number | number[],
+    values: FieldsValues
 ): Promise<QueryResultRow[]> {
     const queryString = ["UPDATE", _sanitizeTable(table), "SET"];
     const variables = [];
@@ -160,6 +164,7 @@ async function update(
         queryString.join(" "),
         variables
     );
+    log(`${result.rows.length} record(s) of type "${table}" updated.`);
     return result.rows;
 }
 

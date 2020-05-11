@@ -3,6 +3,7 @@ import Command from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import PromiseManager from "../../classes/PromiseManager";
 import Salty from "../../classes/Salty";
+import { add as addList, remove as removeList } from "../../data/list";
 
 async function changeNames(msg, transformation) {
     const members: GuildMember[] = msg.guild.members.array();
@@ -11,7 +12,7 @@ async function changeNames(msg, transformation) {
         `changing nicknames: 0/${members.length}`
     );
     const pm: PromiseManager = new PromiseManager();
-    for (let i: number = 0; i < members.length; i++) {
+    for (let i = 0; i < members.length; i++) {
         const newNick = transformation(
             members[i].nickname ? members[i].nickname : members[i].user.username
         );
@@ -67,9 +68,6 @@ export default new Command({
     async action(msg, args) {
         const particle: string = args.slice(1).join(" ");
         const particleRegex: RegExp = new RegExp(particle, "g");
-
-        const addList: string[] = Salty.getList("add");
-        const removeList: string[] = Salty.getList("delete");
 
         if (!args[0]) {
             throw new MissingArg("add or delete + particle");

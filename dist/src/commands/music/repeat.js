@@ -1,7 +1,12 @@
-import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+exports.default = new Command_1.default({
     name: "repeat",
     keys: ["loop", "rep", "replay"],
     help: [
@@ -24,22 +29,22 @@ export default new Command({
     ],
     visibility: "public",
     action(msg, args) {
-        let { playlist } = Guild.get(msg.guild.id);
+        let { playlist } = Guild_1.default.get(msg.guild.id);
         const single = () => {
             playlist.repeat = "single";
-            Salty.success(msg, "I will now repeat the current song", {
+            Salty_1.default.success(msg, "I will now repeat the current song", {
                 react: "🔂",
             });
         };
         const all = () => {
             playlist.repeat = "all";
-            Salty.success(msg, "I will now repeat the whole queue", {
+            Salty_1.default.success(msg, "I will now repeat the whole queue", {
                 react: "🔁",
             });
         };
         const off = () => {
             playlist.repeat = "off";
-            Salty.success(msg, "repeat disabled", { react: "❎" });
+            Salty_1.default.success(msg, "repeat disabled", { react: "❎" });
         };
         if (["single", "1", "one", "this"].includes(args[0])) {
             single();

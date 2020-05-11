@@ -1,9 +1,5 @@
-/**
- * Allows to execute promises in the right order
- * Also drops any non-started promises inserted during the execution
- * of the last promise if `executeAll` is set to true.
- * @class
- */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class PromiseManager {
     constructor() {
         this.next = null;
@@ -28,4 +24,4 @@ class PromiseManager {
         }
     }
 }
-export default PromiseManager;
+exports.default = PromiseManager;

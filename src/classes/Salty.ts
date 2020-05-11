@@ -1,8 +1,8 @@
-import Discord from "discord.js";
+import Discord, { MessageEmbedOptions } from "discord.js";
 import { readdir, readFileSync, statSync } from "fs";
 import { join, sep } from "path";
 import config from "../data/config";
-import list from "../data/list";
+import * as list from "../data/list";
 import {
     choice,
     clean,
@@ -19,6 +19,7 @@ import Dialog from "./Dialog";
 import Guild from "./Guild";
 import QuickCommand from "./QuickCommand";
 import User from "./User";
+import { SaltyException } from "./Exception";
 
 interface CategoryInfo {
     description: string;
@@ -33,32 +34,17 @@ interface CommandHelp {
 }
 
 interface Commands {
-    list: Discord.Collection;
+    list: Discord.Collection<string, Command | QuickCommand>;
     keys: Keys;
     help: HelpInfo;
 }
 
-interface EmbedField {
-    title: string;
-    description: string;
-}
-
-interface EmbedOptions {
-    title?: string;
-    description?: string;
-    color?: number;
-    author?: string;
-    timestamp?: string;
-    footer?: string;
-    react?: string;
+export interface EmbedOptions extends MessageEmbedOptions {
     actions?: any;
-    inline?: boolean;
     content?: string;
-    url?: string;
-    thumbnail?: string;
-    image?: string;
-    fields?: EmbedField[];
     file?: string;
+    inline?: boolean;
+    react?: string;
 }
 
 interface Help {
@@ -91,7 +77,7 @@ const startTime: Date = new Date();
  */
 async function _destroy(restart: boolean): Promise<void> {
     log("Disconnecting ...");
-    await bot.destroy();
+    bot.destroy();
     if (restart) {
         await _loadCommands(...commandsRootPath).then(() =>
             log("Commands loaded")
@@ -184,10 +170,10 @@ async function _loadCommands(...paths: string[]): Promise<void> {
 /**
  * @private
  */
-async function _onChannelDelete(channel: Discord.Channel): Promise<void> {
-    Guild.forEach((guild: Discord.Guild) => {
+async function _onChannelDelete(channel: Discord.GuildChannel): Promise<void> {
+    Guild.forEach((guild: Guild) => {
         if (guild.default_channel === channel.id) {
-            const guildDBId: string = Guild.get(guild.id).id;
+            const guildDBId: number = Guild.get(channel.guild.id).id;
             Guild.update(guildDBId, { default_channel: false });
         }
     });
@@ -198,7 +184,7 @@ async function _onChannelDelete(channel: Discord.Channel): Promise<void> {
  */
 async function _onError(err: Error): Promise<void> {
     logError(err);
-    bot.destroy(true);
+    restart();
 }
 
 /**
@@ -213,7 +199,7 @@ async function _onGuildCreate(guild: Discord.Guild): Promise<void> {
  */
 async function _onGuildDelete(guild: Discord.Guild): Promise<void> {
     if (guild.member(bot.user)) {
-        const guildDBId: string = Guild.find(guild.id).id;
+        const guildDBId: number = Guild.get(guild.id).id;
         Guild.remove(guildDBId);
     }
 }
@@ -224,13 +210,14 @@ async function _onGuildDelete(guild: Discord.Guild): Promise<void> {
 async function _onGuildMemberAdd(member: Discord.GuildMember): Promise<void> {
     const guild: Guild = Guild.get(member.guild.id);
     if (guild.default_channel) {
-        await bot.channels
-            .get(guild.default_channel)
-            .send(`Hey there ${member.user} ! Have a great time here (͡° ͜ʖ ͡°)`);
+        const channel = getTextChannel(guild.default_channel);
+        channel.send(
+            `Hey there ${member.user} ! Have a great time here (͡° ͜ʖ ͡°)`
+        );
     }
     if (guild.default_role) {
         try {
-            member.addRole(guild.default_role);
+            member.roles.add(guild.default_role);
         } catch (err) {
             logError(
                 `Couldn't add default role to ${member.user.username}: permission denied`
@@ -245,11 +232,12 @@ async function _onGuildMemberAdd(member: Discord.GuildMember): Promise<void> {
 async function _onGuildMemberRemove(
     member: Discord.GuildMember
 ): Promise<void> {
-    const guild: Guild = Guild.find(member.guild.id);
+    const guild: Guild = Guild.get(member.guild.id);
     if (guild.default_channel) {
-        bot.channels
-            .get(guild.default_channel)
-            .send(`Well, looks like ${member.user.username} got bored of us:c`);
+        const channel = getTextChannel(guild.default_channel);
+        channel.send(
+            `Well, looks like ${member.user.username} got bored of us :c`
+        );
     }
 }
 
@@ -265,7 +253,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
         return;
     }
 
-    const mention: Discord.GuildMember = msg.mentions.users.first();
+    const mention: Discord.User = msg.mentions.users.first();
     const nickname: string = msg.guild.members.cache.get(bot.user.id).nickname;
     const botNameRegex: string =
         bot.user.username + (nickname ? `|${clean(nickname)}` : "");
@@ -275,7 +263,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     let interaction: boolean = true;
     if (msg.guild) {
         interaction =
-            msg.content.match(new RegExp(botNameRegex, "i")) ||
+            new RegExp(botNameRegex, "i").test(msg.content) ||
             (mention && mention.id === bot.user.id);
     }
     // Look for a prefix. Deleted if found.
@@ -318,7 +306,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     for (let i = 0; i < msgArray.length; i++) {
         const args: string[] = msgArray.slice(i + 1);
         const commandName: string = commands.keys[clean(msgArray[i])];
-        const command: Command = commands.list.get(commandName);
+        const command: Command | QuickCommand = commands.list.get(commandName);
         if (command) {
             if (args[0] && list.help.includes(args[0])) {
                 return commands.list.get("help").run(msg, [commandName]);
@@ -340,14 +328,14 @@ async function _onMessageReactionAdd(
     if (author.bot) {
         return;
     }
-    const { _emoji, message } = msgReact;
+    const { emoji, message } = msgReact;
     const dialog: Dialog = Dialog.find((d: Dialog) => d.author === author);
 
     if (!dialog || message !== dialog.response) {
         return;
     }
     try {
-        await dialog.run(_emoji.name);
+        await dialog.run(emoji.name);
     } catch (err) {
         logError(err);
     }
@@ -363,9 +351,8 @@ async function _onReady(): Promise<void> {
         const guild: Guild = Guild.get(discordGuild.id);
         if (guild) {
             if (guild.default_channel) {
-                bot.channels
-                    .get(guild.default_channel)
-                    .send(title(choice(list.intro)));
+                const channel = getTextChannel(guild.default_channel);
+                channel.send(title(choice(list.intro)));
             }
         } else {
             preGuilds.push({ discord_id: discordGuild.id });
@@ -418,60 +405,42 @@ async function embed(
     msg: Discord.Message,
     options: EmbedOptions = {}
 ): Promise<void> {
-    // Embed options that might change
-    let messageTitle: string = options.title || "";
-    let description: string = options.description || "";
-    let color: number = options.color || 0xffffff;
-    let author: Discord.User = options.author;
-    let timestamp: string = options.timestamp || "";
-    let footer: string = options.footer || "";
-
     // Other options that might change
     let { react, actions } = options;
-    const inline: boolean = options.inline || false;
-    const content: string = options.content || "";
+    const inline = options.inline || false;
+    const content = options.content || "";
 
-    if (messageTitle) {
-        messageTitle = title(messageTitle);
+    if (!options.color) {
+        options.color = 0xffffff;
     }
-    if (description) {
-        description = title(description);
+    if (options.title) {
+        options.title = title(options.title);
     }
-    if (footer) {
-        footer = title(footer);
+    if (options.description) {
+        options.description = title(options.description);
     }
-
-    const embed = new Discord.MessageEmbed()
-        .setTitle(replacer(messageTitle, msg))
-        .setDescription(replacer(description, msg))
-        .setURL(options.url)
-        .setColor(color)
-        .setAuthor(author.username || "")
-        .setTimestamp(timestamp)
-        .setThumbnail(options.thumbnail)
-        .setImage(options.image)
-        .setFooter(footer);
-
+    if (options.footer && options.footer.text) {
+        options.footer.text = title(options.footer.text);
+    }
     if (options.fields) {
-        for (let i = 0; i < options.fields.length; i++) {
-            embed.addField(
-                title(options.fields[i].title),
-                replacer(title(options.fields[i].description), msg),
-                inline
-            );
-        }
+        options.fields = options.fields.map((field) => {
+            return {
+                name: title(field.name),
+                value: replacer(title(field.value), msg),
+                inline,
+            };
+        });
     }
+    const embed = new Discord.MessageEmbed(options);
     const newMessage: Discord.Message = await message(msg, content, {
         embed,
-        file: options.file,
+        files: options.files,
     });
-
     if (react && !msg.deleted) {
         msg.react(react).catch();
     }
-    const dialog: Dialog = new Dialog(msg, newMessage, actions);
-    const reactions: string[] = Object.keys(dialog.actions);
-
+    const dialog = new Dialog(msg, newMessage, actions);
+    const reactions = Object.keys(dialog.actions);
     for (let i = 0; i < reactions.length; i++) {
         if (newMessage.deleted) {
             break;
@@ -501,33 +470,12 @@ function error(
     );
 }
 
-/**
- * Returns the list of terms associated with a given section name.
- */
-function getList(sectionName: string): string[] {
-    return list[sectionName];
-}
-
-/**
- * Entry point of the module. This function is responsible of executing the following
- * actions in the given order:
- * 1. Establish a connection with the PostgreSQL database
- * 2. Load the models: QuickCommand, Guild and User (order is irrelevant) and the
- *    command scripts
- * 3. Log into Discord through the API
- */
-async function init(): Promise<void> {
-    log("Initializing Salty");
-    await Database.connect();
-    await Promise.all([
-        QuickCommand.load().then((commandData) =>
-            commandData.forEach(setQuickCommand)
-        ),
-        Guild.load(),
-        User.load(),
-        _loadCommands(...commandsRootPath).then(() => log("Commands loaded")),
-    ]);
-    await bot.login(process.env.DISCORD_API);
+function getTextChannel(channelId: string): Discord.TextChannel {
+    const channel: Discord.Channel = bot.channels.cache.get(channelId);
+    if (!(channel instanceof Discord.TextChannel)) {
+        throw new SaltyException(`Default channel is not a text channel.`);
+    }
+    return channel;
 }
 
 /**
@@ -563,7 +511,11 @@ function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
 /**
  * Sends a simply structured message in the channel of the given 'msg' object.
  */
-function message(msg: Discord.Message, text: string, options?): Promise<any> {
+function message(
+    msg: Discord.Message,
+    text: string,
+    options?: Discord.MessageOptions
+): Promise<any> {
     return msg.channel.send(text && replacer(title(text), msg), options);
 }
 
@@ -572,7 +524,7 @@ function message(msg: Discord.Message, text: string, options?): Promise<any> {
  * with their related values contained in the 'msg' object.
  */
 function replacer(string: string, msg: Discord.Message): string {
-    const author: Discord.User = msg.member.nickname || msg.author.username;
+    const author: string = msg.member.nickname || msg.author.username;
     const mention: Discord.GuildMember = msg.mentions.members.first();
     const target: string = mention
         ? mention.nickname || mention.user.username
@@ -591,9 +543,29 @@ function setQuickCommand(command: QuickCommand): void {
     command.keys.split(",").forEach((key) => {
         commands.keys[key] = command.name;
     });
-    commands.list.set(command.name, {
-        run: () => eval(command.effect),
-    });
+    commands.list.set(command.name, command);
+}
+
+/**
+ * Entry point of the module. This function is responsible of executing the following
+ * actions in the given order:
+ * 1. Establish a connection with the PostgreSQL database
+ * 2. Load the models: QuickCommand, Guild and User (order is irrelevant) and the
+ *    command scripts
+ * 3. Log into Discord through the API
+ */
+async function start(): Promise<void> {
+    log("Initializing Salty");
+    await Database.connect();
+    await Promise.all([
+        QuickCommand.load().then((commandData) =>
+            commandData.forEach(setQuickCommand)
+        ),
+        Guild.load(),
+        User.load(),
+        _loadCommands(...commandsRootPath).then(() => log("Commands loaded")),
+    ]);
+    await bot.login(process.env.DISCORD_API);
 }
 
 /**
@@ -647,8 +619,8 @@ export default {
     destroy,
     embed,
     error,
-    getList,
-    init,
+    getTextChannel,
+    start,
     isAdmin,
     isDev,
     isOwner,

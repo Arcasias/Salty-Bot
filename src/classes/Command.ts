@@ -1,12 +1,9 @@
 import { Message } from "discord.js";
 import { debug, error } from "../utils";
-import {
-    DeprecatedCommand,
-    PermissionDenied,
-    SaltyException,
-} from "./Exception";
+import { PermissionDenied, SaltyException } from "./Exception";
 import Model from "./Model";
 import Salty from "./Salty";
+import * as list from "../data/list";
 
 const permissions = {
     public: null,
@@ -35,21 +32,25 @@ interface CommandHelp {
 
 class Command extends Model {
     public action: CommandAction;
-    public deprecated: boolean;
     public help: CommandHelp[];
     public keys: string[];
     public name: string;
-    public visibility: string;
-    public env: string;
+    public visibility: string = "public";
+    public env: string | null = null;
 
+    protected static readonly fields = [
+        "action",
+        "help",
+        "keys",
+        "name",
+        "visibility",
+        "env",
+    ];
     /**
      * Runs the command action
      */
     public async run(msg: Message, args: string[]) {
         try {
-            if (this.deprecated) {
-                throw new DeprecatedCommand(this.name);
-            }
             if (
                 this.visibility !== "public" &&
                 !permissions[this.visibility].call(Salty, msg.author, msg.guild)
@@ -76,8 +77,7 @@ class Command extends Model {
     public meaning(word?: string): string {
         if (word && word.length) {
             return (
-                MEANING_ACTIONS.find((w) => Salty.getList(w).includes(word)) ||
-                "string"
+                MEANING_ACTIONS.find((w) => list[w].includes(word)) || "string"
             );
         } else {
             return "noarg";

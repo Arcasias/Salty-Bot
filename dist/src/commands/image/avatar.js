@@ -1,9 +1,14 @@
-import fs from "fs";
-import path from "path";
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { choice, possessive } from "../../utils";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+exports.default = new Command_1.default({
     name: "avatar",
     keys: ["pic", "picture", "pp"],
     help: [
@@ -18,7 +23,6 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg) {
-        // Sets author as default user and adapt color to his/her role
         const mention = msg.mentions.users.first();
         const targetUser = mention ? mention : msg.author;
         const name = mention ? mention.displayName : msg.member.displayName;
@@ -26,32 +30,29 @@ export default new Command({
             ? mention.highestRole.color
             : msg.member.highestRole.color;
         let desc = "This is a huge piece of shit";
-        // If there is someone in the mention list, sets that user as new default then generates random color for the swag
         if (targetUser.bot) {
-            desc = "That's just a crappy bot"; // bot
+            desc = "That's just a crappy bot";
         }
-        else if (targetUser.id === Salty.config.owner.id) {
-            desc = "He's the coolest guy i know ^-^"; // owner
+        else if (targetUser.id === Salty_1.default.config.owner.id) {
+            desc = "He's the coolest guy i know ^-^";
         }
-        else if (Salty.isAdmin(targetUser, msg.guild)) {
-            desc = "It's a cute piece of shit"; // admin
+        else if (Salty_1.default.isAdmin(targetUser, msg.guild)) {
+            desc = "It's a cute piece of shit";
         }
-        // Creates embed message
         const options = {
-            title: `this is ${possessive(name)} profile pic`,
+            title: `this is ${utils_1.possessive(name)} profile pic`,
         };
-        if (targetUser.id === Salty.bot.user.id) {
-            // if Salty
-            const files = fs.readdirSync("assets/img/salty");
+        if (targetUser.id === Salty_1.default.bot.user.id) {
+            const files = fs_1.default.readdirSync("assets/img/salty");
             const pics = files.filter((f) => f.split(".").pop() === "png");
             options.title = `how cute, you asked for my profile pic ^-^`;
-            options.file = path.join("assets/img/salty/", choice(pics));
+            options.file = path_1.default.join("assets/img/salty/", utils_1.choice(pics));
         }
         else {
             options.image = targetUser.avatarURL;
             options.color = parseInt(color);
             options.description = desc;
         }
-        await Salty.embed(msg, options);
+        await Salty_1.default.embed(msg, options);
     },
 });

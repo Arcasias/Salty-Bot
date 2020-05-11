@@ -6,6 +6,7 @@ import {
 } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
+import { add, remove } from "../../data/list";
 
 export default new Command({
     name: "role",
@@ -30,7 +31,7 @@ export default new Command({
         const { guild } = msg;
         const guildDBId = Guild.get(guild.id).id;
 
-        if (args[0] && Salty.getList("add").includes(args[0])) {
+        if (args[0] && add.includes(args[0])) {
             if (!args[1]) {
                 throw new MissingArg("new role");
             }
@@ -63,7 +64,7 @@ export default new Command({
                     `role **${role.name}** has been successfuly set as default role for **${guild.name}**`
                 );
             }
-        } else if (args[0] && Salty.getList("delete").includes(args[0])) {
+        } else if (args[0] && remove.includes(args[0])) {
             if (!Guild.get(guild.id).default_channel) {
                 throw new SaltyException("no default role set");
             }

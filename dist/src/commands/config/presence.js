@@ -1,43 +1,42 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const list_1 = require("../../data/list");
 const STATUSINFO = {
     dnd: { title: "do not disturb", color: 15746887 },
     idle: { title: "idle", color: 16426522 },
     online: { title: "online", color: 4437378 },
 };
-export default new Command({
+exports.default = new Command_1.default({
     name: "presence",
     keys: ["game", "status"],
     visibility: "dev",
     async action(msg, args) {
-        if (args[0] && Salty.getList("delete").includes(args[0])) {
-            await Salty.bot.user.setPresence({
-                game: null,
-                status: Salty.bot.user.presence.status,
-            });
-            Salty.success(msg, "current presence removed");
+        if (args[0] && list_1.remove.includes(args[0])) {
+            await Salty_1.default.bot.user.setPresence({ activity: null });
+            Salty_1.default.success(msg, "current presence removed");
         }
         else if (args[0]) {
             const status = args[0];
             if (status in STATUSINFO) {
-                // status
-                await Salty.bot.user.setStatus(status);
-                Salty.success(msg, `changed my status to **${STATUSINFO[status].title}**`, { color: STATUSINFO[status].color });
+                await Salty_1.default.bot.user.setStatus(status);
+                Salty_1.default.success(msg, `changed my status to **${STATUSINFO[status].title}**`, { color: STATUSINFO[status].color });
             }
             else {
-                // game
-                await Salty.bot.user.setPresence({
-                    game: { name: status },
-                    status: Salty.bot.user.presence.status,
+                await Salty_1.default.bot.user.setPresence({
+                    activity: { name: status },
                 });
-                Salty.success(msg, `changed my presence to **${status}**`);
+                Salty_1.default.success(msg, `changed my presence to **${status}**`);
             }
         }
         else {
-            const { color, title } = STATUSINFO[Salty.bot.user.presence.status];
-            const description = Salty.bot.user.presence.game &&
-                Salty.bot.user.presence.game.name;
-            Salty.embed(msg, { color, title, description });
+            const { color, title } = STATUSINFO[Salty_1.default.bot.user.presence.status];
+            const description = Salty_1.default.bot.user.presence.status;
+            Salty_1.default.embed(msg, { color, title, description });
         }
     },
 });

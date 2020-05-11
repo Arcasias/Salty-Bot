@@ -1,7 +1,10 @@
 import Command from "../../classes/Command";
 import { IncorrectValue } from "../../classes/Exception";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 import { title } from "../../utils";
+import QuickCommand from "../../classes/QuickCommand";
+
+type Categories = { [category: string]: string };
 
 export default new Command({
     name: "help",
@@ -23,12 +26,12 @@ export default new Command({
     visibility: "public",
     async action(msg, args) {
         const { author } = msg;
-        const options = {
+        const options: EmbedOptions = {
             color: 0xffffff,
             fields: [],
         };
         const help = Salty.commands.help;
-        const categories = {};
+        const categories: Categories = {};
         // map name and technical name for enhanced search
         for (let category in help) {
             categories[category] = category;
@@ -58,15 +61,15 @@ export default new Command({
                             ? ` (or ***${cmd.keys.join("***, ***")}***)`
                             : "";
                         options.fields.push({
-                            title: `**${title(cmd.name)}**${alternate}`,
-                            description: `> \`${Salty.config.prefix}help ${cmd.name}\``,
+                            name: `**${title(cmd.name)}**${alternate}`,
+                            value: `> \`${Salty.config.prefix}help ${cmd.name}\``,
                         });
                     }
                 });
                 // query is a command name
             } else if (commands.includes(arg)) {
                 // arg === command
-                const command = Salty.commands.list.get(
+                const command: Command | QuickCommand = Salty.commands.list.get(
                     Salty.commands.keys[arg]
                 );
                 const category = Object.values(categories).find((cat) =>
@@ -77,30 +80,24 @@ export default new Command({
                     Salty.config.homepage
                 }/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
                 options.description = `> ${title(category)}`;
-                if (0 < command.keys.length) {
-                    options.description += `\nAlternative usage: **${command.keys.join(
-                        "**, **"
-                    )}**`;
+                if (command.keys.length) {
+                    const keys: string = Array.isArray(command.keys)
+                        ? command.keys.join("**, **")
+                        : command.keys;
+                    options.description += `\nAlternative usage: **${keys}**`;
                 }
-                if (command.example) {
-                    options.footer = `Example: ${command.example}`;
+                if (command instanceof Command) {
+                    command.help.forEach((usage) => {
+                        if (usage.effect) {
+                            options.fields.push({
+                                name: `${Salty.config.prefix}${command.name} ${
+                                    usage.argument || ""
+                                }`,
+                                value: usage.effect,
+                            });
+                        }
+                    });
                 }
-                if (command.deprecated) {
-                    options.title = "[DEPRECATED] " + options.title;
-                    options.description +=
-                        "\n*This command is deprecated and can no longer be used*";
-                    options.color = 13107200;
-                }
-                command.help.forEach((usage) => {
-                    if (usage.effect) {
-                        options.fields.push({
-                            title: `${Salty.config.prefix}${command.name} ${
-                                usage.argument || ""
-                            }`,
-                            description: usage.effect,
-                        });
-                    }
-                });
             } else {
                 throw new IncorrectValue(
                     "second argument",
@@ -115,10 +112,10 @@ export default new Command({
             for (let category in help) {
                 const { name, icon } = help[category].info;
                 options.fields.push({
-                    title: `${icon} **${title(name)}**  (${
+                    name: `${icon} **${title(name)}**  (${
                         help[category].commands.length
                     } commands)`,
-                    description: `> \`${Salty.config.prefix}help ${category}\``,
+                    value: `> \`${Salty.config.prefix}help ${category}\``,
                 });
             }
         }

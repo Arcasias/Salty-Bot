@@ -1,6 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
+import { answers } from "../../data/list";
 
 export default new Command({
     name: "disconnect",
@@ -13,8 +14,8 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action() {
-        await Salty.success(`${choice(Salty.getList("answers")["bye"])} ♥`);
+    async action(msg) {
+        await Salty.success(msg, `${choice(answers.bye)} ♥`);
         await Salty.destroy();
     },
 });

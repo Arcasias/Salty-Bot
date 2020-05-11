@@ -1,33 +1,44 @@
-import { log, title } from "../utils";
-import Database from "./Database";
+import { log } from "../utils";
+import Database, { FieldsValues } from "./Database";
 
 class Model {
-    public id: string;
-    protected stored: boolean = false;
+    public id: number;
 
-    protected static instances: object = {};
-    protected static fields: object = {};
+    protected static instances: { [constructor: string]: any[] } = {};
+    protected static readonly fields: string[] = [];
     protected static readonly table: string;
 
-    constructor(values: any = {}) {
-        const name: string = this.constructor.name;
+    constructor(values: FieldsValues = {}) {
+        const { name, table, fields } = this.Class;
         if (!Model.instances[name]) {
             Model.instances[name] = [];
         }
         Model.instances[name].push(this);
 
-        if (this.stored) {
-            this.id = values.id;
-            delete values.id;
-            for (const key in values) {
-                if (!this.hasOwnProperty(key)) {
-                    throw new Error(
-                        `Invalid key "${key}" given to ${name} instance.`
-                    );
-                }
-                this[key] = values[key];
+        // Model is stored in database
+        if (table) {
+            if ("id" in values) {
+                this.id = values.id;
+                delete values.id;
+            } else {
+                throw new Error(`Missing field "id" on stored model ${name}.`);
             }
         }
+        // Model has a fields descriptor
+        if (fields.length) {
+            const toAssign = fields.slice();
+            for (const key in values) {
+                const keyIndex = toAssign.indexOf(key);
+                if (keyIndex > -1) {
+                    this[key] = values[key];
+                    toAssign.splice(keyIndex, 1);
+                }
+            }
+        }
+    }
+
+    get Class(): typeof Model {
+        return (<any>this).constructor;
     }
 
     /**
@@ -52,11 +63,9 @@ class Model {
      * Returns the list of instances fetched from the attached database table.
      */
     public static async load<M extends Model>(): Promise<M[]> {
-        const records: any[] = await Database.read(this.table);
-        const instances: Model[] = records.map(
-            (values: any): Model => new this(values)
-        );
-        log(`${title(this.name)} data loaded`);
+        const records: FieldsValues[] = await Database.read(this.table);
+        const instances = records.map((values) => new this(values));
+        log(`${records.length} ${this.name}(s) loaded`);
         return <M[]>instances;
     }
 
@@ -67,24 +76,18 @@ class Model {
     public static async create<M extends Model>(
         ...allValues: any[]
     ): Promise<M[]> {
-        const databaseObjects: any[] = await Database.create(
+        const records: FieldsValues[] = await Database.create(
             this.table,
             ...allValues
         );
-        const instances: Model[] = databaseObjects.map(
-            (res: any): Model => {
-                const instance: Model = new this(res);
-                instance.id = res.id;
-                return instance;
-            }
-        );
+        const instances = records.map((values) => new this(values));
         return <M[]>instances;
     }
 
     /**
      * Destroys the instances linked to the given ids.
      */
-    static async remove(...ids: string[]): Promise<void> {
+    static async remove(...ids: number[]): Promise<void> {
         const newInstances: Model[] = [];
         const instances: Model[] = Model.instances[this.name];
         for (let i = 0; i < instances.length; i++) {
@@ -101,7 +104,7 @@ class Model {
      * Writes the given values on all records matching the given ids.
      */
     static async update<M extends Model>(
-        ids: string | string[],
+        ids: number | number[],
         values: any
     ): Promise<M[]> {
         if (!Array.isArray(ids)) {
@@ -111,7 +114,7 @@ class Model {
         const instances: Model[] = results.map(
             (res: any): Model => {
                 const instance: Model = this.find(
-                    (instance: Model): boolean => instance.id === res.id
+                    (instance: Model) => instance.id === res.id
                 );
                 for (let fieldName in values) {
                     instance[fieldName] = values[fieldName];
@@ -126,41 +129,34 @@ class Model {
     // Array functions applied to all current instances
     //-------------------------------------------------------------------------
 
-    /**
-     * @see Array.filter()
-     */
-    public static filter<M extends Model>(...args: any): M[] {
-        return Model.instances[this.name].filter(...args);
+    public static filter<M extends Model>(callbackfn: {
+        (instance?: M, index?: number): boolean;
+    }): M[] {
+        return Model.instances[this.name].filter(callbackfn);
     }
-    /**
-     * @see Array.find()
-     */
-    public static find<M extends Model>(...args: any): M {
-        return Model.instances[this.name].find(...args);
+
+    public static find<M extends Model>(predicate: {
+        (instance?: M, index?: number): boolean;
+    }): M {
+        return Model.instances[this.name].find(predicate);
     }
-    /**
-     * @see Array.forEach()
-     */
-    public static forEach(...args: any): void {
-        return Model.instances[this.name].forEach(...args);
+
+    public static forEach<M extends Model>(callbackfn: {
+        (instance?: M, index?: number): void;
+    }): void {
+        return Model.instances[this.name].forEach(callbackfn);
     }
-    /**
-     * @see Array.map()
-     */
-    public static map<M extends Model>(...args: any): M[] {
-        return Model.instances[this.name].map(...args);
+
+    public static map<M extends Model>(callbackfn: {
+        (instance?: M, index?: number): any;
+    }): any[] {
+        return Model.instances[this.name].map(callbackfn);
     }
-    /**
-     * @see Array.reduce()
-     */
-    public static reduce(...args: any): any {
-        return Model.instances[this.name].reduce(...args);
-    }
-    /**
-     * @see Array.sort()
-     */
-    public static sort<M extends Model>(...args: any): M[] {
-        return Model.instances[this.name].sort(...args);
+
+    public static sort<M extends Model>(comparefn: {
+        (instance?: M, index?: number): number;
+    }): M[] {
+        return Model.instances[this.name].sort(comparefn);
     }
 }
 

@@ -74,8 +74,11 @@ export default new Command({
                     }
                 } else {
                     const blackListedUsers = User.filter(
-                        (u) => u.black_listed
-                    ).map((u) => Salty.bot.users.get(u.discord_id).username);
+                        (u: User) => u.black_listed
+                    ).map(
+                        (u: User) =>
+                            Salty.bot.users.cache.get(u.discord_id).username
+                    );
                     if (blackListedUsers.length) {
                         await Salty.embed(msg, {
                             title: "Blacklist",

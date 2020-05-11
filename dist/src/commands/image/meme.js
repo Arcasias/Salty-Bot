@@ -1,11 +1,16 @@
-import fs from "fs";
-import http from "http";
-import https from "https";
-import path from "path";
-import PImage from "pureimage";
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { error, title } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const http_1 = __importDefault(require("http"));
+const https_1 = __importDefault(require("https"));
+const path_1 = __importDefault(require("path"));
+const pureimage_1 = __importDefault(require("pureimage"));
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
 const defaultWidth = 450;
 const maxTempImages = 5;
 const fontFamily = "helvetica";
@@ -13,8 +18,8 @@ const baseFontSize = 24;
 const baseLineSpace = 30;
 const baseBorder = 10;
 let imgIndex = 1;
-let imgPath = path.join(Salty.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
-export default new Command({
+let imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+exports.default = new Command_1.default({
     name: "meme",
     keys: ["memes"],
     help: [
@@ -34,15 +39,14 @@ export default new Command({
             ? args
                 .join(" ")
                 .split("\\")
-                .map((line) => title(line))
+                .map((line) => utils_1.title(line))
             : null;
         let imgOffset;
         if (!Array.isArray(imgText))
             imgText = [imgText];
-        // First step : find an image and create a canvas from it, or a blank canvas if no image is found.
         if (imgURL) {
             function urlDecode(res) {
-                PImage.decodePNGFromStream(res).then((img) => {
+                pureimage_1.default.decodePNGFromStream(res).then((img) => {
                     let mult, surface = img.width * img.height;
                     if (surface >= 500000)
                         mult = 3;
@@ -58,7 +62,7 @@ export default new Command({
                     lineSpace = baseLineSpace * mult;
                     border = baseBorder * mult;
                     imgOffset = border * 2 + imgText.length * lineSpace;
-                    canvas = PImage.make(img.width, img.height + imgOffset);
+                    canvas = pureimage_1.default.make(img.width, img.height + imgOffset);
                     c = canvas.getContext("2d");
                     c.fillStyle = "#ffffff";
                     c.fillRect(0, 0, img.width, img.height + imgOffset);
@@ -66,26 +70,24 @@ export default new Command({
                     textHandler();
                 });
             }
-            // Chooses from http or https
             imgURL.startsWith("https")
-                ? https.get(imgURL, urlDecode)
-                : http.get(imgURL, urlDecode);
+                ? https_1.default.get(imgURL, urlDecode)
+                : http_1.default.get(imgURL, urlDecode);
         }
         else {
             fontSize = baseFontSize;
             lineSpace = baseLineSpace;
             border = baseBorder;
             imgOffset = border * 2 + imgText.length * lineSpace;
-            canvas = PImage.make(defaultWidth, imgOffset);
+            canvas = pureimage_1.default.make(defaultWidth, imgOffset);
             c = canvas.getContext("2d");
             c.fillStyle = "#ffffff";
             c.fillRect(0, 0, defaultWidth, imgOffset);
             textHandler();
         }
-        // Second step : apply text on canvas if needed.
         function textHandler() {
             if (imgText[0]) {
-                let font = PImage.registerFont(`assets/fonts/${fontFamily}.ttf`, fontFamily);
+                let font = pureimage_1.default.registerFont(`assets/fonts/${fontFamily}.ttf`, fontFamily);
                 font.load(() => {
                     c.font = `${fontSize}pt ${fontFamily}`;
                     imgText.forEach((line) => {
@@ -108,18 +110,17 @@ export default new Command({
                 sendCanvas();
             }
         }
-        // Last step : send canvas.
-        function sendCanvas() {
-            PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath))
-                .then(() => {
-                Salty.message(msg, null, imgPath).then(() => {
-                    msg.delete();
-                    imgIndex =
-                        imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                    imgPath = path.join(Salty.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
-                });
-            })
-                .catch(error);
+        async function sendCanvas() {
+            try {
+                await pureimage_1.default.encodePNGToStream(canvas, fs_1.default.createWriteStream(imgPath));
+                await Salty_1.default.message(msg, "", { files: [imgPath] });
+                msg.delete();
+                imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
+                imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+            }
+            catch (err) {
+                utils_1.error(err);
+            }
         }
     },
 });

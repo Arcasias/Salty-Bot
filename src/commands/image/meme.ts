@@ -133,21 +133,23 @@ export default new Command({
             }
         }
         // Last step : send canvas.
-        function sendCanvas() {
-            PImage.encodePNGToStream(canvas, fs.createWriteStream(imgPath))
-                .then(() => {
-                    Salty.message(msg, null, imgPath).then(() => {
-                        msg.delete();
+        async function sendCanvas() {
+            try {
+                await PImage.encodePNGToStream(
+                    canvas,
+                    fs.createWriteStream(imgPath)
+                );
+                await Salty.message(msg, "", { files: [imgPath] });
+                msg.delete();
 
-                        imgIndex =
-                            imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                        imgPath = path.join(
-                            Salty.config.tempImageFolder,
-                            `meme_temp_${imgIndex}.png`
-                        );
-                    });
-                })
-                .catch(error);
+                imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
+                imgPath = path.join(
+                    Salty.config.tempImageFolder,
+                    `meme_temp_${imgIndex}.png`
+                );
+            } catch (err) {
+                error(err);
+            }
         }
     },
 });

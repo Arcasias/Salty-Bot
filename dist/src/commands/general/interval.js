@@ -1,8 +1,14 @@
-import Command from "../../classes/Command";
-import { EmptyObject, IncorrectValue, MissingArg, } from "../../classes/Exception";
-import Salty from "../../classes/Salty";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const list_1 = require("../../data/list");
 const INTERVALS = {};
-export default new Command({
+exports.default = new Command_1.default({
     name: "interval",
     keys: [],
     help: [
@@ -17,22 +23,22 @@ export default new Command({
     ],
     visibility: "dev",
     async action(msg, args) {
-        if (args[0] && Salty.getList("clear").includes(args[0])) {
+        if (args[0] && list_1.clear.includes(args[0])) {
             if (!INTERVALS[msg.guild.id]) {
-                throw new EmptyObject("interval");
+                throw new Exception_1.EmptyObject("interval");
             }
             clearInterval(INTERVALS[msg.guild.id]);
-            Salty.success(msg, "Interval cleared");
+            Salty_1.default.success(msg, "Interval cleared");
         }
         else {
             if (!args[0]) {
-                throw new MissingArg("delay");
+                throw new Exception_1.MissingArg("delay");
             }
             if (isNaN(args[0])) {
-                throw new IncorrectValue("delay", "number");
+                throw new Exception_1.IncorrectValue("delay", "number");
             }
             if (!args[1]) {
-                throw new MissingArg("message");
+                throw new Exception_1.MissingArg("message");
             }
             const delay = parseInt(args.shift()) * 1000;
             msg.delete().catch();
@@ -40,7 +46,7 @@ export default new Command({
                 clearInterval(INTERVALS[msg.guild.id]);
             }
             INTERVALS[msg.guild.id] = setInterval(() => {
-                Salty.message(msg, args.join(" "));
+                Salty_1.default.message(msg, args.join(" "));
             }, delay);
         }
     },

@@ -12,16 +12,6 @@ class SaltyException extends Error {
     }
 }
 
-class DeprecatedCommand extends SaltyException {
-    public name: string = "DeprecatedCommand";
-
-    constructor(commandName: string) {
-        super(
-            `Command "${commandName}" is deprecated and can no longer be used`
-        );
-    }
-}
-
 class EmptyObject extends SaltyException {
     public name: string = "EmptyObject";
 
@@ -72,7 +62,6 @@ class PermissionDenied extends SaltyException {
 
 export {
     SaltyException,
-    DeprecatedCommand,
     EmptyObject,
     IncorrectValue,
     MissingArg,

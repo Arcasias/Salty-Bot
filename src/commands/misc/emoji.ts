@@ -1,7 +1,7 @@
-import fs from "fs";
+import { readdir } from "fs";
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
+import { choice, promisify } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
 
@@ -20,33 +20,29 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg, args) {
-        fs.readdir(emojiPath, (error, files) => {
-            if (error) {
-                return error(error);
-            }
-            let pngs = files.filter((file) => file.split(".").pop() === "png");
-            let emojiNames = pngs.map((name) => name.split(".").shift());
+        const files: string[] = await promisify(readdir.bind(null, emojiPath));
+        const pngs = files.filter((file) => file.split(".").pop() === "png");
+        const emojiNames = pngs.map((name) => name.split(".").shift());
 
-            if (args[0]) {
-                let arg = args[0].toLowerCase();
-                let emoji = false;
+        if (args[0]) {
+            const arg = args[0].toLowerCase();
+            let emoji: string | null = null;
 
-                if ("rand" === arg || "random" === arg) {
-                    emoji = choice(emojiNames);
-                } else if (emojiNames.includes(arg)) {
-                    emoji = arg;
-                }
-                if (emoji) {
-                    msg.delete();
-                    return msg.channel.send({
-                        files: [`${emojiPath}/${emoji}.png`],
-                    });
-                }
+            if (["rand", "random"].includes(arg)) {
+                emoji = choice(emojiNames);
+            } else if (emojiNames.includes(arg)) {
+                emoji = arg;
             }
-            Salty.embed(msg, {
-                title: "list of saltmojis",
-                description: emojiNames.join("\n"),
-            });
+            if (emoji) {
+                msg.delete();
+                return Salty.message(msg, "", {
+                    files: [`${emojiPath}/${emoji}.png`],
+                });
+            }
+        }
+        Salty.embed(msg, {
+            title: "list of saltmojis",
+            description: emojiNames.join("\n"),
         });
     },
 });

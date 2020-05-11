@@ -1,7 +1,12 @@
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { error } from "../../utils";
-import { IncorrectValue, SaltyException } from "../../classes/Exception";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const Exception_1 = require("../../classes/Exception");
 let purging = false;
 async function purgeEndless(channel) {
     const messages = await channel.messages.fetch({ limit: 1 });
@@ -11,7 +16,7 @@ async function purgeEndless(channel) {
     await messages.first().delete();
     return purgeEndless(channel);
 }
-export default new Command({
+exports.default = new Command_1.default({
     name: "purge",
     keys: ["prune"],
     help: [
@@ -44,19 +49,19 @@ export default new Command({
                 let messagesToDelete = messages.filter((message) => message.author.bot);
                 try {
                     await msg.channel.bulkDelete(messagesToDelete);
-                    await Salty.success(msg, "most recent bot messages have been deleted");
+                    await Salty_1.default.success(msg, "most recent bot messages have been deleted");
                 }
                 catch (err) {
-                    error(err);
+                    utils_1.error(err);
                 }
                 break;
             case "clear":
                 if (purging) {
                     purging = false;
-                    Salty.success(msg, "purge stopped");
+                    Salty_1.default.success(msg, "purge stopped");
                 }
                 else {
-                    Salty.error(msg, "i wasn't purging anything");
+                    Salty_1.default.error(msg, "i wasn't purging anything");
                 }
                 break;
             case "string":
@@ -64,21 +69,20 @@ export default new Command({
                     purging = true;
                     return purgeEndless(msg.channel);
                 }
-            /* falls through */
             default:
                 if (isNaN(args[0])) {
-                    throw new IncorrectValue("length", "number");
+                    throw new Exception_1.IncorrectValue("length", "number");
                 }
                 if (parseInt(args[0]) === 0) {
-                    throw new SaltyException("you must delete at least 1 message");
+                    throw new Exception_1.SaltyException("you must delete at least 1 message");
                 }
                 const toDelete = Math.min(parseInt(args[0]), 100) || 100;
                 try {
                     await msg.channel.bulkDelete(toDelete, true);
-                    await Salty.success(msg, `${toDelete} messages have been successfully deleted`);
+                    await Salty_1.default.success(msg, `${toDelete} messages have been successfully deleted`);
                 }
                 catch (err) {
-                    error(err);
+                    utils_1.error(err);
                 }
         }
     },

@@ -1,8 +1,13 @@
-import Command from "../../classes/Command";
-import { EmptyObject, MissingArg, SaltyException, } from "../../classes/Exception";
-import QuickCommand from "../../classes/QuickCommand";
-import Salty from "../../classes/Salty";
-export default new Command({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const QuickCommand_1 = __importDefault(require("../../classes/QuickCommand"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+exports.default = new Command_1.default({
     name: "command",
     keys: ["cmd", "commands"],
     help: [
@@ -21,30 +26,30 @@ export default new Command({
             case "delete":
                 const commandName = args[1];
                 if (!commandName) {
-                    throw new MissingArg("command");
+                    throw new Exception_1.MissingArg("command");
                 }
-                const command = QuickCommand.find((cmd) => cmd.keys.includes(commandName));
+                const command = QuickCommand_1.default.find((cmd) => cmd.keys.includes(commandName));
                 if (!command) {
-                    throw new SaltyException("NonExistingObject", "That command doesn't exist");
+                    throw new Exception_1.SaltyException("NonExistingObject", "That command doesn't exist");
                 }
-                Salty.unsetQuickCommand(command);
-                await QuickCommand.remove(command.id);
-                Salty.success(msg, `Command "**${command.name}**" deleted`);
+                Salty_1.default.unsetQuickCommand(command);
+                await QuickCommand_1.default.remove(command.id);
+                Salty_1.default.success(msg, `Command "**${command.name}**" deleted`);
                 break;
             case "list":
             case "noarg":
-                if (!QuickCommand.size) {
-                    throw new EmptyObject("commands");
+                if (!QuickCommand_1.default.size) {
+                    throw new Exception_1.EmptyObject("commands");
                 }
-                await Salty.embed(msg, {
+                await Salty_1.default.embed(msg, {
                     title: "List of commands",
-                    description: QuickCommand.map((cmd, i) => `${i + 1}) ${cmd.name}`).join("\n"),
+                    description: QuickCommand_1.default.map((cmd, i) => `${i + 1}) ${cmd.name}`).join("\n"),
                 });
                 break;
             default:
                 const allArgs = args.join(" ").split("```");
                 if (!allArgs[1]) {
-                    throw new MissingArg("effect");
+                    throw new Exception_1.MissingArg("effect");
                 }
                 let keys = allArgs
                     .shift()
@@ -53,21 +58,21 @@ export default new Command({
                 const name = keys[0];
                 const effect = allArgs.shift().trim();
                 if (!keys[0]) {
-                    throw new MissingArg("keys");
+                    throw new Exception_1.MissingArg("keys");
                 }
                 for (let key = 0; key < keys.length; key++) {
                     keys[key] = keys[key].trim().toLowerCase();
-                    if (Salty.commands.keys[keys[key]]) {
-                        throw new SaltyException("ExistingObject", "That command already exists");
+                    if (Salty_1.default.commands.keys[keys[key]]) {
+                        throw new Exception_1.SaltyException("ExistingObject", "That command already exists");
                     }
                 }
-                const commands = await QuickCommand.create({
+                const commands = await QuickCommand_1.default.create({
                     name,
                     keys: keys.join(),
                     effect,
                 });
-                Salty.setQuickCommand(commands[0]);
-                await Salty.success(msg, `Command "**${name}**" created`);
+                Salty_1.default.setQuickCommand(commands[0]);
+                await Salty_1.default.success(msg, `Command "**${name}**" created`);
         }
     },
 });

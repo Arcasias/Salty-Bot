@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 import User from "../../classes/User";
 
 export default new Command({
@@ -14,7 +14,7 @@ export default new Command({
     ],
     visibility: "dev",
     async action(msg) {
-        const options = {
+        const options: EmbedOptions = {
             title: `Salty Bot`,
             url: Salty.config.homepage,
             description: `Last started on ${
@@ -22,33 +22,33 @@ export default new Command({
             }`,
             fields: [
                 {
-                    title: `Hosted on`,
-                    description:
+                    name: `Hosted on`,
+                    value:
                         process.env.MODE === "server"
                             ? "Server"
                             : "Local instance",
                 },
-                { title: `Owner`, description: Salty.config.owner.username },
+                { name: `Owner`, value: Salty.config.owner.username },
                 {
-                    title: `Servers`,
-                    description: `Running on ${Guild.size} servers`,
+                    name: `Servers`,
+                    value: `Running on ${Guild.size} servers`,
                 },
-                { title: `Users`, description: `Handling ${User.size} users` },
+                { name: `Users`, value: `Handling ${User.size} users` },
                 {
-                    title: `Developers`,
-                    description: `${Salty.config.devs.length} contributors`,
+                    name: `Developers`,
+                    value: `${Salty.config.devs.length} contributors`,
                 },
                 {
-                    title: `Blacklist`,
-                    description: `${
-                        User.filter((u) => u.black_listed).length
+                    name: `Blacklist`,
+                    value: `${
+                        User.filter((u: User) => u.black_listed).length
                     } troublemakers`,
                 },
             ],
             inline: true,
         };
         if (process.env.DEBUG === "true") {
-            options.footer = `Debug mode active`;
+            options.footer = { text: `Debug mode active` };
         }
         await Salty.embed(msg, options);
     },

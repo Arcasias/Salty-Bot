@@ -1,9 +1,14 @@
-import fs from "fs";
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = require("fs");
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
 const emojiPath = "./assets/img/saltmoji";
-export default new Command({
+exports.default = new Command_1.default({
     name: "emoji",
     keys: ["emojis", "saltmoji", "saltmojis"],
     help: [
@@ -18,32 +23,28 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg, args) {
-        fs.readdir(emojiPath, (error, files) => {
-            if (error) {
-                return error(error);
+        const files = await utils_1.promisify(fs_1.readdir.bind(null, emojiPath));
+        const pngs = files.filter((file) => file.split(".").pop() === "png");
+        const emojiNames = pngs.map((name) => name.split(".").shift());
+        if (args[0]) {
+            const arg = args[0].toLowerCase();
+            let emoji = null;
+            if (["rand", "random"].includes(arg)) {
+                emoji = utils_1.choice(emojiNames);
             }
-            let pngs = files.filter((file) => file.split(".").pop() === "png");
-            let emojiNames = pngs.map((name) => name.split(".").shift());
-            if (args[0]) {
-                let arg = args[0].toLowerCase();
-                let emoji = false;
-                if ("rand" === arg || "random" === arg) {
-                    emoji = choice(emojiNames);
-                }
-                else if (emojiNames.includes(arg)) {
-                    emoji = arg;
-                }
-                if (emoji) {
-                    msg.delete();
-                    return msg.channel.send({
-                        files: [`${emojiPath}/${emoji}.png`],
-                    });
-                }
+            else if (emojiNames.includes(arg)) {
+                emoji = arg;
             }
-            Salty.embed(msg, {
-                title: "list of saltmojis",
-                description: emojiNames.join("\n"),
-            });
+            if (emoji) {
+                msg.delete();
+                return Salty_1.default.message(msg, "", {
+                    files: [`${emojiPath}/${emoji}.png`],
+                });
+            }
+        }
+        Salty_1.default.embed(msg, {
+            title: "list of saltmojis",
+            description: emojiNames.join("\n"),
         });
     },
 });

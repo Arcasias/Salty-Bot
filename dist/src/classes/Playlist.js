@@ -1,6 +1,11 @@
-import ytdl from "ytdl-core";
-import Model from "./Model";
-class Playlist extends Model {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ytdl_core_1 = __importDefault(require("ytdl-core"));
+const Model_1 = __importDefault(require("./Model"));
+class Playlist extends Model_1.default {
     constructor() {
         super(...arguments);
         this.connection = null;
@@ -12,23 +17,14 @@ class Playlist extends Model {
     get playing() {
         return this.queue[this.pointer];
     }
-    /**
-     * Adds new items to the queue.
-     */
     add(...songs) {
         songs.forEach(({ duration, title, url }) => {
             this.queue.push({ duration, title, url });
         });
     }
-    /**
-     * Clears the queue and stops anything playing
-     */
     empty() {
         this.queue = [];
     }
-    /**
-     * Stops the dispatcher
-     */
     end() {
         if (this.connection) {
             this.connection.dispatcher.end();
@@ -56,7 +52,7 @@ class Playlist extends Model {
         }
     }
     play() {
-        this.connection.playStream(ytdl(this.playing.url, { filter: "audioonly" }));
+        this.connection.play(ytdl_core_1.default(this.playing.url, { filter: "audioonly" }));
         this.connection.dispatcher.on("end", () => this.onEnd());
     }
     remove(...indices) {
@@ -113,4 +109,11 @@ class Playlist extends Model {
         }
     }
 }
-export default Playlist;
+Playlist.fields = [
+    "connection",
+    "continue",
+    "queue",
+    "pointer",
+    "repeat",
+];
+exports.default = Playlist;

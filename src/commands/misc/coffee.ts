@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 
 export default new Command({
     name: "coffee",
@@ -18,11 +18,13 @@ export default new Command({
     async action(msg) {
         const { author } = msg;
         const mention = msg.mentions.users.first();
-        const options = {
+        const options: EmbedOptions = {
             title: "this is a nice coffee",
             description: "specially made for you ;)",
-            image:
-                "https://cdn.cnn.com/cnnnext/dam/assets/150929101049-black-coffee-stock-super-tease.jpg",
+            image: {
+                url:
+                    "https://cdn.cnn.com/cnnnext/dam/assets/150929101049-black-coffee-stock-super-tease.jpg",
+            },
             color: 0x523415,
         };
         if (mention) {
@@ -30,20 +32,6 @@ export default new Command({
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
                 options.description = `Made with ♥ by **${author.username}** for **${mention.username}**`;
-            }
-        } else {
-            if (Salty.fishing[author.id]) {
-                if ("coffee" === Salty.fishing[author.id].bait) {
-                    options.title =
-                        "<author> threw another coffee into the sea";
-                    options.description =
-                        "you already did that, such a waste:c";
-                } else {
-                    Salty.fishing[author.id].bait = "coffee";
-                    options.title =
-                        "<author> just threw a coffee into the sea !";
-                    options.description = "what could possibly happen ?";
-                }
             }
         }
         await Salty.embed(msg, options);

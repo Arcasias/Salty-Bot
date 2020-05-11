@@ -1,10 +1,16 @@
-import Command from "../../classes/Command";
-import { EmptyObject, IncorrectValue, MissingArg, OutOfRange, } from "../../classes/Exception";
-import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
-import { formatDuration } from "../../utils";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Exception_1 = require("../../classes/Exception");
+const Guild_1 = __importDefault(require("../../classes/Guild"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
+const list_1 = require("../../data/list");
 const DISPLAY_LIMIT = 25;
-export default new Command({
+exports.default = new Command_1.default({
     name: "queue",
     keys: ["playlist", "q"],
     help: [
@@ -23,13 +29,13 @@ export default new Command({
     ],
     visibility: "public",
     async action(msg, args) {
-        const { playlist } = Guild.get(msg.guild.id);
-        if (args[0] && Salty.getList("delete").includes(args[0])) {
+        const { playlist } = Guild_1.default.get(msg.guild.id);
+        if (args[0] && list_1.remove.includes(args[0])) {
             if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+                throw new Exception_1.EmptyObject("queue");
             }
             if (!args[1]) {
-                throw new MissingArg("song number");
+                throw new Exception_1.MissingArg("song number");
             }
             else {
                 args.shift();
@@ -38,49 +44,47 @@ export default new Command({
             const songIds = Array.isArray(songs)
                 ? [...new Set(...songs)]
                 : [songs];
-            // Checks for validity
             for (let i = 0; i < songIds.length; i++) {
                 if (isNaN(songIds[i])) {
-                    throw new IncorrectValue("song", "number");
+                    throw new Exception_1.IncorrectValue("song", "number");
                 }
-                songIds[i]--; // converting human logical index to array index
+                songIds[i]--;
                 if (playlist.queue.length <= songIds[i] || songIds[i] < 0) {
-                    throw new OutOfRange(songIds[i]);
+                    throw new Exception_1.OutOfRange(songIds[i]);
                 }
             }
             const removed = playlist.remove(...songs);
             const message = Array.isArray(songs)
                 ? `Songs n°${songs.map((s) => s + 1)} removed from the queue`
                 : `Song n°${songs[0] + 1} - **${removed[0].title}** removed from the queue`;
-            Salty.success(msg, message);
+            Salty_1.default.success(msg, message);
         }
-        else if (args[0] && Salty.getList("clear").includes(args[0])) {
+        else if (args[0] && list_1.clear.includes(args[0])) {
             playlist.empty();
-            Salty.success(msg, "queue cleared");
+            Salty_1.default.success(msg, "queue cleared");
         }
         else {
             if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+                throw new Exception_1.EmptyObject("queue");
             }
-            // Returns an embed message displaying all songs
             let totalDuration = 0;
             const options = {
                 title: "current queue",
                 fields: [],
-                footer: `repeat: ${playlist.repeat}`,
+                footer: { text: `repeat: ${playlist.repeat}` },
             };
             options.fields = playlist.queue
                 .slice(0, DISPLAY_LIMIT)
                 .map(({ duration, title, url }, i) => {
                 const name = `${i + 1}) ${title}`;
-                const description = `${formatDuration(duration)} - [Open in browser](${url})`;
+                const description = `${utils_1.formatDuration(duration)} - [Open in browser](${url})`;
                 totalDuration += duration;
                 return {
-                    title: playlist.pointer === i ? "> " + name : name,
-                    description,
+                    name: playlist.pointer === i ? "> " + name : name,
+                    value: description,
                 };
             });
-            options.description = `total duration: ${formatDuration(totalDuration)}`;
+            options.description = `total duration: ${utils_1.formatDuration(totalDuration)}`;
             if (playlist.connection) {
                 const playlistTitle = playlist.playing.title;
                 const title = 20 < playlistTitle.length
@@ -88,7 +92,7 @@ export default new Command({
                     : playlistTitle;
                 options.description += ". Currently playing: " + title;
             }
-            Salty.embed(msg, options);
+            Salty_1.default.embed(msg, options);
         }
     },
 });

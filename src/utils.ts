@@ -5,7 +5,7 @@
 /**
  * Returns a random item from a given array.
  */
-function choice(array: any[]): any[] {
+function choice<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
 }
 
@@ -26,7 +26,7 @@ function clean(string: string): string {
  * Format a given duration. If none is given, duration is set to current time.
  * Returned string is formatted as "HH:mm:ss".
  */
-function formatDuration(time: null | string = null): string {
+function formatDuration(time: number = null): string {
     const d: Date = new Date(time);
     const formatted: number[] = [
         Math.max(d.getHours() - 1, 0),
@@ -49,7 +49,7 @@ function generate(percentage: number): boolean {
  * - sequentially if an array of numbers
  */
 function isSorted(array: (string | number)[]): boolean {
-    for (let i: number = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         if (i < array.length && array[i + 1] < array[i]) {
             return false;
         }

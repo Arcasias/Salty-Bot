@@ -1,8 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice, clean } from "../../utils";
-
-const meanList = Salty.getList("meaning");
+import { answers as listAnswers, meaning } from "../../data/list";
 
 export default new Command({
     name: "talk",
@@ -24,12 +23,12 @@ export default new Command({
         let meanFound = [];
         let answers = [];
 
-        for (let mean in meanList) {
-            for (let i = 0; i < meanList[mean].list.length; i++) {
+        for (let mean in meaning) {
+            for (let i = 0; i < meaning[mean].list.length; i++) {
                 if (
                     !meanFound.includes(mean) &&
                     cleanedMsg.match(
-                        new RegExp(" " + meanList[mean].list[i] + " ", "g")
+                        new RegExp(" " + meaning[mean].list[i] + " ", "g")
                     )
                 ) {
                     meanFound.push(mean);
@@ -40,21 +39,18 @@ export default new Command({
             for (let i = 0; i < meanFound.length; i++) {
                 for (
                     let j = 0;
-                    j < meanList[meanFound[i]].answers.length;
+                    j < meaning[meanFound[i]].listAnswers.length;
                     j++
                 ) {
                     answers.push(
-                        choice(
-                            Salty.getList("answers")[
-                                meanList[meanFound[i]].answers[j]
-                            ]
-                        )
+                        choice(answers[meaning[meanFound[i]].answers[j]])
                     );
                 }
             }
             await Salty.message(msg, answers.join(", "));
         } else {
-            await Salty.message(msg, choice(Salty.getList("answers")["rand"]));
+            const random: string[] = answers["rand"];
+            await Salty.message(msg, choice(random));
         }
     },
 });

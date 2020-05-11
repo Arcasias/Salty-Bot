@@ -19,9 +19,7 @@ export default new Command({
             playlist.skip();
             Salty.success(
                 msg,
-                `skipped **${
-                    playlist.getPlaying().title
-                }**, but it was trash anyway`,
+                `skipped **${playlist.playing.title}**, but it was trash anyway`,
                 { react: "⏩" }
             );
         } else {
