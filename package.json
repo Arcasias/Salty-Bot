@@ -1,12 +1,13 @@
 {
     "name": "salty",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "A crude and useful bot",
     "main": "main.js",
     "scripts": {
-        "start": "node index.js",
-        "test": "node test.js",
-        "pretty": "prettier --write \"./**/*.{js,jsx,json}\""
+        "start": "node --experimental-modules dist/index.js",
+        "test": "node --experimental-modules dist/test.js",
+        "pretty": "prettier --write \"./**/*.{ts,json}\"",
+        "build": "tsc"
     },
     "type": "module",
     "repository": {
@@ -20,7 +21,9 @@
     },
     "homepage": "https://github.com/Arcasias/Salty-Bot",
     "dependencies": {
-        "discord.js": "^12.2.0",
+        "@discordjs/opus": "^0.3.2",
+        "discord.js": "github:discordjs/discord.js",
+        "erlpack": "github:discordapp/erlpack",
         "googleapis": "^50.0.0",
         "imgur": "^0.3.1",
         "npm": "^6.14.5",
@@ -30,5 +33,8 @@
         "qunit": "^2.10.0",
         "ytdl-core": "^2.1.2"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "@types/node": "^13.13.5",
+        "@types/pg": "^7.14.3"
+    }
 }
