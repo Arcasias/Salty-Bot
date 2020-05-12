@@ -51,6 +51,38 @@ function promisify(fn) {
     });
 }
 exports.promisify = promisify;
+function search(array, target) {
+    let closest = [];
+    let closestAccuracy = 0;
+    for (const el of array) {
+        let accuracy = 0;
+        let remainingString = el;
+        for (const char of target) {
+            const charIndexInEl = remainingString.indexOf(char);
+            const step = 100 / el.length;
+            if (charIndexInEl === 0) {
+                accuracy += step;
+            }
+            else if (charIndexInEl > -1) {
+                accuracy += step * 0.99;
+            }
+            else {
+                accuracy = 0;
+                break;
+            }
+            remainingString = remainingString.slice(charIndexInEl + 1);
+        }
+        if (accuracy > closestAccuracy) {
+            closest = [el];
+            closestAccuracy = accuracy;
+        }
+        else if (accuracy === closestAccuracy) {
+            closest.push(el);
+        }
+    }
+    return { closest, accuracy: closestAccuracy };
+}
+exports.search = search;
 function shuffle(array) {
     const copy = array.slice();
     for (let i = copy.length - 1; i > 0; i--) {
@@ -80,21 +112,21 @@ function debug(...message) {
         return;
     }
     if (process.env.MODE === "local") {
-        message.unshift(`${colors.RESET + formatDuration()} ${colors.MAGENTA}DEBUG${colors.RESET}:`);
+        message.unshift(`${colors.RESET + formatDuration()} ${colors.MAGENTA}DEBUG${colors.RESET} :`);
     }
     console.log(...message);
 }
 exports.debug = debug;
 function error(...message) {
     if (process.env.MODE === "local") {
-        message.unshift(`${colors.RESET + formatDuration()} ${colors.RED}ERROR${colors.RESET}:`);
+        message.unshift(`${colors.RESET + formatDuration()} ${colors.RED}ERROR${colors.RESET} :`);
     }
     console.error(...message);
 }
 exports.error = error;
 function log(...message) {
     if (process.env.MODE === "local") {
-        message.unshift(`${colors.RESET + formatDuration()} ${colors.CYAN}INFO${colors.RESET}:`);
+        message.unshift(`${colors.RESET + formatDuration()} ${colors.CYAN}INFO${colors.RESET} :`);
     }
     console.log(...message);
 }
@@ -104,7 +136,7 @@ function request(guild, user, msg) {
         ? `${colors.GREEN}"${msg}"${colors.RESET}`
         : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
     const message = [
-        `${colors.YELLOW + guild + colors.RESET} > ${colors.YELLOW + user + colors.RESET}:${content}`,
+        `${colors.YELLOW + guild + colors.RESET} > ${colors.YELLOW + user + colors.RESET} : ${content}`,
     ];
     if (process.env.MODE === "local") {
         message.unshift(`${colors.RESET + formatDuration()}`);
@@ -114,7 +146,7 @@ function request(guild, user, msg) {
 exports.request = request;
 function warn(...message) {
     if (process.env.MODE === "local") {
-        message.unshift(`${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${colors.RESET}:`);
+        message.unshift(`${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${colors.RESET} :`);
     }
     console.warn(...message);
 }

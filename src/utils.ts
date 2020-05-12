@@ -84,6 +84,39 @@ function promisify(
 }
 
 /**
+ * Searches an array of string for a given target. Returned result contains the
+ * closest match(es) and the accuracy of the match (between 0 and 100).
+ */
+function search(array: string[], target: string) {
+    let closest: string[] = [];
+    let closestAccuracy: number = 0;
+    for (const el of array) {
+        let accuracy = 0;
+        let remainingString = el;
+        for (const char of target) {
+            const charIndexInEl = remainingString.indexOf(char);
+            const step = 100 / el.length;
+            if (charIndexInEl === 0) {
+                accuracy += step;
+            } else if (charIndexInEl > -1) {
+                accuracy += step * 0.99;
+            } else {
+                accuracy = 0;
+                break;
+            }
+            remainingString = remainingString.slice(charIndexInEl + 1);
+        }
+        if (accuracy > closestAccuracy) {
+            closest = [el];
+            closestAccuracy = accuracy;
+        } else if (accuracy === closestAccuracy) {
+            closest.push(el);
+        }
+    }
+    return { closest, accuracy: closestAccuracy };
+}
+
+/**
  * Returns a shuffled copy of the given array.
  * @param {any[]} array
  * @returns {any[]}
@@ -130,7 +163,7 @@ function debug(...message: any[]) {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.MAGENTA}DEBUG${
                 colors.RESET
-            }:`
+            } :`
         );
     }
     console.log(...message);
@@ -141,7 +174,7 @@ function error(...message: any[]) {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.RED}ERROR${
                 colors.RESET
-            }:`
+            } :`
         );
     }
     console.error(...message);
@@ -152,7 +185,7 @@ function log(...message: any[]) {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.CYAN}INFO${
                 colors.RESET
-            }:`
+            } :`
         );
     }
     console.log(...message);
@@ -165,7 +198,7 @@ function request(guild: string, user: string, msg: string) {
     const message = [
         `${colors.YELLOW + guild + colors.RESET} > ${
             colors.YELLOW + user + colors.RESET
-        }:${content}`,
+        } : ${content}`,
     ];
     if (process.env.MODE === "local") {
         message.unshift(`${colors.RESET + formatDuration()}`);
@@ -178,7 +211,7 @@ function warn(...message: any[]) {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${
                 colors.RESET
-            }:`
+            } :`
         );
     }
     console.warn(...message);
@@ -193,6 +226,7 @@ export {
     isSorted,
     possessive,
     promisify,
+    search,
     shuffle,
     title,
     // Log

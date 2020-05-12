@@ -163,7 +163,7 @@ async function _onMessage(msg) {
         msg.content = msg.content.slice(1);
         interaction = true;
     }
-    const msgArray = msg.content
+    const msgArgs = msg.content
         .split(" ")
         .filter((word) => word.trim() !== "");
     if (!interaction) {
@@ -173,7 +173,7 @@ async function _onMessage(msg) {
         return error(msg, "you seem to be blacklisted. To find out why, ask my glorious creator");
     }
     utils_1.request(msg.guild.name, author.username, msg.content);
-    if (!msgArray.length) {
+    if (!msgArgs.length) {
         return message(msg, "yes?");
     }
     if (!user) {
@@ -182,20 +182,24 @@ async function _onMessage(msg) {
     if (mention && !mention.bot && !User_1.default.get(mention.id)) {
         await User_1.default.create({ discord_id: mention.id });
     }
-    for (let i = 0; i < msgArray.length; i++) {
-        const args = msgArray.slice(i + 1);
-        const commandName = commands.keys[utils_1.clean(msgArray[i])];
-        const command = commands.list.get(commandName);
-        if (command) {
-            if (args[0] && list.help.includes(args[0])) {
-                return commands.list.get("help").run(msg, [commandName]);
-            }
-            else {
-                return command.run(msg, args);
-            }
+    const commandName = msgArgs.shift();
+    const actualName = commands.keys[utils_1.clean(commandName)];
+    const command = commands.list.get(actualName);
+    if (command) {
+        if (msgArgs[0] && list.help.includes(msgArgs[0])) {
+            return commands.list.get("help").run(msg, [actualName]);
+        }
+        else {
+            return command.run(msg, msgArgs);
         }
     }
-    return commands.list.get("talk").run(msg, msgArray);
+    const { closest, accuracy } = utils_1.search(Object.keys(commands.keys), commandName);
+    if (accuracy > 60) {
+        return message(msg, `command "${commandName}" doesn't exist. Did you mean "${closest.join(`" or "`)}"?`);
+    }
+    else {
+        return commands.list.get("talk").run(msg, msgArgs);
+    }
 }
 async function _onMessageReactionAdd(msgReact, author) {
     if (author.bot) {

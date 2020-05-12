@@ -10,6 +10,7 @@ import {
     log,
     promisify,
     request,
+    search,
     title,
 } from "../utils";
 import Command from "./Command";
@@ -269,7 +270,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     }
 
     // Clean the message of any undesired spaces
-    const msgArray: string[] = msg.content
+    const msgArgs: string[] = msg.content
         .split(" ")
         .filter((word) => word.trim() !== "");
 
@@ -288,7 +289,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
 
     request(msg.guild.name, author.username, msg.content);
 
-    if (!msgArray.length) {
+    if (!msgArgs.length) {
         return message(msg, "yes?");
     }
 
@@ -299,19 +300,30 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     if (mention && !mention.bot && !User.get(mention.id)) {
         await User.create({ discord_id: mention.id });
     }
-    for (let i = 0; i < msgArray.length; i++) {
-        const args: string[] = msgArray.slice(i + 1);
-        const commandName: string = commands.keys[clean(msgArray[i])];
-        const command: Command | QuickCommand = commands.list.get(commandName);
-        if (command) {
-            if (args[0] && list.help.includes(args[0])) {
-                return commands.list.get("help").run(msg, [commandName]);
-            } else {
-                return command.run(msg, args);
-            }
+    const commandName: string = msgArgs.shift();
+    const actualName: string = commands.keys[clean(commandName)];
+    const command: Command | QuickCommand = commands.list.get(actualName);
+    if (command) {
+        if (msgArgs[0] && list.help.includes(msgArgs[0])) {
+            return commands.list.get("help").run(msg, [actualName]);
+        } else {
+            return command.run(msg, msgArgs);
         }
     }
-    return commands.list.get("talk").run(msg, msgArray);
+    const { closest, accuracy } = search(
+        Object.keys(commands.keys),
+        commandName
+    );
+    if (accuracy > 60) {
+        return message(
+            msg,
+            `command "${commandName}" doesn't exist. Did you mean "${closest.join(
+                `" or "`
+            )}"?`
+        );
+    } else {
+        return commands.list.get("talk").run(msg, msgArgs);
+    }
 }
 
 /**
