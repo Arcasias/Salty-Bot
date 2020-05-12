@@ -12,7 +12,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.connection) {

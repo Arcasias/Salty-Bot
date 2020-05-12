@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 import { choice, possessive } from "../../utils";
+import { owner } from "../../config";
 
 export default new Command({
     name: "avatar",
@@ -18,41 +19,30 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg) {
-        // Sets author as default user and adapt color to his/her role
-        const mention = msg.mentions.users.first();
-        const targetUser = mention ? mention : msg.author;
-
-        const name = mention ? mention.displayName : msg.member.displayName;
-        const color = mention
-            ? mention.highestRole.color
-            : msg.member.highestRole.color;
-        let desc = "This is a huge piece of shit";
-
-        // If there is someone in the mention list, sets that user as new default then generates random color for the swag
-        if (targetUser.bot) {
-            desc = "That's just a crappy bot"; // bot
-        } else if (targetUser.id === Salty.config.owner.id) {
-            desc = "He's the coolest guy i know ^-^"; // owner
-        } else if (Salty.isAdmin(targetUser, msg.guild)) {
-            desc = "It's a cute piece of shit"; // admin
-        }
-
-        // Creates embed message
-        const options: any = {
-            title: `this is ${possessive(name)} profile pic`,
+    async action({ msg, target }) {
+        const options: EmbedOptions = {
+            title: `this is ${possessive(
+                target.member.displayName
+            )} profile pic`,
+            color: target.member.displayColor,
         };
-
-        if (targetUser.id === Salty.bot.user.id) {
+        if (target.user.id === Salty.bot.user.id) {
             // if Salty
             const files = fs.readdirSync("assets/img/salty");
             const pics = files.filter((f) => f.split(".").pop() === "png");
             options.title = `how cute, you asked for my profile pic ^-^`;
-            options.file = path.join("assets/img/salty/", choice(pics));
+            options.files = [path.join("assets/img/salty/", choice(pics))];
         } else {
-            options.image = targetUser.avatarURL;
-            options.color = parseInt(color);
-            options.description = desc;
+            if (target.user.bot) {
+                options.description = "That's just a crappy bot"; // bot
+            } else if (target.user.id === owner.id) {
+                options.description = "He's the coolest guy i know ^-^"; // owner
+            } else if (Salty.isAdmin(target.user, msg.guild)) {
+                options.description = "It's a cute piece of shit"; // admin
+            } else {
+                options.description = "This is a huge piece of shit"; // else
+            }
+            options.image = { url: target.user.avatarURL({ size: 1024 }) };
         }
         await Salty.embed(msg, options);
     },

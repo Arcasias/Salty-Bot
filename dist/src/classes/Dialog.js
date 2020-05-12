@@ -25,11 +25,11 @@ class Dialog extends Model_1.default {
         }
     }
 }
-Dialog.fields = [
-    "origin",
-    "author",
-    "response",
-    "actions",
-    "timeOut",
-];
+Dialog.fields = {
+    actions: {},
+    author: null,
+    origin: null,
+    response: null,
+    timeOut: null,
+};
 exports.default = Dialog;

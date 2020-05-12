@@ -9,6 +9,10 @@ class User extends Model_1.default {
         return this.find((user) => user.discord_id === id);
     }
 }
-User.fields = ["discord_id", "black_listed", "todo"];
+User.fields = {
+    discord_id: "",
+    black_listed: "",
+    todo: "",
+};
 User.table = "users";
 exports.default = User;

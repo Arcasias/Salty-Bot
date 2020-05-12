@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 exports.default = new Command_1.default({
     name: "channel",
     keys: ["chan"],
@@ -25,7 +25,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "admin",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const guild = Guild_1.default.get(msg.guild.id);
         if (args[0] && list_1.add.includes(args[0])) {
             await Guild_1.default.update(guild.id, { default_channel: msg.channel.id });

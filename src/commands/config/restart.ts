@@ -11,7 +11,7 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg) {
+    async action({ msg }) {
         await Salty.success(msg, "Restarting ...");
         await Salty.restart();
     },

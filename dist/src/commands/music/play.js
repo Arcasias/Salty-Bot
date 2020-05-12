@@ -10,7 +10,7 @@ const Exception_1 = require("../../classes/Exception");
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 const youtube = new googleapis_1.youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
 const youtubeRegex = new RegExp(youtubeURL, "i");
@@ -28,7 +28,7 @@ async function addSong(msg, playlist, songURL) {
         url: songURL,
     });
     if (!playlist.connection) {
-        playlist.start(msg.member.voiceChannel);
+        playlist.start(msg.member.voice.channel);
     }
 }
 function generateQuery(q) {
@@ -62,8 +62,8 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
-        if (!msg.member.voiceChannel) {
+    async action({ msg, args }) {
+        if (!msg.member.voice.channel) {
             throw new Exception_1.SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild_1.default.get(msg.guild.id);
@@ -76,7 +76,7 @@ exports.default = new Command_1.default({
             if (playlist.connection) {
                 throw new Exception_1.SaltyException("I'm already playing");
             }
-            playlist.start(msg.member.voiceChannel);
+            playlist.start(msg.member.voice.channel);
         }
         if (arg.match(youtubeRegex)) {
             return addSongBound(arg);

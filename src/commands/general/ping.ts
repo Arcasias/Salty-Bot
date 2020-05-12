@@ -3,15 +3,15 @@ import Salty from "../../classes/Salty";
 import { generate, title } from "../../utils";
 
 const MESSAGES = [
-    "nearly perfect !",
+    "nearly perfect!",
     "that's pretty good",
     "that's ok, i guess",
     "that's a bit laggy",
     "that's quite laggy",
     "ok that's laggy as fuck",
     "WTF that's super laggy",
-    "Jesus Christ how can you manage with that much lag ?",
-    "dear god are you on a safari in the middle of the ocean ?",
+    "Jesus Christ how can you manage with that much lag?",
+    "dear god are you on a safari in the middle of the ocean?",
     "get off of this world you fucking chinese",
 ];
 
@@ -25,7 +25,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg) {
+    async action({ msg }) {
         // If too much salt, skips the latency test
         if (generate(3)) {
             await Salty.error(
@@ -41,7 +41,7 @@ export default new Command({
             await sentMsg.delete();
             await Salty.success(
                 msg,
-                `pong ! Latency is ${latency}. ${title(message)}`
+                `pong! Latency is ${latency}. ${title(message)}`
             );
         }
     },

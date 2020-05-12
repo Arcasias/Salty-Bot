@@ -22,7 +22,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const files = await utils_1.promisify(fs_1.readdir.bind(null, emojiPath));
         const pngs = files.filter((file) => file.split(".").pop() === "png");
         const emojiNames = pngs.map((name) => name.split(".").shift());

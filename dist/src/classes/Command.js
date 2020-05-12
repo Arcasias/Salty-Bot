@@ -14,7 +14,7 @@ const utils_1 = require("../utils");
 const Exception_1 = require("./Exception");
 const Model_1 = __importDefault(require("./Model"));
 const Salty_1 = __importDefault(require("./Salty"));
-const list = __importStar(require("../data/list"));
+const list = __importStar(require("../list"));
 const permissions = {
     public: null,
     admin: Salty_1.default.isAdmin,
@@ -23,7 +23,7 @@ const permissions = {
 };
 const MEANING_ACTIONS = [
     "add",
-    "delete",
+    "remove",
     "clear",
     "list",
     "bot",
@@ -31,10 +31,8 @@ const MEANING_ACTIONS = [
     "sell",
 ];
 class Command extends Model_1.default {
-    constructor() {
-        super(...arguments);
-        this.visibility = "public";
-        this.env = null;
+    constructor(values) {
+        super(values);
     }
     async run(msg, args) {
         try {
@@ -46,7 +44,14 @@ class Command extends Model_1.default {
                 utils_1.debug(this.name, this.env);
                 throw new Exception_1.SaltyException("WrongEnvironment", "it looks like I'm not in the right environment to do that");
             }
-            await this.action(msg, args);
+            const mentioned = Boolean(msg.mentions.users.size);
+            const target = {
+                user: mentioned ? msg.mentions.users.first() : msg.author,
+                member: mentioned ? msg.mentions.members.first() : msg.member,
+                isMention: mentioned,
+            };
+            const commandParams = { msg, args, target };
+            await this.action(commandParams);
         }
         catch (err) {
             if (err instanceof Exception_1.SaltyException) {
@@ -58,20 +63,20 @@ class Command extends Model_1.default {
         }
     }
     meaning(word) {
-        if (word && word.length) {
-            return (MEANING_ACTIONS.find((w) => list[w].includes(word)) || "string");
+        if (word) {
+            return (MEANING_ACTIONS.find((w) => list[w] && list[w].includes(word)) || "string");
         }
         else {
             return "noarg";
         }
     }
 }
-Command.fields = [
-    "action",
-    "help",
-    "keys",
-    "name",
-    "visibility",
-    "env",
-];
+Command.fields = {
+    action: null,
+    help: [],
+    keys: [],
+    name: "",
+    visibility: "public",
+    env: null,
+};
 exports.default = Command;

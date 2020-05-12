@@ -12,16 +12,16 @@ export default new Command({
         },
     ],
     visibility: "public",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.queue.length > 2) {
             playlist.shuffle();
-            Salty.success(msg, "queue shuffled !", { react: "🔀" });
+            Salty.success(msg, "queue shuffled!", { react: "🔀" });
         } else {
             Salty.error(
                 msg,
-                "don't you think you'd need more than 1 song to make it useful ?"
+                "don't you think you'd need more than 1 song to make it useful?"
             );
         }
     },

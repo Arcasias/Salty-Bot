@@ -28,7 +28,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    action(msg, args) {
+    async action({ msg, args }) {
         let { playlist } = Guild_1.default.get(msg.guild.id);
         const single = () => {
             playlist.repeat = "single";

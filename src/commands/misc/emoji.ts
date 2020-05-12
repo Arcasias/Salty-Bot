@@ -19,7 +19,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const files: string[] = await promisify(readdir.bind(null, emojiPath));
         const pngs = files.filter((file) => file.split(".").pop() === "png");
         const emojiNames = pngs.map((name) => name.split(".").shift());

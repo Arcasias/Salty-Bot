@@ -1,7 +1,8 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { add, remove } from "../../data/list";
+import { add, remove } from "../../list";
+import { TextChannel } from "discord.js";
 
 export default new Command({
     name: "channel",
@@ -21,14 +22,18 @@ export default new Command({
         },
     ],
     visibility: "admin",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const guild = Guild.get(msg.guild.id);
 
         if (args[0] && add.includes(args[0])) {
             await Guild.update(guild.id, { default_channel: msg.channel.id });
             await Salty.success(
                 msg,
-                `channel **${msg.channel.name}** has been successfuly set as default bot channel for **${msg.guild.name}**`
+                `channel **${
+                    (<TextChannel>msg.channel).name
+                }** has been successfuly set as default bot channel for **${
+                    msg.guild.name
+                }**`
             );
         } else if (args[0] && remove.includes(args[0])) {
             if (!guild.default_channel) {

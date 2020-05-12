@@ -8,6 +8,7 @@ const path_1 = __importDefault(require("path"));
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
+const config_1 = require("../../config");
 exports.default = new Command_1.default({
     name: "avatar",
     keys: ["pic", "picture", "pp"],
@@ -22,36 +23,31 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg) {
-        const mention = msg.mentions.users.first();
-        const targetUser = mention ? mention : msg.author;
-        const name = mention ? mention.displayName : msg.member.displayName;
-        const color = mention
-            ? mention.highestRole.color
-            : msg.member.highestRole.color;
-        let desc = "This is a huge piece of shit";
-        if (targetUser.bot) {
-            desc = "That's just a crappy bot";
-        }
-        else if (targetUser.id === Salty_1.default.config.owner.id) {
-            desc = "He's the coolest guy i know ^-^";
-        }
-        else if (Salty_1.default.isAdmin(targetUser, msg.guild)) {
-            desc = "It's a cute piece of shit";
-        }
+    async action({ msg, target }) {
         const options = {
-            title: `this is ${utils_1.possessive(name)} profile pic`,
+            title: `this is ${utils_1.possessive(target.member.displayName)} profile pic`,
+            color: target.member.displayColor,
         };
-        if (targetUser.id === Salty_1.default.bot.user.id) {
+        if (target.user.id === Salty_1.default.bot.user.id) {
             const files = fs_1.default.readdirSync("assets/img/salty");
             const pics = files.filter((f) => f.split(".").pop() === "png");
             options.title = `how cute, you asked for my profile pic ^-^`;
-            options.file = path_1.default.join("assets/img/salty/", utils_1.choice(pics));
+            options.files = [path_1.default.join("assets/img/salty/", utils_1.choice(pics))];
         }
         else {
-            options.image = targetUser.avatarURL;
-            options.color = parseInt(color);
-            options.description = desc;
+            if (target.user.bot) {
+                options.description = "That's just a crappy bot";
+            }
+            else if (target.user.id === config_1.owner.id) {
+                options.description = "He's the coolest guy i know ^-^";
+            }
+            else if (Salty_1.default.isAdmin(target.user, msg.guild)) {
+                options.description = "It's a cute piece of shit";
+            }
+            else {
+                options.description = "This is a huge piece of shit";
+            }
+            options.image = { url: target.user.avatarURL({ size: 1024 }) };
         }
         await Salty_1.default.embed(msg, options);
     },

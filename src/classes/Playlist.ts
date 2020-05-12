@@ -1,6 +1,6 @@
 import { VoiceConnection } from "discord.js";
 import ytdl from "ytdl-core";
-import Model from "./Model";
+import Model, { FieldsDescriptor } from "./Model";
 
 interface Song {
     duration: number;
@@ -11,17 +11,14 @@ interface Song {
 class Playlist extends Model {
     public connection: VoiceConnection | null = null;
     public continue: boolean = false;
-    public queue: Song[] = [];
     public pointer: number = -1;
+    public queue: Song[];
     public repeat: string = "off";
 
-    protected static readonly fields = [
-        "connection",
-        "continue",
-        "queue",
-        "pointer",
-        "repeat",
-    ];
+    protected static readonly fields: FieldsDescriptor = {
+        queue: [],
+        repeat: "off",
+    };
 
     public get playing(): Song {
         return this.queue[this.pointer];

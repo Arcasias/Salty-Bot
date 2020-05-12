@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice, clean } from "../../utils";
-import { answers as listAnswers, meaning } from "../../data/list";
+import { answers as listAnswers, meaning } from "../../list";
 
 export default new Command({
     name: "talk",
@@ -18,38 +18,30 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
-        let cleanedMsg = " " + args.map((arg) => clean(arg)).join(" ") + " ";
-        let meanFound = [];
-        let answers = [];
+    async action({ msg, args }) {
+        const cleanedMsg = " " + args.map((arg) => clean(arg)).join(" ") + " ";
+        const meanFound: string[] = [];
+        const answers: string[] = [];
 
-        for (let mean in meaning) {
-            for (let i = 0; i < meaning[mean].list.length; i++) {
+        for (const mean in meaning) {
+            for (const term of meaning[mean].list) {
                 if (
                     !meanFound.includes(mean) &&
-                    cleanedMsg.match(
-                        new RegExp(" " + meaning[mean].list[i] + " ", "g")
-                    )
+                    cleanedMsg.match(new RegExp(" " + term + " ", "g"))
                 ) {
                     meanFound.push(mean);
                 }
             }
         }
-        if (0 < meanFound.length) {
-            for (let i = 0; i < meanFound.length; i++) {
-                for (
-                    let j = 0;
-                    j < meaning[meanFound[i]].listAnswers.length;
-                    j++
-                ) {
-                    answers.push(
-                        choice(answers[meaning[meanFound[i]].answers[j]])
-                    );
+        if (meanFound.length) {
+            for (const meaningFound of meanFound) {
+                for (const answerType of meaning[meaningFound].answers) {
+                    answers.push(choice(listAnswers[answerType]));
                 }
             }
             await Salty.message(msg, answers.join(", "));
         } else {
-            const random: string[] = answers["rand"];
+            const random: string[] = listAnswers.rand;
             await Salty.message(msg, choice(random));
         }
     },

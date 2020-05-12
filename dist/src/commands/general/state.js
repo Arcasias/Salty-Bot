@@ -7,6 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const User_1 = __importDefault(require("../../classes/User"));
+const config_1 = require("../../config");
 exports.default = new Command_1.default({
     name: "state",
     keys: ["git", "instance", "local", "server"],
@@ -17,10 +18,10 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "dev",
-    async action(msg) {
+    async action({ msg }) {
         const options = {
             title: `Salty Bot`,
-            url: Salty_1.default.config.homepage,
+            url: config_1.homepage,
             description: `Last started on ${Salty_1.default.startTime.toString().split(" GMT")[0]}`,
             fields: [
                 {
@@ -29,7 +30,7 @@ exports.default = new Command_1.default({
                         ? "Server"
                         : "Local instance",
                 },
-                { name: `Owner`, value: Salty_1.default.config.owner.username },
+                { name: `Owner`, value: config_1.owner.username },
                 {
                     name: `Servers`,
                     value: `Running on ${Guild_1.default.size} servers`,
@@ -37,7 +38,7 @@ exports.default = new Command_1.default({
                 { name: `Users`, value: `Handling ${User_1.default.size} users` },
                 {
                     name: `Developers`,
-                    value: `${Salty_1.default.config.devs.length} contributors`,
+                    value: `${config_1.devs.length} contributors`,
                 },
                 {
                     name: `Blacklist`,

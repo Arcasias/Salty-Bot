@@ -21,21 +21,21 @@ export default new Command({
         {
             argument: "***array length***",
             effect:
-                "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we ?)",
+                "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we?)",
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             throw new MissingArg("length");
         }
-        if (args[0] < 1) {
+        if (Number(args[0]) < 1) {
             throw new IncorrectValue("length", "number between 1 and 10");
         }
 
         const runningMsg = await Salty.message(msg, "monkey sorting ...");
         let tests = 0;
-        let length = Math.min(args[0], 10);
+        let length = Math.min(Number(args[0]), 10);
         let list = [];
 
         const sortingTime = await new Promise((resolve) => {

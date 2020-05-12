@@ -8,6 +8,7 @@ const path_1 = require("path");
 const local_1 = require("./local");
 const Salty_1 = __importDefault(require("./src/classes/Salty"));
 const utils_1 = require("./src/utils");
+const config_1 = require("./src/config");
 if (process.env.SERVER) {
     process.env.MODE = "server";
 }
@@ -24,13 +25,13 @@ else {
     process.env.SERVER_PORT = local_1.SERVER_PORT;
 }
 utils_1.log(`Running on ${process.env.MODE} environment`);
-process.env.DEBUG = String(Salty_1.default.config.debug);
+process.env.DEBUG = String(config_1.debugMode);
 if (process.env.DEBUG) {
     utils_1.debug(`Debug is active`);
 }
-fs_1.readdir(Salty_1.default.config.tempImageFolder, (readErr, files) => {
+fs_1.readdir(config_1.tempImageFolder, (readErr, files) => {
     if (readErr) {
-        fs_1.mkdir(Salty_1.default.config.tempImageFolder, (mkdirErr) => {
+        fs_1.mkdir(config_1.tempImageFolder, (mkdirErr) => {
             if (mkdirErr) {
                 utils_1.error(mkdirErr);
             }
@@ -38,7 +39,7 @@ fs_1.readdir(Salty_1.default.config.tempImageFolder, (readErr, files) => {
         return;
     }
     files.forEach((file) => {
-        fs_1.unlink(path_1.join(Salty_1.default.config.tempImageFolder, file), (unlinkErr) => {
+        fs_1.unlink(path_1.join(config_1.tempImageFolder, file), (unlinkErr) => {
             if (unlinkErr) {
                 utils_1.error(unlinkErr);
             }

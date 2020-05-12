@@ -5,17 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 const STATUSINFO = {
     dnd: { title: "do not disturb", color: 15746887 },
     idle: { title: "idle", color: 16426522 },
     online: { title: "online", color: 4437378 },
+    invisible: { title: "invisible" },
 };
 exports.default = new Command_1.default({
     name: "presence",
     keys: ["game", "status"],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (args[0] && list_1.remove.includes(args[0])) {
             await Salty_1.default.bot.user.setPresence({ activity: null });
             Salty_1.default.success(msg, "current presence removed");

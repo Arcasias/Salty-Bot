@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Exception_1 = require("../../classes/Exception");
 const Salty_1 = __importDefault(require("../../classes/Salty"));
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 const INTERVALS = {};
 exports.default = new Command_1.default({
     name: "interval",
@@ -22,7 +22,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (args[0] && list_1.clear.includes(args[0])) {
             if (!INTERVALS[msg.guild.id]) {
                 throw new Exception_1.EmptyObject("interval");
@@ -34,7 +34,7 @@ exports.default = new Command_1.default({
             if (!args[0]) {
                 throw new Exception_1.MissingArg("delay");
             }
-            if (isNaN(args[0])) {
+            if (isNaN(Number(args[0]))) {
                 throw new Exception_1.IncorrectValue("delay", "number");
             }
             if (!args[1]) {

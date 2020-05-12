@@ -16,14 +16,14 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild_1.default.get(msg.guild.id);
         if (playlist.queue.length > 2) {
             playlist.shuffle();
-            Salty_1.default.success(msg, "queue shuffled !", { react: "🔀" });
+            Salty_1.default.success(msg, "queue shuffled!", { react: "🔀" });
         }
         else {
-            Salty_1.default.error(msg, "don't you think you'd need more than 1 song to make it useful ?");
+            Salty_1.default.error(msg, "don't you think you'd need more than 1 song to make it useful?");
         }
     },
 });

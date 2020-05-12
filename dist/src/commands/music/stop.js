@@ -7,7 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 exports.default = new Command_1.default({
     name: "stop",
     keys: [],
@@ -18,7 +18,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "admin",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild_1.default.get(msg.guild.id);
         if (playlist.connection) {
             playlist.stop();

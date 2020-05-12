@@ -11,11 +11,12 @@ const pureimage_1 = __importDefault(require("pureimage"));
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
+const config_1 = require("../../config");
 const defaultDim = [450, 300];
 const maxTempImages = 5;
 const fontFamily = "impact";
 let imgIndex = 1;
-let imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+let imgPath = path_1.default.join(config_1.tempImageFolder, `caption_temp_${imgIndex}.png`);
 function centerTxtVertical(y, metrics) {
     return y;
 }
@@ -30,15 +31,12 @@ exports.default = new Command_1.default({
     ],
     visibility: "public",
     mode: "local",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let canvas, c;
         let imgURL = msg.attachments.first()
             ? msg.attachments.first().url
             : null;
-        let imgText = args.length > 0 ? utils_1.title(args.join(" ").split("\\")) : null;
-        if (!Array.isArray(imgText)) {
-            imgText = [imgText];
-        }
+        const imgText = args.length ? args.join(" ").split("\\") : [];
         if (imgURL) {
             function urlDecode(res) {
                 pureimage_1.default.decodePNGFromStream(res).then((img) => {
@@ -96,7 +94,7 @@ exports.default = new Command_1.default({
                 await Salty_1.default.message(msg, "", { files: [imgPath] });
                 msg.delete();
                 imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `caption_temp_${imgIndex}.png`);
+                imgPath = path_1.default.join(config_1.tempImageFolder, `caption_temp_${imgIndex}.png`);
             }
             catch (err) {
                 utils_1.error(err);

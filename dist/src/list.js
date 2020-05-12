@@ -1,4 +1,6 @@
-export const add = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.add = [
     "add",
     "append",
     "create",
@@ -8,27 +10,27 @@ export const add = [
     "modify",
     "update",
 ];
-export const remove = ["delete", "remove", "del", "rm", "erase", "unset"];
-export const clear = ["clear", "cls", "empty", "cancel", "stop"];
-export const help = ["help", "halp", "info", "infos", "wtf", "?"];
-export const list = ["list", "ls", "l"];
-export const bot = ["bot", "salty"];
-export const buy = ["buy", "buying", "wtb"];
-export const sell = ["sell", "selling", "wts"];
-export const intro = [
-    "did you miss me ?",
-    "here I come to salt the day !",
-    "surprise, I'm back !",
-    "your favorite bot is back online !",
-    "powered up and ready to salt !",
+exports.remove = ["delete", "remove", "del", "rm", "erase", "unset"];
+exports.clear = ["clear", "cls", "empty", "cancel", "stop"];
+exports.help = ["help", "halp", "info", "infos", "wtf", "?"];
+exports.list = ["list", "ls", "l"];
+exports.bot = ["bot", "salty"];
+exports.buy = ["buy", "buying", "wtb"];
+exports.sell = ["sell", "selling", "wts"];
+exports.intro = [
+    "did you miss me?",
+    "here I come to salt the day!",
+    "surprise, I'm back!",
+    "your favorite bot is back online!",
+    "powered up and ready to salt!",
     "IT'S ME BOIIIIS",
-    "mmmmh... looks like there's a serious lack of salt here !",
-    "I have been reborn !",
+    "mmmmh... looks like there's a serious lack of salt here!",
+    "I have been reborn!",
     "looks like you're getting bored without me ;)",
-    "oh sweet, a whole server to fill with salt !",
-    "all aboard the salt train !",
+    "oh sweet, a whole server to fill with salt!",
+    "all aboard the salt train!",
 ];
-export const meaning = {
+exports.meaning = {
     yes: {
         answers: ["ack"],
         list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],
@@ -126,7 +128,7 @@ export const meaning = {
         ],
     },
 };
-export const answers = {
+exports.answers = {
     yes: ["yes", "yeah", "of course", "affirmative", "yup", "definitely"],
     no: ["no", "nope", "absolutely no"],
     greet: ["hi", "hello", "yo", "howdy", "hey", "hey there", "greetings"],
@@ -177,29 +179,29 @@ export const answers = {
     ],
     fine: ["fine", "I'm fine", "good", "I'm good"],
     rand: [
-        "busy right now but... \\*sigh\\* what do yo want ?",
-        "can you repeat ? That'd be so lovely",
+        "busy right now but... \\*sigh\\* what do yo want?",
+        "can you repeat? That'd be so lovely",
         "<catch phrase>",
-        "do I know you ?",
+        "do I know you?",
         "either you're talking to me, or you just messed up a command",
         "for your information, I have a monkeysort command that is ABSOLUTELY useless",
-        "hey I have other things to do ok ?",
-        "hey, you know, I'm a bot... that's AWESOME right ?",
+        "hey I have other things to do ok?",
+        "hey, you know, I'm a bot... that's AWESOME right?",
         "hmmm",
-        "huh ?",
+        "huh?",
         "i hate you",
         "i love you",
         "I'm vegan",
         "I used to be a knee like you, then I took an adventurer to the arrow",
         "I used to be an adventurer like you, then I took an arrow to the knee",
         "I used to be an arrow like you, then I took an knee to the adventurer",
-        "it looks like you're... talking to me ?",
+        "it looks like you're... talking to me?",
         "just for your information, I'm not actually made of salt. I'm 100% JavaScript ;)",
         "maybe the Earth is flat after all",
-        "oh, are you trying to talk to me ?",
+        "oh, are you trying to talk to me?",
         "oh, hello human",
         "oh hey, didn't notice you there",
-        "yes ?",
+        "yes?",
         "you'll choke to death on 3 pounds of steel",
         "you should try to say that the other way around",
         "yup, still there",
@@ -211,66 +213,66 @@ export const answers = {
         "watch your language",
         "watch your mouth",
         "that was not nice",
-        "you really kiss your mother with that mouth ?",
-        "you're that pathetic that you have to use such words to express yourself ?",
+        "you really kiss your mother with that mouth?",
+        "you're that pathetic that you have to use such words to express yourself?",
         "you better talk nice to me",
         "you know I can swear too",
-        "you sure you're old enough to use that word ?",
+        "you sure you're old enough to use that word?",
     ],
 };
-export const jokes = [
+exports.jokes = [
     "your life",
     "the current Bitcoin value",
     "well your life is a joke anyway",
     "a blind man walks into a bar, a chair, the waitress...",
     "i don't like jokes about german sausages. They really are the wurst",
     "two routers decided to marry. The wedding wasn't much, but the reception was incredible",
-    "what's the hardest part in a vegetable ?\n\n\nThe wheelchair",
-    "how do you make a clown cry ?\n\n\nBy killing his whole family",
-    "how do you make a plumber cry ?\n\n\nBy killing his whole family",
-    "why do crabs never give to charity ?\n\n\nBecause they're shellfish",
-    "why did the chicken cross the road ?\n\n\nBecause you touch yourself at night",
-    "why aren't Microsoft developers wearing glasses ?\n\n\nBecause they can C sharp",
-    "what did the triceratops say to the dimetrodon ?\n\n\nNothing. They lived at different epochs",
+    "what's the hardest part in a vegetable?\n\n\nThe wheelchair",
+    "how do you make a clown cry?\n\n\nBy killing his whole family",
+    "how do you make a plumber cry?\n\n\nBy killing his whole family",
+    "why do crabs never give to charity?\n\n\nBecause they're shellfish",
+    "why did the chicken cross the road?\n\n\nBecause you touch yourself at night",
+    "why aren't Microsoft developers wearing glasses?\n\n\nBecause they can C sharp",
+    "what did the triceratops say to the dimetrodon?\n\n\nNothing. They lived at different epochs",
 ];
-export const pureSalt = [
+exports.pureSalt = [
     "you're a complete retard",
     "you're retarded as fuck",
     "kill yourself",
-    "what the fuck is wrong with you ?",
+    "what the fuck is wrong with you?",
     "you should definitely kill yourself",
     "you're definitely retarded",
     "LMAO you're dumb as shit",
     "get a life",
-    "you really aren't smart, are you ?",
-    "are you retarded ?",
+    "you really aren't smart, are you?",
+    "are you retarded?",
     "autistic fuck",
     "you're just bad",
-    "what's the point of you ?",
+    "what's the point of you?",
     "try killing yourself next time",
     "i hope you step on a lego",
     "end your pathetic life",
-    "have you already considered suicide ?",
+    "have you already considered suicide?",
     "please don't reproduce",
     "please use condoms",
     "i hope you're using condoms",
     "don't breed. Please",
-    "and when exactly are you planning to die ?",
+    "and when exactly are you planning to die?",
     "please die",
-    "considered suicide already ? You should try it",
+    "considered suicide already? You should try it",
     "please do me a favor and jump off a rooftop",
     "looks like your age matches your IQ",
     "i don't have the time nor the crayons to explain how dumb you are",
     'i wrote you a poem, it goes like this: "Roses are red, go fuck yourself"',
 ];
-export const surpriseSong = [
+exports.surpriseSong = [
     "https://www.youtube.com/watch?v=pjepDoTUvAI",
     "https://www.youtube.com/watch?v=Q3E7L_RoyTU",
     "https://www.youtube.com/watch?v=ShCBna7Eg1Q",
     "https://www.youtube.com/watch?v=6ua6OahzdwQ",
     "https://www.youtube.com/watch?v=FLdFL3TNoDo",
 ];
-export const waifus = [
+exports.waifus = [
     {
         name: "Rory Mercury",
         anime: "Gate: Jieitai Kanochi nite, Kaku Tatakaeri",
@@ -302,28 +304,16 @@ export const waifus = [
         ],
     },
 ];
-export const fishingStart = [
-    "After a clean throw, <author> sits down nearby and waits for fishes to take the bait",
-    "<author> throws a bait far away",
-    "<author> just threw a sharp hook deep into the sea",
-];
-export const fishingStartDescription = [
-    "Time to wait for a bit",
-    "Time to wait now",
-    "It's now time to wait",
-    "Patience now",
-];
-export const fishes = ["🐟", "🐠", "🐡"];
-export const transactionSuccess = [
+exports.transactionSuccess = [
     "A pleasure to make business with you",
     "Come back anytime",
     "Hope to see you soon",
 ];
-export const fault = {
+exports.fault = {
     start: [
         "",
-        "want to know why you lost ? ",
-        "isn't it obvious ? ",
+        "want to know why you lost? ",
+        "isn't it obvious? ",
         "I think it was pretty clear ",
     ],
     sentence: [

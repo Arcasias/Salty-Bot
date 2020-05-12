@@ -21,36 +21,38 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
-        const mention = msg.mentions.members.first();
-        const user = User_1.default.get(mention.user.id);
+    async action({ msg, args, target }) {
+        const user = User_1.default.get(target.user.id);
         switch (this.meaning(args[0])) {
             case "add":
-                if (!mention) {
+                if (!target.isMention) {
                     throw new Exception_1.MissingMention();
                 }
-                if (mention.id === Salty_1.default.bot.user.id) {
-                    return Salty_1.default.message(msg, "Woa woa woa ! You can't just put me in my own blacklist you punk !");
+                if (target.user.id === Salty_1.default.bot.user.id) {
+                    return Salty_1.default.message(msg, "Woa woa woa! You can't just put me in my own blacklist you punk!");
+                }
+                if (Salty_1.default.isDev(target.user)) {
+                    return Salty_1.default.message(msg, "Can't add a Salty dev to the blacklist: they're too nice for that!");
                 }
                 await User_1.default.update(user.id, { black_listed: true });
                 await Salty_1.default.success(msg, `<mention> added to the blacklist`);
                 break;
-            case "delete":
-                if (!mention) {
+            case "remove":
+                if (!target.isMention) {
                     throw new Exception_1.MissingMention();
                 }
-                if (mention.id === Salty_1.default.bot.user.id) {
+                if (target.user.id === Salty_1.default.bot.user.id) {
                     return Salty_1.default.message(msg, "Well... as you might expect, I'm not in the blacklist.");
                 }
                 if (!user.black_listed) {
-                    throw new Exception_1.SaltyException(`**${mention.nickname}** is not in the blacklist`);
+                    throw new Exception_1.SaltyException(`**${target.member.nickname}** is not in the blacklist`);
                 }
                 await User_1.default.update(user.id, { black_listed: false });
                 await Salty_1.default.success(msg, `<mention> removed from the blacklist`);
                 break;
             default:
-                if (mention) {
-                    if (mention.id === Salty_1.default.bot.user.id) {
+                if (target.isMention) {
+                    if (target.user.id === Salty_1.default.bot.user.id) {
                         await Salty_1.default.message(msg, "Nope, I am not and will never be in the blacklist");
                     }
                     else {

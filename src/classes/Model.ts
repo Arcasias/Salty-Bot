@@ -1,11 +1,14 @@
 import { log } from "../utils";
 import Database, { FieldsValues } from "./Database";
+import { SaltyException } from "./Exception";
+
+export type FieldsDescriptor = { [field: string]: any };
 
 class Model {
     public id: number;
 
     protected static instances: { [constructor: string]: any[] } = {};
-    protected static readonly fields: string[] = [];
+    protected static readonly fields: FieldsDescriptor = {};
     protected static readonly table: string;
 
     constructor(values: FieldsValues = {}) {
@@ -21,18 +24,23 @@ class Model {
                 this.id = values.id;
                 delete values.id;
             } else {
-                throw new Error(`Missing field "id" on stored model ${name}.`);
+                throw new SaltyException(
+                    `Missing field "id" on stored model ${name}.`
+                );
             }
         }
         // Model has a fields descriptor
-        if (fields.length) {
-            const toAssign = fields.slice();
+        if (Object.keys(fields).length) {
+            const toAssign = Object.assign({}, fields);
             for (const key in values) {
-                const keyIndex = toAssign.indexOf(key);
-                if (keyIndex > -1) {
+                if (key in toAssign) {
                     this[key] = values[key];
-                    toAssign.splice(keyIndex, 1);
+                    delete toAssign[key];
                 }
+            }
+            // Apply default values to unassigned fields
+            for (const key in toAssign) {
+                this[key] = toAssign[key];
             }
         }
     }
@@ -63,6 +71,11 @@ class Model {
      * Returns the list of instances fetched from the attached database table.
      */
     public static async load<M extends Model>(): Promise<M[]> {
+        if (!this.table) {
+            throw new SaltyException(
+                `Model "${this.name}" is not stored in the database.`
+            );
+        }
         const records: FieldsValues[] = await Database.read(this.table);
         const instances = records.map((values) => new this(values));
         log(`${records.length} ${this.name}(s) loaded`);
@@ -76,6 +89,11 @@ class Model {
     public static async create<M extends Model>(
         ...allValues: any[]
     ): Promise<M[]> {
+        if (!this.table) {
+            throw new SaltyException(
+                `Model "${this.name}" is not stored in the database. Use 'new ${this.name}(...)' instead.`
+            );
+        }
         const records: FieldsValues[] = await Database.create(
             this.table,
             ...allValues
@@ -88,6 +106,11 @@ class Model {
      * Destroys the instances linked to the given ids.
      */
     static async remove(...ids: number[]): Promise<void> {
+        if (!this.table) {
+            throw new SaltyException(
+                `Model "${this.name}" is not stored in the database.`
+            );
+        }
         const newInstances: Model[] = [];
         const instances: Model[] = Model.instances[this.name];
         for (let i = 0; i < instances.length; i++) {
@@ -107,6 +130,13 @@ class Model {
         ids: number | number[],
         values: any
     ): Promise<M[]> {
+        if (!this.table) {
+            throw new SaltyException(
+                `Model "${
+                    this.name
+                }" is not stored in the database. Use 'Object.assign(${this.name.toLocaleLowerCase()}, ...)' instead.`
+            );
+        }
         if (!Array.isArray(ids)) {
             ids = [ids];
         }
@@ -125,9 +155,9 @@ class Model {
         return <M[]>instances;
     }
 
-    //-------------------------------------------------------------------------
-    // Array functions applied to all current instances
-    //-------------------------------------------------------------------------
+    public static all<M extends Model>(): M[] {
+        return Model.instances[this.name];
+    }
 
     public static filter<M extends Model>(callbackfn: {
         (instance?: M, index?: number): boolean;
@@ -141,7 +171,7 @@ class Model {
         return Model.instances[this.name].find(predicate);
     }
 
-    public static forEach<M extends Model>(callbackfn: {
+    public static each<M extends Model>(callbackfn: {
         (instance?: M, index?: number): void;
     }): void {
         return Model.instances[this.name].forEach(callbackfn);

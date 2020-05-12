@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
-import { jokes } from "../../data/list";
+import { jokes } from "../../list";
 
 export default new Command({
     name: "joke",
@@ -9,11 +9,11 @@ export default new Command({
     help: [
         {
             argument: null,
-            effect: "Tells some spicy jokes !",
+            effect: "Tells some spicy jokes!",
         },
     ],
     visibility: "public",
-    async action(msg) {
+    async action({ msg }) {
         await Salty.message(msg, choice(jokes));
     },
 });

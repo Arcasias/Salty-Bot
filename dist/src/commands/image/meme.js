@@ -11,6 +11,7 @@ const pureimage_1 = __importDefault(require("pureimage"));
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
+const config_1 = require("../../config");
 const defaultWidth = 450;
 const maxTempImages = 5;
 const fontFamily = "helvetica";
@@ -18,7 +19,7 @@ const baseFontSize = 24;
 const baseLineSpace = 30;
 const baseBorder = 10;
 let imgIndex = 1;
-let imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+let imgPath = path_1.default.join(config_1.tempImageFolder, `meme_temp_${imgIndex}.png`);
 exports.default = new Command_1.default({
     name: "meme",
     keys: ["memes"],
@@ -30,7 +31,7 @@ exports.default = new Command_1.default({
     ],
     visibility: "public",
     mode: "local",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let canvas, c, fontSize, border, lineSpace;
         const imgURL = msg.attachments.first()
             ? msg.attachments.first().url
@@ -116,7 +117,7 @@ exports.default = new Command_1.default({
                 await Salty_1.default.message(msg, "", { files: [imgPath] });
                 msg.delete();
                 imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
-                imgPath = path_1.default.join(Salty_1.default.config.tempImageFolder, `meme_temp_${imgIndex}.png`);
+                imgPath = path_1.default.join(config_1.tempImageFolder, `meme_temp_${imgIndex}.png`);
             }
             catch (err) {
                 utils_1.error(err);

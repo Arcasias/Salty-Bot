@@ -1,24 +1,24 @@
 import { Message, User } from "discord.js";
-import Model from "./Model";
+import Model, { FieldsDescriptor } from "./Model";
 
 const DIALOG_TIMEOUT = 300000;
 
 type Actions = { [id: string]: Function };
 
 class Dialog extends Model {
-    public origin: Message;
-    public author: User;
-    public response: Message;
     public actions: Actions;
+    public author: User;
+    public origin: Message;
+    public response: Message;
     public timeOut: number | null;
 
-    protected static readonly fields = [
-        "origin",
-        "author",
-        "response",
-        "actions",
-        "timeOut",
-    ];
+    protected static readonly fields: FieldsDescriptor = {
+        actions: {},
+        author: null,
+        origin: null,
+        response: null,
+        timeOut: null,
+    };
 
     constructor(origin: Message, response: Message, actions: Actions = {}) {
         super(...arguments);

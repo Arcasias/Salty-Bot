@@ -23,9 +23,9 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         switch (this.meaning(args[0])) {
-            case "delete":
+            case "remove":
                 const commandName: string = args[1];
                 if (!commandName) {
                     throw new MissingArg("command");

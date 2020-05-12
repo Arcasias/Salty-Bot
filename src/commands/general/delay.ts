@@ -16,13 +16,15 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             throw new MissingArg("anything");
         }
 
         const delay =
-            args[1] && !isNaN(args[0]) ? parseInt(args.shift()) * 1000 : 5000;
+            args[1] && !isNaN(Number(args[0]))
+                ? parseInt(args.shift()) * 1000
+                : 5000;
 
         msg.delete().catch();
 

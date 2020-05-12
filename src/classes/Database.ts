@@ -23,7 +23,7 @@ async function connect(): Promise<void> {
     try {
         await client.connect();
     } catch (err) {
-        error(err);
+        error(err.stack);
     }
 }
 
@@ -31,7 +31,7 @@ async function disconnect(): Promise<void> {
     try {
         await client.end();
     } catch (err) {
-        error(err);
+        error(err.stack);
     }
 }
 
@@ -60,12 +60,17 @@ async function create(
 
     debug({ query: queryString.join(" ") }, variables);
 
-    const result: QueryResult = await client.query(
-        queryString.join(" "),
-        variables
-    );
-    log(`${result.rows.length} record(s) of type "${table}" created.`);
-    return result.rows;
+    try {
+        const result: QueryResult = await client.query(
+            queryString.join(" "),
+            variables
+        );
+        log(`${result.rows.length} record(s) of type "${table}" created.`);
+        return result.rows;
+    } catch (err) {
+        error(err.stack);
+        return [];
+    }
 }
 
 async function remove(
@@ -87,12 +92,17 @@ async function remove(
 
     debug({ query: queryString.join(" ") }, variables);
 
-    const result: QueryResult = await client.query(
-        queryString.join(" "),
-        variables
-    );
-    log(`${result.rows.length} record(s) of type "${table}" removed.`);
-    return result.rows;
+    try {
+        const result: QueryResult = await client.query(
+            queryString.join(" "),
+            variables
+        );
+        log(`${result.rows.length} record(s) of type "${table}" removed.`);
+        return result.rows;
+    } catch (err) {
+        error(err.stack);
+        return [];
+    }
 }
 
 async function read(
@@ -126,11 +136,16 @@ async function read(
 
     debug({ query: queryString.join(" ") }, variables);
 
-    const result: QueryResult = await client.query(
-        queryString.join(" "),
-        variables
-    );
-    return result.rows;
+    try {
+        const result: QueryResult = await client.query(
+            queryString.join(" "),
+            variables
+        );
+        return result.rows;
+    } catch (err) {
+        error(err.stack);
+        return [];
+    }
 }
 
 async function update(
@@ -160,12 +175,17 @@ async function update(
 
     debug({ query: queryString.join(" ") }, variables);
 
-    const result: QueryResult = await client.query(
-        queryString.join(" "),
-        variables
-    );
-    log(`${result.rows.length} record(s) of type "${table}" updated.`);
-    return result.rows;
+    try {
+        const result: QueryResult = await client.query(
+            queryString.join(" "),
+            variables
+        );
+        log(`${result.rows.length} record(s) of type "${table}" updated.`);
+        return result.rows;
+    } catch (err) {
+        error(err.stack);
+        return [];
+    }
 }
 
 export default {

@@ -75,7 +75,7 @@ QUnit.module(
             console.log = (...args) => {
                 assert.deepEqual(args, [
                     "\u001b[0m00:00:00",
-                    '\u001b[33mCoolKidsServer\u001b[0m > \u001b[33mCoolestBoi\u001b[0m : \u001b[32m"aaa"\u001b[0m',
+                    '\u001b[33mCoolKidsServer\u001b[0m > \u001b[33mCoolestBoi\u001b[0m:\u001b[32m"aaa"\u001b[0m',
                 ]);
             };
             request("CoolKidsServer", "CoolestBoi", "aaa");

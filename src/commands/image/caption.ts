@@ -6,16 +6,14 @@ import PImage from "pureimage";
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error, title } from "../../utils";
+import { tempImageFolder } from "../../config";
 
 const defaultDim = [450, 300];
 const maxTempImages = 5;
 const fontFamily = "impact";
 
 let imgIndex = 1;
-let imgPath = path.join(
-    Salty.config.tempImageFolder,
-    `caption_temp_${imgIndex}.png`
-);
+let imgPath = path.join(tempImageFolder, `caption_temp_${imgIndex}.png`);
 
 function centerTxtVertical(
     y: number,
@@ -35,19 +33,14 @@ export default new Command({
     ],
     visibility: "public",
     mode: "local",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let canvas, c;
         let imgURL = msg.attachments.first()
             ? msg.attachments.first().url
             : null;
-        let imgText =
-            args.length > 0 ? title(args.join(" ").split("\\")) : null;
+        const imgText: string[] = args.length ? args.join(" ").split("\\") : [];
 
-        if (!Array.isArray(imgText)) {
-            imgText = [imgText];
-        }
-
-        // First step : find an image and create a canvas from it, or a blank canvas if no image is found.
+        // First step:find an image and create a canvas from it, or a blank canvas if no image is found.
         if (imgURL) {
             function urlDecode(res) {
                 PImage.decodePNGFromStream(res).then((img) => {
@@ -73,7 +66,7 @@ export default new Command({
             textHandler();
         }
 
-        // Second step : apply text on canvas if needed.
+        // Second step:apply text on canvas if needed.
         function textHandler() {
             if (imgText[0]) {
                 let fontSize = 64;
@@ -125,7 +118,7 @@ export default new Command({
             }
         }
 
-        // Last step : send canvas.
+        // Last step:send canvas.
         async function sendCanvas() {
             try {
                 await PImage.encodePNGToStream(
@@ -137,7 +130,7 @@ export default new Command({
 
                 imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
                 imgPath = path.join(
-                    Salty.config.tempImageFolder,
+                    tempImageFolder,
                     `caption_temp_${imgIndex}.png`
                 );
             } catch (err) {

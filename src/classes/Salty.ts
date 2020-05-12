@@ -1,14 +1,13 @@
 import Discord, { MessageEmbedOptions } from "discord.js";
 import { readdir, readFileSync, statSync } from "fs";
 import { join, sep } from "path";
-import config from "../data/config";
-import * as list from "../data/list";
+import { devs, prefix, owner } from "../config";
+import * as list from "../list";
 import {
     choice,
     clean,
     error as logError,
     log,
-    possessive,
     promisify,
     request,
     title,
@@ -20,6 +19,7 @@ import Guild from "./Guild";
 import QuickCommand from "./QuickCommand";
 import User from "./User";
 import { SaltyException } from "./Exception";
+import formatter from "./Formatter";
 
 interface CategoryInfo {
     description: string;
@@ -33,35 +33,27 @@ interface CommandHelp {
     visibility: string;
 }
 
-interface Commands {
+interface CommandManager {
     list: Discord.Collection<string, Command | QuickCommand>;
-    keys: Keys;
-    help: HelpInfo;
+    keys: { [id: string]: string };
+    help: { [id: string]: HelpManager };
 }
 
 export interface EmbedOptions extends MessageEmbedOptions {
     actions?: any;
     content?: string;
-    file?: string;
     inline?: boolean;
     react?: string;
 }
 
-interface Help {
+interface HelpManager {
     info: CategoryInfo;
     commands: CommandHelp[];
 }
 
-interface PreGuild {
-    discord_id: string;
-}
-
-type Keys = { [id: string]: string };
-type HelpInfo = { [id: string]: Help };
-
 const bot: Discord.Client = new Discord.Client();
 const commandsRootPath: string[] = ["src", "commands"];
-const commands: Commands = {
+const commands: CommandManager = {
     list: new Discord.Collection(),
     keys: {},
     help: {},
@@ -79,8 +71,11 @@ async function _destroy(restart: boolean): Promise<void> {
     log("Disconnecting ...");
     bot.destroy();
     if (restart) {
+        commands.list.clear();
+        commands.keys = {};
+        commands.help = {};
         await _loadCommands(...commandsRootPath).then(() =>
-            log("Commands loaded")
+            log("Static commands loaded")
         );
         await bot.login(process.env.DISCORD_API);
     } else {
@@ -96,8 +91,9 @@ async function _loadCommand(
     commandPath: string,
     category: string
 ): Promise<void> {
-    const command: any = await import(commandPath);
-    const { name, keys, visibility } = command.default;
+    const commandImport: any = await import(commandPath);
+    const command: Command = commandImport.default;
+    const { name, keys, visibility } = command;
     if (process.env.DEBUG === "true") {
         for (let key of [name, ...keys]) {
             if (commands.list.get(key)) {
@@ -151,7 +147,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
         if (stats.isDirectory()) {
             // If the file is a directory => executes the function inside
             _loadCommands(fullpath);
-        } else if (["js", "cjs", "mjs"].includes(extension)) {
+        } else if (["ts", "js", "cjs", "mjs"].includes(extension)) {
             // If the file is a category info file => extracts its data
             try {
                 const commandPath: string = join("..", "..", fullpath).replace(
@@ -171,7 +167,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
  * @private
  */
 async function _onChannelDelete(channel: Discord.GuildChannel): Promise<void> {
-    Guild.forEach((guild: Guild) => {
+    Guild.each((guild: Guild) => {
         if (guild.default_channel === channel.id) {
             const guildDBId: number = Guild.get(channel.guild.id).id;
             Guild.update(guildDBId, { default_channel: false });
@@ -212,7 +208,7 @@ async function _onGuildMemberAdd(member: Discord.GuildMember): Promise<void> {
     if (guild.default_channel) {
         const channel = getTextChannel(guild.default_channel);
         channel.send(
-            `Hey there ${member.user} ! Have a great time here (͡° ͜ʖ ͡°)`
+            `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
         );
     }
     if (guild.default_role) {
@@ -267,7 +263,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
             (mention && mention.id === bot.user.id);
     }
     // Look for a prefix. Deleted if found.
-    if (msg.content.startsWith(config.prefix)) {
+    if (msg.content.startsWith(prefix)) {
         msg.content = msg.content.slice(1);
         interaction = true;
     }
@@ -293,7 +289,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     request(msg.guild.name, author.username, msg.content);
 
     if (!msgArray.length) {
-        return message(msg, "yes ?");
+        return message(msg, "yes?");
     }
 
     // Ensures the user and all mentions are already registered
@@ -345,7 +341,7 @@ async function _onMessageReactionAdd(
  * @private
  */
 async function _onReady(): Promise<void> {
-    const preGuilds: PreGuild[] = [];
+    const preGuilds: { discord_id: string }[] = [];
     bot.user.setStatus("online"); // dnd , online , idle
     bot.guilds.cache.forEach((discordGuild) => {
         const guild: Guild = Guild.get(discordGuild.id);
@@ -414,28 +410,32 @@ async function embed(
         options.color = 0xffffff;
     }
     if (options.title) {
-        options.title = title(options.title);
+        options.title = formatter.format(title(options.title), msg);
     }
     if (options.description) {
-        options.description = title(options.description);
+        options.description = formatter.format(title(options.description), msg);
     }
     if (options.footer && options.footer.text) {
-        options.footer.text = title(options.footer.text);
+        options.footer.text = formatter.format(title(options.footer.text), msg);
     }
     if (options.fields) {
         options.fields = options.fields.map((field) => {
             return {
                 name: title(field.name),
-                value: replacer(title(field.value), msg),
+                value: formatter.format(title(field.value), msg),
                 inline,
             };
         });
     }
     const embed = new Discord.MessageEmbed(options);
-    const newMessage: Discord.Message = await message(msg, content, {
-        embed,
-        files: options.files,
-    });
+    const newMessage: Discord.Message = await message(
+        msg,
+        formatter.format(content, msg),
+        {
+            embed,
+            files: options.files,
+        }
+    );
     if (react && !msg.deleted) {
         msg.react(react).catch();
     }
@@ -483,7 +483,7 @@ function getTextChannel(channelId: string): Discord.TextChannel {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 function isOwner(user: Discord.User): boolean {
-    return user.id === config.owner.id;
+    return user.id === owner.id;
 }
 
 /**
@@ -491,10 +491,7 @@ function isOwner(user: Discord.User): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 function isDev(user: Discord.User): boolean {
-    if (isOwner(user)) {
-        return true;
-    }
-    return config.devs.includes(user.id);
+    return isOwner(user) || devs.includes(user.id);
 }
 
 /**
@@ -502,10 +499,11 @@ function isDev(user: Discord.User): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
-    if (isDev(user) || isOwner(user)) {
-        return true;
-    }
-    return guild.member(user).hasPermission("ADMINISTRATOR");
+    return (
+        isOwner(user) ||
+        isDev(user) ||
+        guild.member(user).hasPermission("ADMINISTRATOR")
+    );
 }
 
 /**
@@ -516,24 +514,10 @@ function message(
     text: string,
     options?: Discord.MessageOptions
 ): Promise<any> {
-    return msg.channel.send(text && replacer(title(text), msg), options);
-}
-
-/**
- * Returns a string in which the <author> and <mention> tags have been replaced
- * with their related values contained in the 'msg' object.
- */
-function replacer(string: string, msg: Discord.Message): string {
-    const author: string = msg.member.nickname || msg.author.username;
-    const mention: Discord.GuildMember = msg.mentions.members.first();
-    const target: string = mention
-        ? mention.nickname || mention.user.username
-        : author;
-    return string
-        .replace(/<author>'s/g, possessive(author))
-        .replace(/<author>/g, author)
-        .replace(/<mention>'s/g, possessive(target))
-        .replace(/<mention>/g, target);
+    return msg.channel.send(
+        text && formatter.format(title(text), msg),
+        options
+    );
 }
 
 /**
@@ -563,7 +547,9 @@ async function start(): Promise<void> {
         ),
         Guild.load(),
         User.load(),
-        _loadCommands(...commandsRootPath).then(() => log("Commands loaded")),
+        _loadCommands(...commandsRootPath).then(() =>
+            log("Static commands loaded")
+        ),
     ]);
     await bot.login(process.env.DISCORD_API);
 }
@@ -613,7 +599,6 @@ export default {
     // Properties
     bot,
     commands,
-    config,
     startTime,
     // Functions
     destroy,
@@ -625,7 +610,6 @@ export default {
     isDev,
     isOwner,
     message,
-    replacer,
     restart,
     setQuickCommand,
     success,

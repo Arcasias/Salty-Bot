@@ -5,7 +5,7 @@ import {
     MissingArg,
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
-import { clear } from "../../data/list";
+import { clear } from "../../list";
 
 const INTERVALS = {};
 
@@ -23,7 +23,7 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (args[0] && clear.includes(args[0])) {
             if (!INTERVALS[msg.guild.id]) {
                 throw new EmptyObject("interval");
@@ -35,7 +35,7 @@ export default new Command({
             if (!args[0]) {
                 throw new MissingArg("delay");
             }
-            if (isNaN(args[0])) {
+            if (isNaN(Number(args[0]))) {
                 throw new IncorrectValue("delay", "number");
             }
             if (!args[1]) {

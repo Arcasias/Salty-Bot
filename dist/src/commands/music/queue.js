@@ -8,7 +8,7 @@ const Exception_1 = require("../../classes/Exception");
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 const DISPLAY_LIMIT = 25;
 exports.default = new Command_1.default({
     name: "queue",
@@ -28,7 +28,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const { playlist } = Guild_1.default.get(msg.guild.id);
         if (args[0] && list_1.remove.includes(args[0])) {
             if (!playlist.queue[0]) {
@@ -45,15 +45,16 @@ exports.default = new Command_1.default({
                 ? [...new Set(...songs)]
                 : [songs];
             for (let i = 0; i < songIds.length; i++) {
-                if (isNaN(songIds[i])) {
+                let songId = Number(songIds[i]);
+                if (isNaN(songId)) {
                     throw new Exception_1.IncorrectValue("song", "number");
                 }
-                songIds[i]--;
-                if (playlist.queue.length <= songIds[i] || songIds[i] < 0) {
-                    throw new Exception_1.OutOfRange(songIds[i]);
+                songId--;
+                if (playlist.queue.length <= songId || songId < 0) {
+                    throw new Exception_1.OutOfRange(songId);
                 }
             }
-            const removed = playlist.remove(...songs);
+            const removed = playlist.remove(...songs.map(Number));
             const message = Array.isArray(songs)
                 ? `Songs n°${songs.map((s) => s + 1)} removed from the queue`
                 : `Song n°${songs[0] + 1} - **${removed[0].title}** removed from the queue`;

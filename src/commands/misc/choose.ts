@@ -14,11 +14,11 @@ export default new Command({
         {
             argument: "***first choice*** / ***second choice*** / ...",
             effect:
-                "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok ?",
+                "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok?",
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0] || !args[1]) {
             throw new MissingArg("choices");
         }

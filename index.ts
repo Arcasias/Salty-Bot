@@ -13,6 +13,7 @@ import {
 } from "./local";
 import Salty from "./src/classes/Salty";
 import { debug, error, log } from "./src/utils";
+import { debugMode, tempImageFolder } from "./src/config";
 
 // Set ENV according to the presence of a SERVER env variable
 if (process.env.SERVER) {
@@ -31,15 +32,15 @@ if (process.env.SERVER) {
 }
 log(`Running on ${process.env.MODE} environment`);
 
-process.env.DEBUG = String(Salty.config.debug);
+process.env.DEBUG = String(debugMode);
 if (process.env.DEBUG) {
     debug(`Debug is active`);
 }
 
 // Empty temp images folder
-readdir(Salty.config.tempImageFolder, (readErr, files) => {
+readdir(tempImageFolder, (readErr, files) => {
     if (readErr) {
-        mkdir(Salty.config.tempImageFolder, (mkdirErr) => {
+        mkdir(tempImageFolder, (mkdirErr) => {
             if (mkdirErr) {
                 error(mkdirErr);
             }
@@ -47,7 +48,7 @@ readdir(Salty.config.tempImageFolder, (readErr, files) => {
         return;
     }
     files.forEach((file) => {
-        unlink(join(Salty.config.tempImageFolder, file), (unlinkErr) => {
+        unlink(join(tempImageFolder, file), (unlinkErr) => {
             if (unlinkErr) {
                 error(unlinkErr);
             }

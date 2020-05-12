@@ -7,7 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Exception_1 = require("../../classes/Exception");
 const PromiseManager_1 = __importDefault(require("../../classes/PromiseManager"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 async function changeNames(msg, transformation) {
     const members = msg.guild.members.array();
     const progressMsg = await Salty_1.default.message(msg, `changing nicknames: 0/${members.length}`);
@@ -43,7 +43,7 @@ exports.default = new Command_1.default({
         },
         {
             argument: "add ***particle***",
-            effect: "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters !",
+            effect: "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters!",
         },
         {
             argument: "remove ***particle***",
@@ -51,7 +51,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "admin",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const particle = args.slice(1).join(" ");
         const particleRegex = new RegExp(particle, "g");
         if (!args[0]) {

@@ -5,7 +5,7 @@ import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { choice, generate, promisify } from "../../utils";
-import { surpriseSong } from "../../data/list";
+import { surpriseSong } from "../../list";
 
 const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
@@ -31,7 +31,7 @@ async function addSong(msg, playlist, songURL) {
         url: songURL,
     });
     if (!playlist.connection) {
-        playlist.start(msg.member.voiceChannel);
+        playlist.start(msg.member.voice.channel);
     }
 }
 
@@ -71,8 +71,8 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
-        if (!msg.member.voiceChannel) {
+    async action({ msg, args }) {
+        if (!msg.member.voice.channel) {
             throw new SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild.get(msg.guild.id);
@@ -85,7 +85,7 @@ export default new Command({
             if (playlist.connection) {
                 throw new SaltyException("I'm already playing");
             }
-            playlist.start(msg.member.voiceChannel);
+            playlist.start(msg.member.voice.channel);
         }
         if (arg.match(youtubeRegex)) {
             return addSongBound(arg);

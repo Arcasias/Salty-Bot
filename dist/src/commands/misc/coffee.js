@@ -19,9 +19,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg) {
-        const { author } = msg;
-        const mention = msg.mentions.users.first();
+    async action({ msg, target }) {
         const options = {
             title: "this is a nice coffee",
             description: "specially made for you ;)",
@@ -30,12 +28,12 @@ exports.default = new Command_1.default({
             },
             color: 0x523415,
         };
-        if (mention) {
-            if (mention.id === Salty_1.default.bot.user.id) {
+        if (target.isMention) {
+            if (target.user.id === Salty_1.default.bot.user.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             }
             else {
-                options.description = `Made with ♥ by **${author.username}** for **${mention.username}**`;
+                options.description = `Made with ♥ by **${msg.member.displayName}** for **${target.member.displayName}**`;
             }
         }
         await Salty_1.default.embed(msg, options);

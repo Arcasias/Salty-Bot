@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
 const Database_1 = __importDefault(require("./Database"));
+const Exception_1 = require("./Exception");
 class Model {
     constructor(values = {}) {
         const { name, table, fields } = this.Class;
@@ -18,17 +19,19 @@ class Model {
                 delete values.id;
             }
             else {
-                throw new Error(`Missing field "id" on stored model ${name}.`);
+                throw new Exception_1.SaltyException(`Missing field "id" on stored model ${name}.`);
             }
         }
-        if (fields.length) {
-            const toAssign = fields.slice();
+        if (Object.keys(fields).length) {
+            const toAssign = Object.assign({}, fields);
             for (const key in values) {
-                const keyIndex = toAssign.indexOf(key);
-                if (keyIndex > -1) {
+                if (key in toAssign) {
                     this[key] = values[key];
-                    toAssign.splice(keyIndex, 1);
+                    delete toAssign[key];
                 }
+            }
+            for (const key in toAssign) {
+                this[key] = toAssign[key];
             }
         }
     }
@@ -49,17 +52,26 @@ class Model {
         return Model.instances[this.name].length;
     }
     static async load() {
+        if (!this.table) {
+            throw new Exception_1.SaltyException(`Model "${this.name}" is not stored in the database.`);
+        }
         const records = await Database_1.default.read(this.table);
         const instances = records.map((values) => new this(values));
         utils_1.log(`${records.length} ${this.name}(s) loaded`);
         return instances;
     }
     static async create(...allValues) {
+        if (!this.table) {
+            throw new Exception_1.SaltyException(`Model "${this.name}" is not stored in the database. Use 'new ${this.name}(...)' instead.`);
+        }
         const records = await Database_1.default.create(this.table, ...allValues);
         const instances = records.map((values) => new this(values));
         return instances;
     }
     static async remove(...ids) {
+        if (!this.table) {
+            throw new Exception_1.SaltyException(`Model "${this.name}" is not stored in the database.`);
+        }
         const newInstances = [];
         const instances = Model.instances[this.name];
         for (let i = 0; i < instances.length; i++) {
@@ -73,6 +85,9 @@ class Model {
         Model.instances[this.name] = newInstances;
     }
     static async update(ids, values) {
+        if (!this.table) {
+            throw new Exception_1.SaltyException(`Model "${this.name}" is not stored in the database. Use 'Object.assign(${this.name.toLocaleLowerCase()}, ...)' instead.`);
+        }
         if (!Array.isArray(ids)) {
             ids = [ids];
         }
@@ -86,13 +101,16 @@ class Model {
         });
         return instances;
     }
+    static all() {
+        return Model.instances[this.name];
+    }
     static filter(callbackfn) {
         return Model.instances[this.name].filter(callbackfn);
     }
     static find(predicate) {
         return Model.instances[this.name].find(predicate);
     }
-    static forEach(callbackfn) {
+    static each(callbackfn) {
         return Model.instances[this.name].forEach(callbackfn);
     }
     static map(callbackfn) {
@@ -103,5 +121,5 @@ class Model {
     }
 }
 Model.instances = {};
-Model.fields = [];
+Model.fields = {};
 exports.default = Model;

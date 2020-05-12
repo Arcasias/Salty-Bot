@@ -21,7 +21,7 @@ async function connect() {
         await client.connect();
     }
     catch (err) {
-        utils_1.error(err);
+        utils_1.error(err.stack);
     }
 }
 async function disconnect() {
@@ -29,7 +29,7 @@ async function disconnect() {
         await client.end();
     }
     catch (err) {
-        utils_1.error(err);
+        utils_1.error(err.stack);
     }
 }
 async function create(table, ...allValues) {
@@ -47,9 +47,15 @@ async function create(table, ...allValues) {
     queryString.push(allFormattedValues.join());
     queryString.push("RETURNING *;");
     utils_1.debug({ query: queryString.join(" ") }, variables);
-    const result = await client.query(queryString.join(" "), variables);
-    utils_1.log(`${result.rows.length} record(s) of type "${table}" created.`);
-    return result.rows;
+    try {
+        const result = await client.query(queryString.join(" "), variables);
+        utils_1.log(`${result.rows.length} record(s) of type "${table}" created.`);
+        return result.rows;
+    }
+    catch (err) {
+        utils_1.error(err.stack);
+        return [];
+    }
 }
 async function remove(table, ids) {
     const queryString = ["DELETE FROM", _sanitizeTable(table)];
@@ -61,9 +67,15 @@ async function remove(table, ids) {
     queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
     variables.push(...ids);
     utils_1.debug({ query: queryString.join(" ") }, variables);
-    const result = await client.query(queryString.join(" "), variables);
-    utils_1.log(`${result.rows.length} record(s) of type "${table}" removed.`);
-    return result.rows;
+    try {
+        const result = await client.query(queryString.join(" "), variables);
+        utils_1.log(`${result.rows.length} record(s) of type "${table}" removed.`);
+        return result.rows;
+    }
+    catch (err) {
+        utils_1.error(err.stack);
+        return [];
+    }
 }
 async function read(table, ids, fields) {
     const queryString = ["SELECT"];
@@ -88,8 +100,14 @@ async function read(table, ids, fields) {
         variables.push(...ids);
     }
     utils_1.debug({ query: queryString.join(" ") }, variables);
-    const result = await client.query(queryString.join(" "), variables);
-    return result.rows;
+    try {
+        const result = await client.query(queryString.join(" "), variables);
+        return result.rows;
+    }
+    catch (err) {
+        utils_1.error(err.stack);
+        return [];
+    }
 }
 async function update(table, ids, values) {
     const queryString = ["UPDATE", _sanitizeTable(table), "SET"];
@@ -107,9 +125,15 @@ async function update(table, ids, values) {
     queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
     variables.push(...ids);
     utils_1.debug({ query: queryString.join(" ") }, variables);
-    const result = await client.query(queryString.join(" "), variables);
-    utils_1.log(`${result.rows.length} record(s) of type "${table}" updated.`);
-    return result.rows;
+    try {
+        const result = await client.query(queryString.join(" "), variables);
+        utils_1.log(`${result.rows.length} record(s) of type "${table}" updated.`);
+        return result.rows;
+    }
+    catch (err) {
+        utils_1.error(err.stack);
+        return [];
+    }
 }
 exports.default = {
     connect,

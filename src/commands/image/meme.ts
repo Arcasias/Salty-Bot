@@ -6,6 +6,7 @@ import PImage from "pureimage";
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error, title } from "../../utils";
+import { tempImageFolder } from "../../config";
 
 const defaultWidth = 450;
 const maxTempImages = 5;
@@ -15,10 +16,7 @@ const baseLineSpace = 30;
 const baseBorder = 10;
 
 let imgIndex = 1;
-let imgPath = path.join(
-    Salty.config.tempImageFolder,
-    `meme_temp_${imgIndex}.png`
-);
+let imgPath = path.join(tempImageFolder, `meme_temp_${imgIndex}.png`);
 
 export default new Command({
     name: "meme",
@@ -31,7 +29,7 @@ export default new Command({
     ],
     visibility: "public",
     mode: "local",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let canvas, c, fontSize, border, lineSpace;
         const imgURL = msg.attachments.first()
             ? msg.attachments.first().url
@@ -48,7 +46,7 @@ export default new Command({
 
         if (!Array.isArray(imgText)) imgText = [imgText];
 
-        // First step : find an image and create a canvas from it, or a blank canvas if no image is found.
+        // First step:find an image and create a canvas from it, or a blank canvas if no image is found.
         if (imgURL) {
             function urlDecode(res) {
                 PImage.decodePNGFromStream(res).then((img) => {
@@ -98,7 +96,7 @@ export default new Command({
 
             textHandler();
         }
-        // Second step : apply text on canvas if needed.
+        // Second step:apply text on canvas if needed.
         function textHandler() {
             if (imgText[0]) {
                 let font = PImage.registerFont(
@@ -132,7 +130,7 @@ export default new Command({
                 sendCanvas();
             }
         }
-        // Last step : send canvas.
+        // Last step:send canvas.
         async function sendCanvas() {
             try {
                 await PImage.encodePNGToStream(
@@ -144,7 +142,7 @@ export default new Command({
 
                 imgIndex = imgIndex >= maxTempImages - 1 ? 1 : imgIndex + 1;
                 imgPath = path.join(
-                    Salty.config.tempImageFolder,
+                    tempImageFolder,
                     `meme_temp_${imgIndex}.png`
                 );
             } catch (err) {

@@ -16,7 +16,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "admin",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild_1.default.get(msg.guild.id);
         if (playlist.connection) {
             playlist.end();

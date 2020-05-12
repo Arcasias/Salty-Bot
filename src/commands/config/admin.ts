@@ -16,19 +16,18 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg) {
-        const mention: GuildMember = msg.mentions.users.first();
+    async action({ msg, target }) {
         const isRequestedUserAdmin: boolean = Salty.isAdmin(
-            mention || msg.author,
+            target.user,
             msg.guild
         );
 
         // Fuck if/else structures, long live ternary operators
         await Salty.message(
             msg,
-            mention
+            target.isMention
                 ? // mention
-                  mention.id === Salty.bot.user.id
+                  target.user.id === Salty.bot.user.id
                     ? // mention is Salty
                       isRequestedUserAdmin
                         ? // mention is Salty and is admin
@@ -44,7 +43,7 @@ export default new Command({
                 : // author
                 isRequestedUserAdmin
                 ? // author is admin
-                  "you have been granted the administrators permissions. May your deeds be blessed forever !"
+                  "you have been granted the administrators permissions. May your deeds be blessed forever!"
                 : // author is not admin
                   "nope, you're not an admin"
         );

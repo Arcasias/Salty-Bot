@@ -1,5 +1,6 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
+import { prefix } from "../../config";
 
 const specialActions = [
     {
@@ -18,7 +19,7 @@ const specialActions = [
 
 export default new Command({
     name: "send",
-    keys: ["say", Salty.config.prefix],
+    keys: ["say", prefix],
     help: [
         {
             argument: null,
@@ -26,11 +27,11 @@ export default new Command({
         },
         {
             argument: "***anything***",
-            effect: "Sends something. Who knows what ?",
+            effect: "Sends something. Who knows what?",
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             return Salty.commands.list.get("talk").run(msg, args);
         }

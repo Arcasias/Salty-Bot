@@ -12,7 +12,7 @@ function clean(string) {
 }
 exports.clean = clean;
 function formatDuration(time = null) {
-    const d = new Date(time);
+    const d = time ? new Date(time) : new Date();
     const formatted = [
         Math.max(d.getHours() - 1, 0),
         d.getMinutes(),
@@ -51,46 +51,17 @@ function promisify(fn) {
     });
 }
 exports.promisify = promisify;
-function randRange(array) {
-    if (array.length !== 2) {
-        throw new Error("Invalid Array content");
-    }
-    return Math.floor(Math.random() * (array[1] - array[0]) + array[0]);
-}
-exports.randRange = randRange;
-function randStat(array) {
-    if (!Array.isArray(array)) {
-        return array;
-    }
-    let rand = Math.random() * 100;
-    for (let i = 0; i < array.length; i++) {
-        let chances = array[i].chance;
-        for (let j = 0; j < i; j++) {
-            chances += array[j].chance;
-        }
-        if (rand < chances) {
-            return array[i].val;
-        }
-    }
-}
-exports.randStat = randStat;
 function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+    const copy = array.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
         const randId = Math.floor(Math.random() * (i + 1));
-        const temp = array[i];
-        array[i] = array[randId];
-        array[randId] = temp;
+        const temp = copy[i];
+        copy[i] = copy[randId];
+        copy[randId] = temp;
     }
-    return array;
+    return copy;
 }
 exports.shuffle = shuffle;
-function sortArray(array) {
-    if (array.length < 2) {
-        return array;
-    }
-    return array.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
-}
-exports.sortArray = sortArray;
 function title(string) {
     return string[0].toUpperCase() + string.slice(1);
 }
@@ -133,7 +104,7 @@ function request(guild, user, msg) {
         ? `${colors.GREEN}"${msg}"${colors.RESET}`
         : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
     const message = [
-        `${colors.YELLOW + guild + colors.RESET} > ${colors.YELLOW + user + colors.RESET} : ${content}`,
+        `${colors.YELLOW + guild + colors.RESET} > ${colors.YELLOW + user + colors.RESET}:${content}`,
     ];
     if (process.env.MODE === "local") {
         message.unshift(`${colors.RESET + formatDuration()}`);

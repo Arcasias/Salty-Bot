@@ -27,7 +27,7 @@ function clean(string: string): string {
  * Returned string is formatted as "HH:mm:ss".
  */
 function formatDuration(time: number = null): string {
-    const d: Date = new Date(time);
+    const d: Date = time ? new Date(time) : new Date();
     const formatted: number[] = [
         Math.max(d.getHours() - 1, 0),
         d.getMinutes(),
@@ -48,7 +48,7 @@ function generate(percentage: number): boolean {
  * - alphabetically if an array of strings
  * - sequentially if an array of numbers
  */
-function isSorted(array: (string | number)[]): boolean {
+function isSorted(array: string[] | number[]): boolean {
     for (let i = 0; i < array.length; i++) {
         if (i < array.length && array[i + 1] < array[i]) {
             return false;
@@ -69,7 +69,9 @@ function possessive(text: string): string {
  * The given function will take the following function as argument:
  *      <callback: Function>(error: Error, result: any)
  */
-function promisify(fn: Function): Promise<any> {
+function promisify(
+    fn: (callback: (error: any, result: any) => void) => void
+): Promise<any> {
     return new Promise((resolve, reject) => {
         fn((error, result) => {
             if (error) {
@@ -82,70 +84,25 @@ function promisify(fn: Function): Promise<any> {
 }
 
 /**
- * Returns a random number between the given boundaries.
- * The given array must be as following: [minimum: number, maximum: number]
- */
-function randRange(array: number[]): number {
-    if (array.length !== 2) {
-        throw new Error("Invalid Array content");
-    }
-    return Math.floor(Math.random() * (array[1] - array[0]) + array[0]);
-}
-
-/**
- * Uuuugh I don't know.
- * @param {???} array
- */
-function randStat(array) {
-    if (!Array.isArray(array)) {
-        return array;
-    }
-    let rand = Math.random() * 100;
-    for (let i = 0; i < array.length; i++) {
-        let chances = array[i].chance;
-
-        for (let j = 0; j < i; j++) {
-            chances += array[j].chance;
-        }
-        if (rand < chances) {
-            return array[i].val;
-        }
-    }
-}
-
-/**
  * Returns a shuffled copy of the given array.
  * @param {any[]} array
  * @returns {any[]}
  */
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+function shuffle<T>(array: T[]): T[] {
+    const copy = array.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
         const randId = Math.floor(Math.random() * (i + 1));
-        const temp = array[i];
-        array[i] = array[randId];
-        array[randId] = temp;
+        const temp = copy[i];
+        copy[i] = copy[randId];
+        copy[randId] = temp;
     }
-    return array;
-}
-
-/**
- * Returns a shuffled copy of the given array.
- * @param {any[]} array
- * @returns {any[]}
- */
-function sortArray(array) {
-    if (array.length < 2) {
-        return array;
-    }
-    return array.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
+    return copy;
 }
 
 /**
  * Returns the given string with the first letter capitalized.
- * @param {String} string
- * @returns {String}
  */
-function title(string) {
+function title(string: string) {
     return string[0].toUpperCase() + string.slice(1);
 }
 
@@ -165,7 +122,7 @@ const colors = {
     RESET: "\x1b[0m",
 };
 
-function debug(...message) {
+function debug(...message: any[]) {
     if (process.env.DEBUG !== "true") {
         return;
     }
@@ -179,7 +136,7 @@ function debug(...message) {
     console.log(...message);
 }
 
-function error(...message) {
+function error(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.RED}ERROR${
@@ -190,7 +147,7 @@ function error(...message) {
     console.error(...message);
 }
 
-function log(...message) {
+function log(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.CYAN}INFO${
@@ -201,14 +158,14 @@ function log(...message) {
     console.log(...message);
 }
 
-function request(guild, user, msg) {
+function request(guild: string, user: string, msg: string) {
     const content = msg
         ? `${colors.GREEN}"${msg}"${colors.RESET}`
         : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
     const message = [
         `${colors.YELLOW + guild + colors.RESET} > ${
             colors.YELLOW + user + colors.RESET
-        } : ${content}`,
+        }:${content}`,
     ];
     if (process.env.MODE === "local") {
         message.unshift(`${colors.RESET + formatDuration()}`);
@@ -216,7 +173,7 @@ function request(guild, user, msg) {
     console.log(...message);
 }
 
-function warn(...message) {
+function warn(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${
@@ -228,6 +185,7 @@ function warn(...message) {
 }
 
 export {
+    // Utilities
     choice,
     clean,
     formatDuration,
@@ -235,11 +193,9 @@ export {
     isSorted,
     possessive,
     promisify,
-    randRange,
-    randStat,
     shuffle,
-    sortArray,
     title,
+    // Log
     debug,
     error,
     log,

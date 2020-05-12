@@ -8,7 +8,7 @@ import {
 import Guild from "../../classes/Guild";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import { formatDuration } from "../../utils";
-import { clear, remove } from "../../data/list";
+import { clear, remove } from "../../list";
 
 const DISPLAY_LIMIT = 25;
 
@@ -32,7 +32,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (args[0] && remove.includes(args[0])) {
@@ -51,16 +51,17 @@ export default new Command({
 
             // Checks for validity
             for (let i = 0; i < songIds.length; i++) {
-                if (isNaN(songIds[i])) {
+                let songId = Number(songIds[i]);
+                if (isNaN(songId)) {
                     throw new IncorrectValue("song", "number");
                 }
-                songIds[i]--; // converting human logical index to array index
-                if (playlist.queue.length <= songIds[i] || songIds[i] < 0) {
-                    throw new OutOfRange(songIds[i]);
+                songId--; // converting logical index to array index
+                if (playlist.queue.length <= songId || songId < 0) {
+                    throw new OutOfRange(songId);
                 }
             }
 
-            const removed = playlist.remove(...songs);
+            const removed = playlist.remove(...songs.map(Number));
             const message = Array.isArray(songs)
                 ? `Songs n°${songs.map((s) => s + 1)} removed from the queue`
                 : `Song n°${songs[0] + 1} - **${

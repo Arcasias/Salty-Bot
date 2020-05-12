@@ -21,9 +21,9 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         switch (this.meaning(args[0])) {
-            case "delete":
+            case "remove":
                 const commandName = args[1];
                 if (!commandName) {
                     throw new Exception_1.MissingArg("command");

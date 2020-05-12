@@ -9,18 +9,15 @@ class Guild extends Model_1.default {
     constructor() {
         super(...arguments);
         this.playlist = new Playlist_1.default({});
-        this.discord_id = "";
-        this.default_channel = "";
-        this.default_role = "";
     }
     static get(id) {
         return this.find((guild) => guild.discord_id === id);
     }
 }
-Guild.fields = [
-    "discord_id",
-    "default_channel",
-    "default_role",
-];
+Guild.fields = {
+    discord_id: "",
+    default_channel: "",
+    default_role: "",
+};
 Guild.table = "guilds";
 exports.default = Guild;

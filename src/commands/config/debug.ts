@@ -3,49 +3,47 @@ import { MissingArg } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
-import { log } from "../../utils";
+import { debug } from "../../utils";
 
 const MAXDEPTH = 3;
+const TAB = "    ";
 
 // Avoid linter to consider these useless
 ((a, b) => null)(Guild, User);
 
-function getFormat(variable: any, depth: number): string {
-    if (depth > MAXDEPTH) {
+function stringify(variable: any, depth: number): string {
+    if (MAXDEPTH < depth) {
         return;
     }
-    const type: string = Array.isArray(variable) ? "array" : typeof variable;
-    let res: string;
-    switch (type) {
-        case "string": {
-            res = `"${variable}"`;
-            break;
-        }
+    switch (Array.isArray(variable) ? "array" : typeof variable) {
+        case "string":
+            return `"${variable}"`;
         case "array": {
             const items: string[] = [];
             for (let item of variable) {
-                items.push(getFormat(item, depth + 1));
+                items.push(stringify(item, depth + 1));
             }
-            res = `[${items.join(", ")}]`;
-            break;
+            return `[${items.join(", ")}]`;
         }
         case "object": {
             const items: string[] = [];
             for (let key in variable) {
                 items.push(
-                    `${getFormat(key, depth + 1)}: ${getFormat(
+                    `${stringify(key, depth + 1)}: ${stringify(
                         variable[key],
                         depth + 1
                     )}`
                 );
             }
-            res = `{\n${items.join(",\n\t")}\n}`;
-            break;
+            return `{\n${items.join(`,\n${TAB}`)}\n}`;
         }
         default:
-            res = String(variable);
+            return String(variable);
     }
-    return res;
+}
+
+function evalInContext(code: string): any {
+    return eval(code);
 }
 
 export default new Command({
@@ -58,18 +56,18 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             throw new MissingArg("instructions");
         }
 
-        const res = eval(args.join(" "));
-        const message = `${args.join(" ")} = /*${typeof res}*/ ${getFormat(
-            res,
-            0
-        )}`;
-
-        Salty.message(msg, `\`\`\`js\n${message.slice(0, 1950)}\n\`\`\``);
-        log(message);
+        const evalResult = evalInContext.call(Salty, args.join(" "));
+        const result = `${args.join(
+            " "
+        )} = /*${typeof evalResult}*/ ${stringify(evalResult, 0)}`;
+        const message =
+            result.length < 2000 ? result : `${evalResult.slice(0, 1985)} ...`;
+        Salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
+        debug(message);
     },
 });

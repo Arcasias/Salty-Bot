@@ -6,7 +6,7 @@ import {
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
-import { list, remove } from "../../data/list";
+import { list, remove } from "../../list";
 
 export default new Command({
     name: "todo",
@@ -22,7 +22,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let user = User.get(msg.author.id);
 
         if (args[0] && remove.includes(args[0])) {
@@ -32,7 +32,7 @@ export default new Command({
                 throw new SaltyException("your todo list is empty");
             }
             if (!args[1] || !todoList[parseInt(args[1]) - 1]) {
-                throw new OutOfRange(args[1]);
+                throw new OutOfRange(Number(args[1]));
             }
             user.todo.splice(parseInt(args[1]) - 1, 1);
 
@@ -49,7 +49,7 @@ export default new Command({
                     throw new EmptyObject("your todo list");
                 }
                 Salty.embed(msg, {
-                    title: "<author>'s todo list",
+                    title: "<authors> todo list",
                     description: `> ${user.todo.join("\n> ")}`,
                 });
             } else {

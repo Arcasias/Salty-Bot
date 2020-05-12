@@ -42,7 +42,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         switch (this.meaning(args[0])) {
             case "bot":
                 const messages = await msg.channel.messages.fetch();
@@ -70,7 +70,7 @@ exports.default = new Command_1.default({
                     return purgeEndless(msg.channel);
                 }
             default:
-                if (isNaN(args[0])) {
+                if (isNaN(Number(args[0]))) {
                     throw new Exception_1.IncorrectValue("length", "number");
                 }
                 if (parseInt(args[0]) === 0) {

@@ -13,8 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = __importDefault(require("discord.js"));
 const fs_1 = require("fs");
 const path_1 = require("path");
-const config_1 = __importDefault(require("../data/config"));
-const list = __importStar(require("../data/list"));
+const config_1 = require("../config");
+const list = __importStar(require("../list"));
 const utils_1 = require("../utils");
 const Database_1 = __importDefault(require("./Database"));
 const Dialog_1 = __importDefault(require("./Dialog"));
@@ -22,6 +22,7 @@ const Guild_1 = __importDefault(require("./Guild"));
 const QuickCommand_1 = __importDefault(require("./QuickCommand"));
 const User_1 = __importDefault(require("./User"));
 const Exception_1 = require("./Exception");
+const Formatter_1 = __importDefault(require("./Formatter"));
 const bot = new discord_js_1.default.Client();
 const commandsRootPath = ["src", "commands"];
 const commands = {
@@ -34,7 +35,10 @@ async function _destroy(restart) {
     utils_1.log("Disconnecting ...");
     bot.destroy();
     if (restart) {
-        await _loadCommands(...commandsRootPath).then(() => utils_1.log("Commands loaded"));
+        commands.list.clear();
+        commands.keys = {};
+        commands.help = {};
+        await _loadCommands(...commandsRootPath).then(() => utils_1.log("Static commands loaded"));
         await bot.login(process.env.DISCORD_API);
     }
     else {
@@ -43,8 +47,9 @@ async function _destroy(restart) {
     }
 }
 async function _loadCommand(commandPath, category) {
-    const command = await Promise.resolve().then(() => __importStar(require(commandPath)));
-    const { name, keys, visibility } = command.default;
+    const commandImport = await Promise.resolve().then(() => __importStar(require(commandPath)));
+    const command = commandImport.default;
+    const { name, keys, visibility } = command;
     if (process.env.DEBUG === "true") {
         for (let key of [name, ...keys]) {
             if (commands.list.get(key)) {
@@ -84,7 +89,7 @@ async function _loadCommands(...paths) {
         if (stats.isDirectory()) {
             _loadCommands(fullpath);
         }
-        else if (["js", "cjs", "mjs"].includes(extension)) {
+        else if (["ts", "js", "cjs", "mjs"].includes(extension)) {
             try {
                 const commandPath = path_1.join("..", "..", fullpath).replace(path_1.sep, "/");
                 return _loadCommand(commandPath, category);
@@ -97,7 +102,7 @@ async function _loadCommands(...paths) {
     await Promise.all(promises);
 }
 async function _onChannelDelete(channel) {
-    Guild_1.default.forEach((guild) => {
+    Guild_1.default.each((guild) => {
         if (guild.default_channel === channel.id) {
             const guildDBId = Guild_1.default.get(channel.guild.id).id;
             Guild_1.default.update(guildDBId, { default_channel: false });
@@ -121,7 +126,7 @@ async function _onGuildMemberAdd(member) {
     const guild = Guild_1.default.get(member.guild.id);
     if (guild.default_channel) {
         const channel = getTextChannel(guild.default_channel);
-        channel.send(`Hey there ${member.user} ! Have a great time here (͡° ͜ʖ ͡°)`);
+        channel.send(`Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`);
     }
     if (guild.default_role) {
         try {
@@ -154,7 +159,7 @@ async function _onMessage(msg) {
             new RegExp(botNameRegex, "i").test(msg.content) ||
                 (mention && mention.id === bot.user.id);
     }
-    if (msg.content.startsWith(config_1.default.prefix)) {
+    if (msg.content.startsWith(config_1.prefix)) {
         msg.content = msg.content.slice(1);
         interaction = true;
     }
@@ -169,7 +174,7 @@ async function _onMessage(msg) {
     }
     utils_1.request(msg.guild.name, author.username, msg.content);
     if (!msgArray.length) {
-        return message(msg, "yes ?");
+        return message(msg, "yes?");
     }
     if (!user) {
         await User_1.default.create({ discord_id: author.id });
@@ -244,25 +249,25 @@ async function embed(msg, options = {}) {
         options.color = 0xffffff;
     }
     if (options.title) {
-        options.title = utils_1.title(options.title);
+        options.title = Formatter_1.default.format(utils_1.title(options.title), msg);
     }
     if (options.description) {
-        options.description = utils_1.title(options.description);
+        options.description = Formatter_1.default.format(utils_1.title(options.description), msg);
     }
     if (options.footer && options.footer.text) {
-        options.footer.text = utils_1.title(options.footer.text);
+        options.footer.text = Formatter_1.default.format(utils_1.title(options.footer.text), msg);
     }
     if (options.fields) {
         options.fields = options.fields.map((field) => {
             return {
                 name: utils_1.title(field.name),
-                value: replacer(utils_1.title(field.value), msg),
+                value: Formatter_1.default.format(utils_1.title(field.value), msg),
                 inline,
             };
         });
     }
     const embed = new discord_js_1.default.MessageEmbed(options);
-    const newMessage = await message(msg, content, {
+    const newMessage = await message(msg, Formatter_1.default.format(content, msg), {
         embed,
         files: options.files,
     });
@@ -293,34 +298,18 @@ function getTextChannel(channelId) {
     return channel;
 }
 function isOwner(user) {
-    return user.id === config_1.default.owner.id;
+    return user.id === config_1.owner.id;
 }
 function isDev(user) {
-    if (isOwner(user)) {
-        return true;
-    }
-    return config_1.default.devs.includes(user.id);
+    return isOwner(user) || config_1.devs.includes(user.id);
 }
 function isAdmin(user, guild) {
-    if (isDev(user) || isOwner(user)) {
-        return true;
-    }
-    return guild.member(user).hasPermission("ADMINISTRATOR");
+    return (isOwner(user) ||
+        isDev(user) ||
+        guild.member(user).hasPermission("ADMINISTRATOR"));
 }
 function message(msg, text, options) {
-    return msg.channel.send(text && replacer(utils_1.title(text), msg), options);
-}
-function replacer(string, msg) {
-    const author = msg.member.nickname || msg.author.username;
-    const mention = msg.mentions.members.first();
-    const target = mention
-        ? mention.nickname || mention.user.username
-        : author;
-    return string
-        .replace(/<author>'s/g, utils_1.possessive(author))
-        .replace(/<author>/g, author)
-        .replace(/<mention>'s/g, utils_1.possessive(target))
-        .replace(/<mention>/g, target);
+    return msg.channel.send(text && Formatter_1.default.format(utils_1.title(text), msg), options);
 }
 function setQuickCommand(command) {
     command.keys.split(",").forEach((key) => {
@@ -335,7 +324,7 @@ async function start() {
         QuickCommand_1.default.load().then((commandData) => commandData.forEach(setQuickCommand)),
         Guild_1.default.load(),
         User_1.default.load(),
-        _loadCommands(...commandsRootPath).then(() => utils_1.log("Commands loaded")),
+        _loadCommands(...commandsRootPath).then(() => utils_1.log("Static commands loaded")),
     ]);
     await bot.login(process.env.DISCORD_API);
 }
@@ -364,7 +353,6 @@ bot.on("ready", _onReady);
 exports.default = {
     bot,
     commands,
-    config: config_1.default,
     startTime,
     destroy,
     embed,
@@ -375,7 +363,6 @@ exports.default = {
     isDev,
     isOwner,
     message,
-    replacer,
     restart,
     setQuickCommand,
     success,

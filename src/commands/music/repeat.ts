@@ -24,7 +24,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    action(msg, args) {
+    async action({ msg, args }) {
         let { playlist } = Guild.get(msg.guild.id);
 
         const single = () => {

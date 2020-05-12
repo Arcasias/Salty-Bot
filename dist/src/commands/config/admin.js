@@ -19,12 +19,11 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg) {
-        const mention = msg.mentions.users.first();
-        const isRequestedUserAdmin = Salty_1.default.isAdmin(mention || msg.author, msg.guild);
-        await Salty_1.default.message(msg, mention
+    async action({ msg, target }) {
+        const isRequestedUserAdmin = Salty_1.default.isAdmin(target.user, msg.guild);
+        await Salty_1.default.message(msg, target.isMention
             ?
-                mention.id === Salty_1.default.bot.user.id
+                target.user.id === Salty_1.default.bot.user.id
                     ?
                         isRequestedUserAdmin
                             ?
@@ -40,7 +39,7 @@ exports.default = new Command_1.default({
             :
                 isRequestedUserAdmin
                     ?
-                        "you have been granted the administrators permissions. May your deeds be blessed forever !"
+                        "you have been granted the administrators permissions. May your deeds be blessed forever!"
                     :
                         "nope, you're not an admin");
     },

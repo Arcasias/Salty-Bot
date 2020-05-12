@@ -3,6 +3,7 @@ import { IncorrectValue } from "../../classes/Exception";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import { title } from "../../utils";
 import QuickCommand from "../../classes/QuickCommand";
+import { homepage, prefix } from "../../config";
 
 type Categories = { [category: string]: string };
 
@@ -24,7 +25,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const { author } = msg;
         const options: EmbedOptions = {
             color: 0xffffff,
@@ -62,7 +63,7 @@ export default new Command({
                             : "";
                         options.fields.push({
                             name: `**${title(cmd.name)}**${alternate}`,
-                            value: `> \`${Salty.config.prefix}help ${cmd.name}\``,
+                            value: `> \`${prefix}help ${cmd.name}\``,
                         });
                     }
                 });
@@ -76,9 +77,7 @@ export default new Command({
                     help[cat].commands.find((cmd) => cmd.name === command.name)
                 );
                 options.title = `**${command.name.toUpperCase()}**`;
-                options.url = `${
-                    Salty.config.homepage
-                }/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
+                options.url = `${homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
                 options.description = `> ${title(category)}`;
                 if (command.keys.length) {
                     const keys: string = Array.isArray(command.keys)
@@ -90,7 +89,7 @@ export default new Command({
                     command.help.forEach((usage) => {
                         if (usage.effect) {
                             options.fields.push({
-                                name: `${Salty.config.prefix}${command.name} ${
+                                name: `${prefix}${command.name} ${
                                     usage.argument || ""
                                 }`,
                                 value: usage.effect,
@@ -115,7 +114,7 @@ export default new Command({
                     name: `${icon} **${title(name)}**  (${
                         help[category].commands.length
                     } commands)`,
-                    value: `> \`${Salty.config.prefix}help ${category}\``,
+                    value: `> \`${prefix}help ${category}\``,
                 });
             }
         }

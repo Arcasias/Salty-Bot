@@ -21,7 +21,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let parsed;
         try {
             parsed = JSON.parse(args.join(" "));

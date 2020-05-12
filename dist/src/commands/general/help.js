@@ -7,6 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Exception_1 = require("../../classes/Exception");
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
+const config_1 = require("../../config");
 exports.default = new Command_1.default({
     name: "help",
     keys: ["halp", "info", "infos", "wtf", "?"],
@@ -25,7 +26,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const { author } = msg;
         const options = {
             color: 0xffffff,
@@ -55,7 +56,7 @@ exports.default = new Command_1.default({
                             : "";
                         options.fields.push({
                             name: `**${utils_1.title(cmd.name)}**${alternate}`,
-                            value: `> \`${Salty_1.default.config.prefix}help ${cmd.name}\``,
+                            value: `> \`${config_1.prefix}help ${cmd.name}\``,
                         });
                     }
                 });
@@ -64,7 +65,7 @@ exports.default = new Command_1.default({
                 const command = Salty_1.default.commands.list.get(Salty_1.default.commands.keys[arg]);
                 const category = Object.values(categories).find((cat) => help[cat].commands.find((cmd) => cmd.name === command.name));
                 options.title = `**${command.name.toUpperCase()}**`;
-                options.url = `${Salty_1.default.config.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
+                options.url = `${config_1.homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
                 options.description = `> ${utils_1.title(category)}`;
                 if (command.keys.length) {
                     const keys = Array.isArray(command.keys)
@@ -76,7 +77,7 @@ exports.default = new Command_1.default({
                     command.help.forEach((usage) => {
                         if (usage.effect) {
                             options.fields.push({
-                                name: `${Salty_1.default.config.prefix}${command.name} ${usage.argument || ""}`,
+                                name: `${config_1.prefix}${command.name} ${usage.argument || ""}`,
                                 value: usage.effect,
                             });
                         }
@@ -95,7 +96,7 @@ exports.default = new Command_1.default({
                 const { name, icon } = help[category].info;
                 options.fields.push({
                     name: `${icon} **${utils_1.title(name)}**  (${help[category].commands.length} commands)`,
-                    value: `> \`${Salty_1.default.config.prefix}help ${category}\``,
+                    value: `> \`${config_1.prefix}help ${category}\``,
                 });
             }
         }

@@ -5,16 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Model_1 = __importDefault(require("./Model"));
 class QuickCommand extends Model_1.default {
-    constructor() {
-        super(...arguments);
-        this.keys = "";
-        this.effect = "";
-        this.name = "";
-    }
     async run() {
         eval(this.effect);
     }
 }
-QuickCommand.fields = ["keys", "effect", "name"];
+QuickCommand.fields = {
+    keys: "",
+    effect: "",
+    name: "",
+};
 QuickCommand.table = "commands";
 exports.default = QuickCommand;

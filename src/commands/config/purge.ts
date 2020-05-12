@@ -42,7 +42,7 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         switch (this.meaning(args[0])) {
             case "bot":
                 const messages = await msg.channel.messages.fetch();
@@ -50,7 +50,9 @@ export default new Command({
                     (message) => message.author.bot
                 );
                 try {
-                    await msg.channel.bulkDelete(messagesToDelete);
+                    await (<TextChannel>msg.channel).bulkDelete(
+                        messagesToDelete
+                    );
                     await Salty.success(
                         msg,
                         "most recent bot messages have been deleted"
@@ -70,11 +72,11 @@ export default new Command({
             case "string":
                 if (args[0] === "endless") {
                     purging = true;
-                    return purgeEndless(msg.channel);
+                    return purgeEndless(<TextChannel>msg.channel);
                 }
             /* falls through */
             default:
-                if (isNaN(args[0])) {
+                if (isNaN(Number(args[0]))) {
                     throw new IncorrectValue("length", "number");
                 }
                 if (parseInt(args[0]) === 0) {
@@ -84,7 +86,7 @@ export default new Command({
                 }
                 const toDelete = Math.min(parseInt(args[0]), 100) || 100;
                 try {
-                    await msg.channel.bulkDelete(toDelete, true);
+                    await (<TextChannel>msg.channel).bulkDelete(toDelete, true);
                     await Salty.success(
                         msg,
                         `${toDelete} messages have been successfully deleted`

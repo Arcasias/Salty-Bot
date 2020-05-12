@@ -15,7 +15,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         // Just sends the arguments as a TTS message
         if (!args[0]) {
             throw new MissingArg("message");

@@ -10,7 +10,6 @@ class Playlist extends Model_1.default {
         super(...arguments);
         this.connection = null;
         this.continue = false;
-        this.queue = [];
         this.pointer = -1;
         this.repeat = "off";
     }
@@ -109,11 +108,8 @@ class Playlist extends Model_1.default {
         }
     }
 }
-Playlist.fields = [
-    "connection",
-    "continue",
-    "queue",
-    "pointer",
-    "repeat",
-];
+Playlist.fields = {
+    queue: [],
+    repeat: "off",
+};
 exports.default = Playlist;

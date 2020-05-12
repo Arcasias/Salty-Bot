@@ -2,6 +2,7 @@ import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import User from "../../classes/User";
+import { devs, owner, homepage } from "../../config";
 
 export default new Command({
     name: "state",
@@ -13,10 +14,10 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg) {
+    async action({ msg }) {
         const options: EmbedOptions = {
             title: `Salty Bot`,
-            url: Salty.config.homepage,
+            url: homepage,
             description: `Last started on ${
                 Salty.startTime.toString().split(" GMT")[0]
             }`,
@@ -28,7 +29,7 @@ export default new Command({
                             ? "Server"
                             : "Local instance",
                 },
-                { name: `Owner`, value: Salty.config.owner.username },
+                { name: `Owner`, value: owner.username },
                 {
                     name: `Servers`,
                     value: `Running on ${Guild.size} servers`,
@@ -36,7 +37,7 @@ export default new Command({
                 { name: `Users`, value: `Handling ${User.size} users` },
                 {
                     name: `Developers`,
-                    value: `${Salty.config.devs.length} contributors`,
+                    value: `${devs.length} contributors`,
                 },
                 {
                     name: `Blacklist`,

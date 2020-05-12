@@ -7,15 +7,15 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
 const MESSAGES = [
-    "nearly perfect !",
+    "nearly perfect!",
     "that's pretty good",
     "that's ok, i guess",
     "that's a bit laggy",
     "that's quite laggy",
     "ok that's laggy as fuck",
     "WTF that's super laggy",
-    "Jesus Christ how can you manage with that much lag ?",
-    "dear god are you on a safari in the middle of the ocean ?",
+    "Jesus Christ how can you manage with that much lag?",
+    "dear god are you on a safari in the middle of the ocean?",
     "get off of this world you fucking chinese",
 ];
 exports.default = new Command_1.default({
@@ -28,7 +28,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg) {
+    async action({ msg }) {
         if (utils_1.generate(3)) {
             await Salty_1.default.error(msg, "pong, and I don't give a fuck about your latency");
         }
@@ -37,7 +37,7 @@ exports.default = new Command_1.default({
             const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
             const message = MESSAGES[Math.floor(latency / 100)] || "lol wat";
             await sentMsg.delete();
-            await Salty_1.default.success(msg, `pong ! Latency is ${latency}. ${utils_1.title(message)}`);
+            await Salty_1.default.success(msg, `pong! Latency is ${latency}. ${utils_1.title(message)}`);
         }
     },
 });

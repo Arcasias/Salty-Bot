@@ -7,7 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Exception_1 = require("../../classes/Exception");
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const User_1 = __importDefault(require("../../classes/User"));
-const list_1 = require("../../data/list");
+const list_1 = require("../../list");
 exports.default = new Command_1.default({
     name: "todo",
     keys: ["todos"],
@@ -22,7 +22,7 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         let user = User_1.default.get(msg.author.id);
         if (args[0] && list_1.remove.includes(args[0])) {
             let todoList = user.todo;
@@ -30,7 +30,7 @@ exports.default = new Command_1.default({
                 throw new Exception_1.SaltyException("your todo list is empty");
             }
             if (!args[1] || !todoList[parseInt(args[1]) - 1]) {
-                throw new Exception_1.OutOfRange(args[1]);
+                throw new Exception_1.OutOfRange(Number(args[1]));
             }
             user.todo.splice(parseInt(args[1]) - 1, 1);
             Salty_1.default.success(msg, `item number **${args[1]}** removed from your todo list`);
@@ -45,7 +45,7 @@ exports.default = new Command_1.default({
                     throw new Exception_1.EmptyObject("your todo list");
                 }
                 Salty_1.default.embed(msg, {
-                    title: "<author>'s todo list",
+                    title: "<authors> todo list",
                     description: `> ${user.todo.join("\n> ")}`,
                 });
             }

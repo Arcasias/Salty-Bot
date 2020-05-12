@@ -6,7 +6,7 @@ import {
 } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { add, remove } from "../../data/list";
+import { add, remove } from "../../list";
 
 export default new Command({
     name: "role",
@@ -27,7 +27,7 @@ export default new Command({
         },
     ],
     visibility: "dev",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const { guild } = msg;
         const guildDBId = Guild.get(guild.id).id;
 
@@ -38,13 +38,16 @@ export default new Command({
             let role = msg.mentions.roles.first();
             const roleName = args.slice(1).join(" ");
             if (!role) {
-                role = guild.roles.find((r) => r.name === roleName);
+                role = guild.roles.cache.find((r) => r.name === roleName);
             }
             if (!role) {
                 try {
-                    role = await guild.createRole({
-                        name: roleName,
-                        color: "#1eff00",
+                    role = await guild.roles.create({
+                        data: {
+                            name: roleName,
+                            color: "#1eff00",
+                        },
+                        reason: `Created by ${msg.author.username}`,
                     });
                     await Guild.update(guildDBId, { default_role: role.id });
                     await Salty.success(
@@ -77,7 +80,9 @@ export default new Command({
             if (!Guild.get(guild.id).default_role) {
                 return Salty.message(msg, "No default role set");
             } else {
-                const role = guild.roles.get(Guild.get(guild.id).default_role);
+                const role = guild.roles.cache.get(
+                    Guild.get(guild.id).default_role
+                );
                 Salty.embed(msg, {
                     title: `default role is ${role.name}`,
                     description: "newcomers will automatically get this role",

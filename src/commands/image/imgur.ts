@@ -17,7 +17,7 @@ export default new Command({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             throw new MissingArg("image name");
         }

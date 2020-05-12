@@ -20,11 +20,13 @@ exports.default = new Command_1.default({
         },
     ],
     visibility: "public",
-    async action(msg, args) {
+    async action({ msg, args }) {
         if (!args[0]) {
             throw new Exception_1.MissingArg("anything");
         }
-        const delay = args[1] && !isNaN(args[0]) ? parseInt(args.shift()) * 1000 : 5000;
+        const delay = args[1] && !isNaN(Number(args[0]))
+            ? parseInt(args.shift()) * 1000
+            : 5000;
         msg.delete().catch();
         setTimeout(() => {
             Salty_1.default.message(msg, args.join(" "));

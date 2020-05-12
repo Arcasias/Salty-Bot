@@ -3,7 +3,7 @@ import Command from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import PromiseManager from "../../classes/PromiseManager";
 import Salty from "../../classes/Salty";
-import { add as addList, remove as removeList } from "../../data/list";
+import { add as addList, remove as removeList } from "../../list";
 
 async function changeNames(msg, transformation) {
     const members: GuildMember[] = msg.guild.members.array();
@@ -57,7 +57,7 @@ export default new Command({
         {
             argument: "add ***particle***",
             effect:
-                "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters !",
+                "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters!",
         },
         {
             argument: "remove ***particle***",
@@ -65,7 +65,7 @@ export default new Command({
         },
     ],
     visibility: "admin",
-    async action(msg, args) {
+    async action({ msg, args }) {
         const particle: string = args.slice(1).join(" ");
         const particleRegex: RegExp = new RegExp(particle, "g");
 

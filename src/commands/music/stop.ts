@@ -2,7 +2,7 @@ import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
-import { answers } from "../../data/list";
+import { answers } from "../../list";
 
 export default new Command({
     name: "stop",
@@ -14,7 +14,7 @@ export default new Command({
         },
     ],
     visibility: "admin",
-    action(msg) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.connection) {
