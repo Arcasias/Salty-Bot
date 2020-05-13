@@ -1,5 +1,5 @@
 import imgur from "imgur";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { MissingArg, SaltyException } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
@@ -7,17 +7,17 @@ import { choice } from "../../utils";
 imgur.setClientId();
 imgur.setAPIUrl("https://api.imgur.com/3/");
 
-export default new Command({
-    name: "imgur",
-    keys: ["img", "imgur"],
-    help: [
+class ImgurCommand extends Command {
+    public name = "imgur";
+    public keys = ["img", "imgur"];
+    public help = [
         {
             argument: null,
             effect: "Work in progress",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         if (!args[0]) {
             throw new MissingArg("image name");
         }
@@ -37,5 +37,7 @@ export default new Command({
         } catch (err) {
             Salty.error(msg, "no result");
         }
-    },
-});
+    }
+}
+
+export default ImgurCommand;

@@ -1,4 +1,4 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { IncorrectValue } from "../../classes/Exception";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import { title } from "../../utils";
@@ -7,10 +7,10 @@ import { homepage, prefix } from "../../config";
 
 type Categories = { [category: string]: string };
 
-export default new Command({
-    name: "help",
-    keys: ["halp", "info", "infos", "wtf", "?"],
-    help: [
+class HelpCommand extends Command {
+    public name = "help";
+    public keys = ["info", "wtf", "?"];
+    public help = [
         {
             argument: null,
             effect: "Shows all of the available commands categories",
@@ -23,9 +23,9 @@ export default new Command({
             argument: "***command***",
             effect: "Shows a detailed usage of a specific ***command***",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         const { author } = msg;
         const options: EmbedOptions = {
             color: 0xffffff,
@@ -119,5 +119,7 @@ export default new Command({
             }
         }
         await Salty.embed(msg, options);
-    },
-});
+    }
+}
+
+export default HelpCommand;

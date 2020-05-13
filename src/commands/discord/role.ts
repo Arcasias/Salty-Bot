@@ -1,4 +1,7 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import {
     MissingArg,
     PermissionDenied,
@@ -6,12 +9,11 @@ import {
 } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { add, remove } from "../../list";
+import { add, remove } from "../../terms";
 
-export default new Command({
-    name: "role",
-    keys: ["role"],
-    help: [
+class RoleCommand extends Command {
+    public name = "role";
+    public help = [
         {
             argument: null,
             effect: "Shows the current default role",
@@ -25,9 +27,10 @@ export default new Command({
             argument: "unset",
             effect: "Removes the default role",
         },
-    ],
-    visibility: "dev",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         const { guild } = msg;
         const guildDBId = Guild.get(guild.id).id;
 
@@ -90,5 +93,7 @@ export default new Command({
                 });
             }
         }
-    },
-});
+    }
+}
+
+export default RoleCommand;

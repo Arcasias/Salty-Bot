@@ -1,10 +1,10 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 
-export default new Command({
-    name: "coffee",
-    keys: ["cof", "covfefe"],
-    help: [
+class CoffeeCommand extends Command {
+    public name = "coffee";
+    public keys = ["cof", "covfefe"];
+    public help = [
         {
             argument: null,
             effect: "Gets you a nice hot coffee",
@@ -13,9 +13,9 @@ export default new Command({
             argument: "***mention***",
             effect: "Gets the ***mention*** a nice hot coffee",
         },
-    ],
-    visibility: "public",
-    async action({ msg, target }) {
+    ];
+
+    async action({ msg, target }: CommandParams) {
         const options: EmbedOptions = {
             title: "this is a nice coffee",
             description: "specially made for you ;)",
@@ -33,5 +33,7 @@ export default new Command({
             }
         }
         await Salty.embed(msg, options);
-    },
-});
+    }
+}
+
+export default CoffeeCommand;

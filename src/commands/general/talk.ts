@@ -1,12 +1,12 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice, clean } from "../../utils";
-import { answers as listAnswers, meaning } from "../../list";
+import { answers as listAnswers, meaning } from "../../terms";
 
-export default new Command({
-    name: "talk",
-    keys: [],
-    help: [
+class TalkCommand extends Command {
+    public name = "talk";
+    public keys = [];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -16,9 +16,9 @@ export default new Command({
             effect:
                 'I\'ll answer to what you said. As I\'m not a really advanced AI, you may want to try simple things such as "Hello" or "How are you"',
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         const cleanedMsg = " " + args.map((arg) => clean(arg)).join(" ") + " ";
         const meanFound: string[] = [];
         const answers: string[] = [];
@@ -44,5 +44,7 @@ export default new Command({
             const random: string[] = listAnswers.rand;
             await Salty.message(msg, choice(random));
         }
-    },
-});
+    }
+}
+
+export default TalkCommand;

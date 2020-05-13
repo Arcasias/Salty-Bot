@@ -1,18 +1,18 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "pause",
-    keys: ["freeze"],
-    help: [
+class PauseCommand extends Command {
+    public name = "pause";
+    public keys = ["freeze"];
+    public help = [
         {
             argument: null,
             effect: "Pauses the song currently playing",
         },
-    ],
-    visibility: "public",
-    async action({ msg }) {
+    ];
+
+    async action({ msg }: CommandParams) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.connection) {
@@ -27,5 +27,7 @@ export default new Command({
         } else {
             Salty.error(msg, "there's nothing playing");
         }
-    },
-});
+    }
+}
+
+export default PauseCommand;

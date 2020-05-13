@@ -1,9 +1,8 @@
 import { Message, User, GuildMember } from "discord.js";
 import { debug, error } from "../utils";
 import { PermissionDenied, SaltyException } from "./Exception";
-import Model, { FieldsDescriptor } from "./Model";
 import Salty from "./Salty";
-import * as list from "../list";
+import * as list from "../terms";
 
 const permissions = {
     public: null,
@@ -21,21 +20,9 @@ const MEANING_ACTIONS = [
     "sell",
 ];
 
-type CommandAction = (commandParams: CommandParams) => Promise<void>;
-
 interface CommandHelp {
     argument: string | null;
     effect: string;
-}
-
-interface CommandDescriptor {
-    action: CommandAction;
-    help?: CommandHelp[];
-    keys: string[];
-    mode?: string;
-    name: string;
-    visibility?: string;
-    env?: string | null;
 }
 
 interface MessageTarget {
@@ -44,33 +31,23 @@ interface MessageTarget {
     isMention: boolean;
 }
 
-interface CommandParams {
-    msg: Message;
-    args: string[];
+export interface CommandParams {
+    args?: string[];
+    msg?: Message;
     target?: MessageTarget;
 }
 
-class Command extends Model {
-    public action: CommandAction;
-    public help: CommandHelp[];
-    public keys: string[];
-    public mode: string;
-    public name: string;
-    public visibility: string;
-    public env: string | null;
+export type CommandVisiblity = "public" | "admin" | "dev" | "owner";
 
-    protected static readonly fields: FieldsDescriptor = {
-        action: null,
-        help: [],
-        keys: [],
-        name: "",
-        visibility: "public",
-        env: null,
-    };
+abstract class Command {
+    public readonly env: "local" | "server";
+    public readonly help: CommandHelp[];
+    public readonly keys: string[] = [];
+    public readonly mode: string;
+    public readonly name: string;
+    public readonly visibility: CommandVisiblity = "public";
 
-    constructor(values: CommandDescriptor) {
-        super(values);
-    }
+    abstract async action(commandParams: CommandParams): Promise<void>;
 
     /**
      * Runs the command action
@@ -107,7 +84,7 @@ class Command extends Model {
         }
     }
 
-    public meaning(word?: string): string {
+    protected meaning(word?: string): string {
         if (word) {
             return (
                 MEANING_ACTIONS.find(

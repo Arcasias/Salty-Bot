@@ -3,7 +3,7 @@ import http from "http";
 import https from "https";
 import path from "path";
 import PImage from "pureimage";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error, title } from "../../utils";
 import { tempImageFolder } from "../../config";
@@ -22,18 +22,18 @@ function centerTxtVertical(
     return y;
 }
 
-export default new Command({
-    name: "caption",
-    keys: ["cap"],
-    help: [
+class CaptionCommand extends Command {
+    public name = "caption";
+    public keys = ["cap"];
+    public help = [
         {
             argument: null,
             effect: "Work in progress",
         },
-    ],
-    visibility: "public",
-    mode: "local",
-    async action({ msg, args }) {
+    ];
+    public mode = "local";
+
+    async action({ args, msg }: CommandParams) {
         let canvas, c;
         let imgURL = msg.attachments.first()
             ? msg.attachments.first().url
@@ -137,5 +137,7 @@ export default new Command({
                 error(err);
             }
         }
-    },
-});
+    }
+}
+
+export default CaptionCommand;

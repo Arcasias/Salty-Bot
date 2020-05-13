@@ -1,4 +1,4 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { generate, title } from "../../utils";
 
@@ -15,17 +15,17 @@ const MESSAGES = [
     "get off of this world you fucking chinese",
 ];
 
-export default new Command({
-    name: "ping",
-    keys: ["latency", "test"],
-    help: [
+class PingCommand extends Command {
+    public name = "ping";
+    public keys = ["latency", "test"];
+    public help = [
         {
             argument: null,
             effect: "Tests client-server latency",
         },
-    ],
-    visibility: "public",
-    async action({ msg }) {
+    ];
+
+    async action({ msg }: CommandParams) {
         // If too much salt, skips the latency test
         if (generate(3)) {
             await Salty.error(
@@ -44,5 +44,7 @@ export default new Command({
                 `pong! Latency is ${latency}. ${title(message)}`
             );
         }
-    },
-});
+    }
+}
+
+export default PingCommand;

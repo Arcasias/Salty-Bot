@@ -1,4 +1,7 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import {
     EmptyObject,
     MissingArg,
@@ -7,10 +10,10 @@ import {
 import QuickCommand from "../../classes/QuickCommand";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "command",
-    keys: ["cmd", "commands"],
-    help: [
+class CommandCommand extends Command {
+    public name = "command";
+    public keys = ["cmd"];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -21,9 +24,10 @@ export default new Command({
             effect:
                 "Creates a new command having ***command keys*** as its triggers. ***command effect*** will then be displayed as a response",
         },
-    ],
-    visibility: "dev",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         switch (this.meaning(args[0])) {
             case "remove":
                 const commandName: string = args[1];
@@ -93,5 +97,7 @@ export default new Command({
 
                 await Salty.success(msg, `Command "**${name}**" created`);
         }
-    },
-});
+    }
+}
+
+export default CommandCommand;

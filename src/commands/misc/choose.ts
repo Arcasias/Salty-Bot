@@ -1,12 +1,12 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
 
-export default new Command({
-    name: "choose",
-    keys: ["choice", "chose", "shoes"],
-    help: [
+class ChooseCommand extends Command {
+    public name = "choose";
+    public keys = ["choice", "chose", "shoes"];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -16,9 +16,9 @@ export default new Command({
             effect:
                 "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok?",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         if (!args[0] || !args[1]) {
             throw new MissingArg("choices");
         }
@@ -26,5 +26,7 @@ export default new Command({
             msg,
             `I choose ${choice(args.join(" ").split("/"))}`
         );
-    },
-});
+    }
+}
+
+export default ChooseCommand;

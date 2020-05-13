@@ -3,7 +3,7 @@ import http from "http";
 import https from "https";
 import path from "path";
 import PImage from "pureimage";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error, title } from "../../utils";
 import { tempImageFolder } from "../../config";
@@ -18,18 +18,18 @@ const baseBorder = 10;
 let imgIndex = 1;
 let imgPath = path.join(tempImageFolder, `meme_temp_${imgIndex}.png`);
 
-export default new Command({
-    name: "meme",
-    keys: ["memes"],
-    help: [
+class MemeCommand extends Command {
+    public name = "meme";
+    public keys = ["memes"];
+    public help = [
         {
             argument: null,
             effect: "Work in progress",
         },
-    ],
-    visibility: "public",
-    mode: "local",
-    async action({ msg, args }) {
+    ];
+    public mode = "local";
+
+    async action({ args, msg }: CommandParams) {
         let canvas, c, fontSize, border, lineSpace;
         const imgURL = msg.attachments.first()
             ? msg.attachments.first().url
@@ -149,5 +149,7 @@ export default new Command({
                 error(err);
             }
         }
-    },
-});
+    }
+}
+
+export default MemeCommand;

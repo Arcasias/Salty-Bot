@@ -1,14 +1,14 @@
 import { readdir } from "fs";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice, promisify } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
 
-export default new Command({
-    name: "emoji",
-    keys: ["emojis", "saltmoji", "saltmojis"],
-    help: [
+class EmojiCommand extends Command {
+    public name = "emoji";
+    public keys = ["emojis", "saltmoji", "saltmojis"];
+    public help = [
         {
             argument: null,
             effect: "Shows my emojis list",
@@ -17,9 +17,9 @@ export default new Command({
             argument: "***emoji name***",
             effect: "Sends the indicated emoji",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         const files: string[] = await promisify(readdir.bind(null, emojiPath));
         const pngs = files.filter((file) => file.split(".").pop() === "png");
         const emojiNames = pngs.map((name) => name.split(".").shift());
@@ -44,5 +44,7 @@ export default new Command({
             title: "list of saltmojis",
             description: emojiNames.join("\n"),
         });
-    },
-});
+    }
+}
+
+export default EmojiCommand;

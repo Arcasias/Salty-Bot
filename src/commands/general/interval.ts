@@ -1,18 +1,20 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import {
     EmptyObject,
     IncorrectValue,
     MissingArg,
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
-import { clear } from "../../list";
+import { clear } from "../../terms";
 
 const INTERVALS = {};
 
-export default new Command({
-    name: "interval",
-    keys: [],
-    help: [
+class IntervalCommand extends Command {
+    public name = "interval";
+    public help = [
         {
             argument: null,
             effect: null,
@@ -21,9 +23,10 @@ export default new Command({
             argument: "*delay* ***anything***",
             effect: "I'll tell what you want after a every **delay** seconds",
         },
-    ],
-    visibility: "dev",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         if (args[0] && clear.includes(args[0])) {
             if (!INTERVALS[msg.guild.id]) {
                 throw new EmptyObject("interval");
@@ -52,5 +55,7 @@ export default new Command({
                 Salty.message(msg, args.join(" "));
             }, delay);
         }
-    },
-});
+    }
+}
+
+export default IntervalCommand;

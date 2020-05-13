@@ -1,6 +1,9 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { remove } from "../../list";
+import { remove } from "../../terms";
 import { PresenceStatusData } from "discord.js";
 
 interface StatusInfo {
@@ -17,11 +20,12 @@ const STATUSINFO: StatusInfos = {
     invisible: { title: "invisible" },
 };
 
-export default new Command({
-    name: "presence",
-    keys: ["game", "status"],
-    visibility: "dev",
-    async action({ msg, args }) {
+class PresenceCommand extends Command {
+    public name = "presence";
+    public keys = ["activity", "status"];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         if (args[0] && remove.includes(args[0])) {
             await Salty.bot.user.setPresence({ activity: null });
             Salty.success(msg, "current presence removed");
@@ -47,5 +51,7 @@ export default new Command({
             const description = Salty.bot.user.presence.status;
             Salty.embed(msg, { color, title, description });
         }
-    },
-});
+    }
+}
+
+export default PresenceCommand;

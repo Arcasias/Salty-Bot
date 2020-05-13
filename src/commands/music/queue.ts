@@ -1,4 +1,4 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import {
     EmptyObject,
     IncorrectValue,
@@ -8,14 +8,14 @@ import {
 import Guild from "../../classes/Guild";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import { formatDuration } from "../../utils";
-import { clear, remove } from "../../list";
+import { clear, remove } from "../../terms";
 
 const DISPLAY_LIMIT = 25;
 
-export default new Command({
-    name: "queue",
-    keys: ["playlist", "q"],
-    help: [
+class QueueCommand extends Command {
+    public name = "queue";
+    public keys = ["playlist", "q"];
+    public help = [
         {
             argument: null,
             effect:
@@ -30,9 +30,9 @@ export default new Command({
             argument: "clear",
             effect: "Clears the queue",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (args[0] && remove.includes(args[0])) {
@@ -110,5 +110,7 @@ export default new Command({
             }
             Salty.embed(msg, options);
         }
-    },
-});
+    }
+}
+
+export default QueueCommand;

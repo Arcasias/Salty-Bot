@@ -4,7 +4,7 @@
     "description": "A crude and useful bot",
     "main": "main.js",
     "scripts": {
-        "dev": "ts-node index.ts",
+        "dev": "ts-node src/local.ts",
         "start": "node dist/index.js",
         "test": "node dist/test.js",
         "build": "prettier --write \"./**/*.{ts,json}\" && tsc"

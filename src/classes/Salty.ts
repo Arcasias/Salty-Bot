@@ -1,8 +1,8 @@
-import Discord, { MessageEmbedOptions } from "discord.js";
+import Discord from "discord.js";
 import { readdir, readFileSync, statSync } from "fs";
 import { join, sep } from "path";
 import { devs, prefix, owner } from "../config";
-import * as list from "../list";
+import * as list from "../terms";
 import {
     choice,
     clean,
@@ -12,6 +12,8 @@ import {
     request,
     search,
     title,
+    debug,
+    ellipsis,
 } from "../utils";
 import Command from "./Command";
 import Database from "./Database";
@@ -40,7 +42,7 @@ interface CommandManager {
     help: { [id: string]: HelpManager };
 }
 
-export interface EmbedOptions extends MessageEmbedOptions {
+export interface EmbedOptions extends Discord.MessageEmbedOptions {
     actions?: any;
     content?: string;
     inline?: boolean;
@@ -93,7 +95,8 @@ async function _loadCommand(
     category: string
 ): Promise<void> {
     const commandImport: any = await import(commandPath);
-    const command: Command = commandImport.default;
+    const CommandConstructor = commandImport.default;
+    const command = new CommandConstructor();
     const { name, keys, visibility } = command;
     if (process.env.DEBUG === "true") {
         for (let key of [name, ...keys]) {
@@ -310,16 +313,20 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
             return command.run(msg, msgArgs);
         }
     }
-    const { closest, accuracy } = search(
-        Object.keys(commands.keys),
-        commandName
-    );
-    if (accuracy > 60) {
+    const closests = search(Object.keys(commands.keys), commandName, 2);
+    if (closests.length) {
+        const cmds: { [key: string]: string } = {};
+        for (const key of closests) {
+            const cmdName = commands.keys[key];
+            if (!(cmdName in cmds)) {
+                cmds[cmdName] = key;
+            }
+        }
         return message(
             msg,
-            `command "${commandName}" doesn't exist. Did you mean "${closest.join(
-                `" or "`
-            )}"?`
+            `command "*${commandName}*" doesn't exist. Did you mean "*${Object.values(
+                cmds
+            ).join(`*" or "*`)}*"?`
         );
     } else {
         return commands.list.get("talk").run(msg, msgArgs);
@@ -442,7 +449,7 @@ async function embed(
     const embed = new Discord.MessageEmbed(options);
     const newMessage: Discord.Message = await message(
         msg,
-        formatter.format(content, msg),
+        ellipsis(title(formatter.format(content, msg))),
         {
             embed,
             files: options.files,
@@ -527,7 +534,7 @@ function message(
     options?: Discord.MessageOptions
 ): Promise<any> {
     return msg.channel.send(
-        text && formatter.format(title(text), msg),
+        ellipsis(title(formatter.format(text, msg))),
         options
     );
 }

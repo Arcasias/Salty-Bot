@@ -1,21 +1,26 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
-import { answers } from "../../list";
+import { answers } from "../../terms";
 
-export default new Command({
-    name: "disconnect",
-    keys: [],
-    help: [
+class DisconnectCommand extends Command {
+    public name = "disconnect";
+    public help = [
         {
             argument: null,
             effect:
                 "Disconnects me and terminates my program. Think wisely before using this one, ok?",
         },
-    ],
-    visibility: "dev",
-    async action({ msg }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ msg }: CommandParams) {
         await Salty.success(msg, `${choice(answers.bye)} ♥`);
         await Salty.destroy();
-    },
-});
+    }
+}
+
+export default DisconnectCommand;

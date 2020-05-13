@@ -1,12 +1,12 @@
 import { MessageEmbed } from "discord.js";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { IncorrectValue, MissingArg } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "embed",
-    keys: ["embeds", "json", "parse"],
-    help: [
+class EmbedCommand extends Command {
+    public name = "embed";
+    public keys = ["json", "parse"];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -15,9 +15,9 @@ export default new Command({
             argument: "***JSON data***",
             effect: "Parses the provided JSON as a Discord embed",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         let parsed;
         try {
             parsed = JSON.parse(args.join(" "));
@@ -28,5 +28,7 @@ export default new Command({
             throw new MissingArg("JSON");
         }
         await Salty.message(msg, null, { embed: new MessageEmbed(parsed) });
-    },
-});
+    }
+}
+
+export default EmbedCommand;

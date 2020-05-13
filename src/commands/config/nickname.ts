@@ -1,9 +1,12 @@
 import { GuildMember, Message } from "discord.js";
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import PromiseManager from "../../classes/PromiseManager";
 import Salty from "../../classes/Salty";
-import { add as addList, remove as removeList } from "../../list";
+import { add as addList, remove as removeList } from "../../terms";
 
 async function changeNames(msg, transformation) {
     const members: GuildMember[] = msg.guild.members.array();
@@ -46,10 +49,10 @@ async function changeNames(msg, transformation) {
     Salty.success(msg, "nicknames successfully changed");
 }
 
-export default new Command({
-    name: "nickname",
-    keys: ["name", "nick", "pseudo"],
-    help: [
+class NickNameCommand extends Command {
+    public name = "nickname";
+    public keys = ["name", "nick", "pseudo"];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -63,9 +66,10 @@ export default new Command({
             argument: "remove ***particle***",
             effect: "Removes the ***particle*** from each matching nickname",
         },
-    ],
-    visibility: "admin",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"admin";
+
+    async action({ args, msg }: CommandParams) {
         const particle: string = args.slice(1).join(" ");
         const particleRegex: RegExp = new RegExp(particle, "g");
 
@@ -89,5 +93,7 @@ export default new Command({
                 throw new MissingArg("add or delete + particle");
             }
         }
-    },
-});
+    }
+}
+
+export default NickNameCommand;

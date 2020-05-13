@@ -1,4 +1,4 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import {
     EmptyObject,
     OutOfRange,
@@ -6,12 +6,12 @@ import {
 } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
-import { list, remove } from "../../list";
+import { list, remove } from "../../terms";
 
-export default new Command({
-    name: "todo",
-    keys: ["todos"],
-    help: [
+class TodoCommand extends Command {
+    public name = "todo";
+    public keys = ["todos"];
+    public help = [
         {
             argument: null,
             effect: "Shows your todo list",
@@ -20,9 +20,9 @@ export default new Command({
             argument: "***something to do***",
             effect: "Adds something to your todo list",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         let user = User.get(msg.author.id);
 
         if (args[0] && remove.includes(args[0])) {
@@ -60,5 +60,7 @@ export default new Command({
                 );
             }
         }
-    },
-});
+    }
+}
+
+export default TodoCommand;

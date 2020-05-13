@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import { choice, possessive } from "../../utils";
 import { owner } from "../../config";
 
-export default new Command({
-    name: "avatar",
-    keys: ["pic", "picture", "pp"],
-    help: [
+class AvatarCommand extends Command {
+    public name = "avatar";
+    public keys = ["pic", "picture", "pp"];
+    public help = [
         {
             argument: null,
             effect: "Shows a bigger version of your profile picture",
@@ -17,9 +17,9 @@ export default new Command({
             argument: "***mention***",
             effect: "Shows a bigger version of ***mention***'s profile picture",
         },
-    ],
-    visibility: "public",
-    async action({ msg, target }) {
+    ];
+
+    async action({ msg, target }: CommandParams) {
         const options: EmbedOptions = {
             title: `this is ${possessive(
                 target.member.displayName
@@ -45,5 +45,7 @@ export default new Command({
             options.image = { url: target.user.avatarURL({ size: 1024 }) };
         }
         await Salty.embed(msg, options);
-    },
-});
+    }
+}
+
+export default AvatarCommand;

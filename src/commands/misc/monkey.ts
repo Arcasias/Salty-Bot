@@ -1,19 +1,19 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { IncorrectValue, MissingArg } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import { isSorted, shuffle } from "../../utils";
 
-export default new Command({
-    name: "monkey",
-    keys: [
+class MonkeyCommand extends Command {
+    public name = "monkey";
+    public keys = [
         "bogosort",
         "monkeysort",
         "permutationsort",
         "shotgunsort",
         "slowsort",
         "stupidsort",
-    ],
-    help: [
+    ];
+    public help = [
         {
             argument: null,
             effect: "Monkey sorts a 10 elements array",
@@ -23,9 +23,9 @@ export default new Command({
             effect:
                 "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we?)",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         if (!args[0]) {
             throw new MissingArg("length");
         }
@@ -60,5 +60,7 @@ export default new Command({
             `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`,
             { react: "🐒" }
         );
-    },
-});
+    }
+}
+
+export default MonkeyCommand;

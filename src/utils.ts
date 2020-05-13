@@ -4,9 +4,10 @@
 
 /**
  * Returns a random item from a given array.
+ * @param array
  */
-function choice<T>(array: T[]): T {
-    return array[Math.floor(Math.random() * array.length)];
+export function choice<T>(array: T[]): T {
+    return array[randInt(0, array.length)];
 }
 
 /**
@@ -14,19 +15,25 @@ function choice<T>(array: T[]): T {
  * - stripped of characters deemed unnecessary
  * - trimmed of trailing white spaces
  * - lower cased
+ * @param text
  */
-function clean(string: string): string {
-    return string
+export function clean(text: string): string {
+    return text
         .replace(/[,."'`\-_]/g, "")
         .trim()
         .toLowerCase();
 }
 
+export function ellipsis(text: string, limit: number = 2000): string {
+    return text.length < limit ? text : `${text.slice(0, limit - 4)} ...`;
+}
+
 /**
  * Format a given duration. If none is given, duration is set to current time.
  * Returned string is formatted as "HH:mm:ss".
+ * @param time
  */
-function formatDuration(time: number = null): string {
+export function formatDuration(time: number = null): string {
     const d: Date = time ? new Date(time) : new Date();
     const formatted: number[] = [
         Math.max(d.getHours() - 1, 0),
@@ -38,8 +45,9 @@ function formatDuration(time: number = null): string {
 
 /**
  * Returns true if a randomly generated number is below a given percentage.
+ * @param percentage
  */
-function generate(percentage: number): boolean {
+export function generate(percentage: number): boolean {
     return Math.random() * 100 <= percentage;
 }
 
@@ -47,8 +55,9 @@ function generate(percentage: number): boolean {
  * Returns true if the given array is sorted:
  * - alphabetically if an array of strings
  * - sequentially if an array of numbers
+ * @param array
  */
-function isSorted(array: string[] | number[]): boolean {
+export function isSorted(array: string[] | number[]): boolean {
     for (let i = 0; i < array.length; i++) {
         if (i < array.length && array[i + 1] < array[i]) {
             return false;
@@ -57,10 +66,47 @@ function isSorted(array: string[] | number[]): boolean {
     return true;
 }
 
+// Weights used in the Levenshtein matrix
+const LVD_REPLACE = 1.5;
+const LVD_INSERT = 1;
+const LVD_DELETE = 1;
+
+/**
+ * Returns the edit distance between 2 given strings
+ * @param a
+ * @param b
+ */
+export function levenshtein(a: string, b: string): number {
+    // One of the strings is empty => requires otherstring.length mutations
+    if (!a.length || !b.length) {
+        return (b || a).length;
+    }
+    const matrix: number[][] = [];
+    // Assign first row and column
+    for (let row = 0; row <= a.length; matrix[row] = [row++]);
+    for (let col = 0; col <= b.length; matrix[0][col] = col++);
+    // Fills the rest of the matrix
+    for (let row = 1; row <= a.length; row++) {
+        for (let col = 1; col <= b.length; col++) {
+            matrix[row][col] =
+                a[row - 1] === b[col - 1]
+                    ? matrix[row - 1][col - 1]
+                    : Math.min(
+                          matrix[row - 1][col - 1] + LVD_REPLACE,
+                          matrix[row][col - 1] + LVD_INSERT,
+                          matrix[row - 1][col] + LVD_DELETE
+                      );
+        }
+    }
+    // Minimal distance is the last element
+    return matrix[a.length][b.length];
+}
+
 /**
  * Returns the given word with its appropriate possessive form.
+ * @param text
  */
-function possessive(text: string): string {
+export function possessive(text: string): string {
     return "s" === text[text.length - 1] ? `${text}'` : `${text}'s`;
 }
 
@@ -68,8 +114,9 @@ function possessive(text: string): string {
  * Returns the given callback based function as a promise based one.
  * The given function will take the following function as argument:
  *      <callback: Function>(error: Error, result: any)
+ * @param fn
  */
-function promisify(
+export function promisify(
     fn: (callback: (error: any, result: any) => void) => void
 ): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -83,48 +130,36 @@ function promisify(
     });
 }
 
+export function randInt(min: number = 0, max: number = 1): number {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
 /**
- * Searches an array of string for a given target. Returned result contains the
- * closest match(es) and the accuracy of the match (between 0 and 100).
+ * Searches an array of string for a given target. Returns a list of the closest
+ * results having an edit distance above given threshold, sorted by accuracy.
+ * @param array
+ * @param target
+ * @param threshold
  */
-function search(array: string[], target: string) {
-    let closest: string[] = [];
-    let closestAccuracy: number = 0;
-    for (const el of array) {
-        let accuracy = 0;
-        let remainingString = el;
-        for (const char of target) {
-            const charIndexInEl = remainingString.indexOf(char);
-            const step = 100 / el.length;
-            if (charIndexInEl === 0) {
-                accuracy += step;
-            } else if (charIndexInEl > -1) {
-                accuracy += step * 0.99;
-            } else {
-                accuracy = 0;
-                break;
-            }
-            remainingString = remainingString.slice(charIndexInEl + 1);
-        }
-        if (accuracy > closestAccuracy) {
-            closest = [el];
-            closestAccuracy = accuracy;
-        } else if (accuracy === closestAccuracy) {
-            closest.push(el);
+export function search(array: string[], target: string, threshold: number) {
+    const closests: Array<[string, number]> = [];
+    for (const str of array) {
+        const lvd = levenshtein(target, str);
+        if (lvd <= threshold) {
+            closests.push([str, lvd]);
         }
     }
-    return { closest, accuracy: closestAccuracy };
+    return closests.sort((a, b) => a[1] - b[1]).map((c) => c[0]);
 }
 
 /**
  * Returns a shuffled copy of the given array.
- * @param {any[]} array
- * @returns {any[]}
+ * @param array
  */
-function shuffle<T>(array: T[]): T[] {
+export function shuffle<T>(array: T[]): T[] {
     const copy = array.slice();
     for (let i = copy.length - 1; i > 0; i--) {
-        const randId = Math.floor(Math.random() * (i + 1));
+        const randId = randInt(0, i + 1);
         const temp = copy[i];
         copy[i] = copy[randId];
         copy[randId] = temp;
@@ -134,8 +169,12 @@ function shuffle<T>(array: T[]): T[] {
 
 /**
  * Returns the given string with the first letter capitalized.
+ * @param string
  */
-function title(string: string) {
+export function title(string: string) {
+    if (!string.length) {
+        return string;
+    }
     return string[0].toUpperCase() + string.slice(1);
 }
 
@@ -155,7 +194,10 @@ const colors = {
     RESET: "\x1b[0m",
 };
 
-function debug(...message: any[]) {
+/**
+ * @param message
+ */
+export function debug(...message: any[]) {
     if (process.env.DEBUG !== "true") {
         return;
     }
@@ -169,7 +211,10 @@ function debug(...message: any[]) {
     console.log(...message);
 }
 
-function error(...message: any[]) {
+/**
+ * @param message
+ */
+export function error(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.RED}ERROR${
@@ -180,7 +225,10 @@ function error(...message: any[]) {
     console.error(...message);
 }
 
-function log(...message: any[]) {
+/**
+ * @param message
+ */
+export function log(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.CYAN}INFO${
@@ -191,7 +239,12 @@ function log(...message: any[]) {
     console.log(...message);
 }
 
-function request(guild: string, user: string, msg: string) {
+/**
+ * @param guild
+ * @param user
+ * @param msg
+ */
+export function request(guild: string, user: string, msg: string) {
     const content = msg
         ? `${colors.GREEN}"${msg}"${colors.RESET}`
         : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
@@ -206,7 +259,10 @@ function request(guild: string, user: string, msg: string) {
     console.log(...message);
 }
 
-function warn(...message: any[]) {
+/**
+ * @param message
+ */
+export function warn(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
             `${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${
@@ -216,23 +272,3 @@ function warn(...message: any[]) {
     }
     console.warn(...message);
 }
-
-export {
-    // Utilities
-    choice,
-    clean,
-    formatDuration,
-    generate,
-    isSorted,
-    possessive,
-    promisify,
-    search,
-    shuffle,
-    title,
-    // Log
-    debug,
-    error,
-    log,
-    request,
-    warn,
-};

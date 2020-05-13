@@ -1,6 +1,7 @@
 import { VoiceConnection } from "discord.js";
 import ytdl from "ytdl-core";
 import Model, { FieldsDescriptor } from "./Model";
+import { randInt } from "../utils";
 
 interface Song {
     duration: number;
@@ -96,7 +97,7 @@ class Playlist extends Model {
 
     public shuffle(): void {
         for (let index: number = this.queue.length - 1; index > 0; index--) {
-            const randId: number = Math.floor(Math.random() * (index + 1));
+            const randId: number = randInt(0, index + 1);
             const temp: Song = this.queue[index];
             this.queue[index] = this.queue[randId];
             this.queue[randId] = temp;

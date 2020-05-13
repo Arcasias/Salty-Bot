@@ -1,19 +1,23 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { TextChannel } from "discord.js";
 
-export default new Command({
-    name: "leave",
-    keys: ["exit", "quit"],
-    help: [
+class LeaveCommand extends Command {
+    public name = "leave";
+    public keys = ["exit", "quit"];
+    public help = [
         {
             argument: null,
             effect: "Leaves the current voice channel",
         },
-    ],
-    visibility: "admin",
-    async action({ msg }) {
+    ];
+    public visibility = <CommandVisiblity>"admin";
+
+    async action({ msg }: CommandParams) {
         const { playlist } = Guild.get(msg.guild.id);
 
         if (playlist.connection) {
@@ -25,5 +29,7 @@ export default new Command({
         } else {
             Salty.error(msg, "I'm not in a voice channel");
         }
-    },
-});
+    }
+}
+
+export default LeaveCommand;

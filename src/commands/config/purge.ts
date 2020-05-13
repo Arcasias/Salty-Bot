@@ -1,5 +1,8 @@
 import { TextChannel } from "discord.js";
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error } from "../../utils";
 import { IncorrectValue, SaltyException } from "../../classes/Exception";
@@ -15,10 +18,10 @@ async function purgeEndless(channel: TextChannel): Promise<void> {
     return purgeEndless(channel);
 }
 
-export default new Command({
-    name: "purge",
-    keys: ["prune"],
-    help: [
+class PurgeCommand extends Command {
+    public name = "purge";
+    public keys = ["prune"];
+    public help = [
         {
             argument: null,
             effect: "Deletes the last 100 messages",
@@ -40,9 +43,10 @@ export default new Command({
             argument: "clear",
             effect: "Used to stop the endless purge",
         },
-    ],
-    visibility: "dev",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         switch (this.meaning(args[0])) {
             case "bot":
                 const messages = await msg.channel.messages.fetch();
@@ -95,5 +99,7 @@ export default new Command({
                     error(err);
                 }
         }
-    },
-});
+    }
+}
+
+export default PurgeCommand;

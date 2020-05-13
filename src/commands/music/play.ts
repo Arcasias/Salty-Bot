@@ -1,11 +1,11 @@
 import { youtube_v3 } from "googleapis";
 import ytdl from "ytdl-core";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { choice, generate, promisify } from "../../utils";
-import { surpriseSong } from "../../list";
+import { surpriseSong } from "../../terms";
 
 const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
@@ -45,10 +45,10 @@ function generateQuery(q) {
     };
 }
 
-export default new Command({
-    name: "play",
-    keys: ["sing", "song", "video", "youtube", "yt"],
-    help: [
+class PlayCommand extends Command {
+    public name = "play";
+    public keys = ["sing", "song", "video", "youtube", "yt"];
+    public help = [
         {
             argument: null,
             effect:
@@ -69,9 +69,9 @@ export default new Command({
             effect:
                 "Searches for a video on YouTube and plays the first result",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         if (!msg.member.voice.channel) {
             throw new SaltyException("you're not in a voice channel");
         }
@@ -129,5 +129,7 @@ export default new Command({
             );
         });
         Salty.embed(msg, options);
-    },
-});
+    }
+}
+
+export default PlayCommand;

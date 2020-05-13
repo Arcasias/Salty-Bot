@@ -1,13 +1,16 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { add, remove } from "../../list";
+import { add, remove } from "../../terms";
 import { TextChannel } from "discord.js";
 
-export default new Command({
-    name: "channel",
-    keys: ["chan"],
-    help: [
+class ChannelCommand extends Command {
+    public name = "channel";
+    public keys = ["chan"];
+    public help = [
         {
             argument: null,
             effect: "Shows the current default channel",
@@ -20,9 +23,10 @@ export default new Command({
             argument: "unset",
             effect: "Unsets this server's default channel",
         },
-    ],
-    visibility: "admin",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"admin";
+
+    async action({ args, msg }: CommandParams) {
         const guild = Guild.get(msg.guild.id);
 
         if (args[0] && add.includes(args[0])) {
@@ -61,5 +65,7 @@ export default new Command({
                 });
             }
         }
-    },
-});
+    }
+}
+
+export default ChannelCommand;

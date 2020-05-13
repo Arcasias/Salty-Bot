@@ -1,19 +1,21 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
-import { jokes } from "../../list";
+import { jokes } from "../../terms";
 
-export default new Command({
-    name: "joke",
-    keys: ["fun", "haha", "jest", "joker", "jokes"],
-    help: [
+class JokeCommand extends Command {
+    public name = "joke";
+    public keys = ["fun", "haha", "jest", "joker", "jokes"];
+    public help = [
         {
             argument: null,
             effect: "Tells some spicy jokes!",
         },
-    ],
-    visibility: "public",
-    async action({ msg }) {
+    ];
+
+    async action({ msg }: CommandParams) {
         await Salty.message(msg, choice(jokes));
-    },
-});
+    }
+}
+
+export default JokeCommand;

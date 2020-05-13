@@ -1,9 +1,12 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
-import { debug } from "../../utils";
+import { debug, ellipsis } from "../../utils";
 
 const MAXDEPTH = 3;
 const TAB = "    ";
@@ -46,17 +49,17 @@ function evalInContext(code: string): any {
     return eval(code);
 }
 
-export default new Command({
-    name: "debug",
-    keys: [],
-    help: [
+class DebugCommand extends Command {
+    public name = "debug";
+    public help = [
         {
             argument: "***JS code***",
             effect: "Executes a ***JS code*** within Salty context",
         },
-    ],
-    visibility: "dev",
-    async action({ msg, args }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ args, msg }: CommandParams) {
         if (!args[0]) {
             throw new MissingArg("instructions");
         }
@@ -65,9 +68,10 @@ export default new Command({
         const result = `${args.join(
             " "
         )} = /*${typeof evalResult}*/ ${stringify(evalResult, 0)}`;
-        const message =
-            result.length < 2000 ? result : `${evalResult.slice(0, 1985)} ...`;
+        const message = ellipsis(result, 1985);
         Salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
         debug(message);
-    },
-});
+    }
+}
+
+export default DebugCommand;

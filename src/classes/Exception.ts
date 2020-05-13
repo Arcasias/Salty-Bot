@@ -1,4 +1,4 @@
-class SaltyException extends Error {
+export class SaltyException extends Error {
     public name: string = "SaltyException";
 
     constructor(name: string, message?: string) {
@@ -12,7 +12,7 @@ class SaltyException extends Error {
     }
 }
 
-class EmptyObject extends SaltyException {
+export class EmptyObject extends SaltyException {
     public name: string = "EmptyObject";
 
     constructor(object: string) {
@@ -20,7 +20,7 @@ class EmptyObject extends SaltyException {
     }
 }
 
-class IncorrectValue extends SaltyException {
+export class IncorrectValue extends SaltyException {
     public name: string = "IncorrectValue";
 
     constructor(requiredArgument: string, requiredType: string) {
@@ -28,7 +28,7 @@ class IncorrectValue extends SaltyException {
     }
 }
 
-class MissingArg extends SaltyException {
+export class MissingArg extends SaltyException {
     public name: string = "MissingArg";
 
     constructor(missingArgument) {
@@ -36,7 +36,7 @@ class MissingArg extends SaltyException {
     }
 }
 
-class MissingMention extends SaltyException {
+export class MissingMention extends SaltyException {
     public name: string = "MissingMention";
 
     constructor() {
@@ -44,7 +44,7 @@ class MissingMention extends SaltyException {
     }
 }
 
-class OutOfRange extends SaltyException {
+export class OutOfRange extends SaltyException {
     public name: string = "OutOfRange";
 
     constructor(index: number) {
@@ -52,20 +52,10 @@ class OutOfRange extends SaltyException {
     }
 }
 
-class PermissionDenied extends SaltyException {
+export class PermissionDenied extends SaltyException {
     public name: string = "PermissionDenied";
 
     constructor(requiredPermission: string, user: string = "you") {
         super(`${user} need to be **${requiredPermission}** to do this`);
     }
 }
-
-export {
-    SaltyException,
-    EmptyObject,
-    IncorrectValue,
-    MissingArg,
-    MissingMention,
-    OutOfRange,
-    PermissionDenied,
-};

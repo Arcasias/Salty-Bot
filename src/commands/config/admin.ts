@@ -1,11 +1,10 @@
-import { GuildMember } from "discord.js";
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "admin",
-    keys: ["admins", "administrator", "administrators"],
-    help: [
+class AdminCommand extends Command {
+    public name = "admin";
+    public keys = ["administrator"];
+    public help = [
         {
             argument: null,
             effect: "Tells you wether you're an admin",
@@ -14,9 +13,9 @@ export default new Command({
             argument: "***mention***",
             effect: "Tells you wether the ***mention*** is an admin",
         },
-    ],
-    visibility: "public",
-    async action({ msg, target }) {
+    ];
+
+    async action({ msg, target }: CommandParams) {
         const isRequestedUserAdmin: boolean = Salty.isAdmin(
             target.user,
             msg.guild
@@ -47,5 +46,7 @@ export default new Command({
                 : // author is not admin
                   "nope, you're not an admin"
         );
-    },
-});
+    }
+}
+
+export default AdminCommand;

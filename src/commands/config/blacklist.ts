@@ -1,13 +1,12 @@
-import { GuildMember } from "discord.js";
-import Command from "../../classes/Command";
+import Command, { CommandVisiblity } from "../../classes/Command";
 import { MissingMention, SaltyException } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
 
-export default new Command({
-    name: "blacklist",
-    keys: ["blackls", "bl"],
-    help: [
+class BlackListCommand extends Command {
+    public name = "blacklist";
+    public keys = ["bl"];
+    public help = [
         {
             argument: null,
             effect: "Tells you wether you're an admin",
@@ -16,8 +15,9 @@ export default new Command({
             argument: "***mention***",
             effect: "Tells you wether the ***mention*** is an admin",
         },
-    ],
-    visibility: "dev",
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
     async action({ msg, args, target }) {
         const user: User = User.get(target.user.id);
         switch (this.meaning(args[0])) {
@@ -96,5 +96,7 @@ export default new Command({
                     }
                 }
         }
-    },
-});
+    }
+}
+
+export default BlackListCommand;

@@ -1,18 +1,24 @@
-import Command from "../../classes/Command";
+import Command, {
+    CommandVisiblity,
+    CommandParams,
+} from "../../classes/Command";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "restart",
-    keys: ["reset"],
-    help: [
+class RestartCommand extends Command {
+    public name = "restart";
+    public keys = ["reset"];
+    public help = [
         {
             argument: null,
             effect: "Disconnects me and reconnects right after",
         },
-    ],
-    visibility: "dev",
-    async action({ msg }) {
+    ];
+    public visibility = <CommandVisiblity>"dev";
+
+    async action({ msg }: CommandParams) {
         await Salty.success(msg, "Restarting ...");
         await Salty.restart();
-    },
-});
+    }
+}
+
+export default RestartCommand;

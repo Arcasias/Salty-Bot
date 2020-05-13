@@ -15,10 +15,10 @@
             "esnext.symbol"
         ],
         "removeComments": true,
-        "sourceMap": false,
+        "inlineSourceMap": true,
         "outDir": "dist",
         "esModuleInterop": true
     },
-    "include": ["index.ts", "local.ts", "test.ts", "src/**/*"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules"]
 }

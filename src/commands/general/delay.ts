@@ -1,11 +1,11 @@
-import Command from "../../classes/Command";
+import Command, { CommandParams } from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import Salty from "../../classes/Salty";
 
-export default new Command({
-    name: "delay",
-    keys: ["later", "sleep"],
-    help: [
+class DelayCommand extends Command {
+    public name = "delay";
+    public keys = ["sleep", "timeout"];
+    public help = [
         {
             argument: null,
             effect: null,
@@ -14,9 +14,9 @@ export default new Command({
             argument: "*delay* ***anything***",
             effect: "I'll tell what you want after a provided delay",
         },
-    ],
-    visibility: "public",
-    async action({ msg, args }) {
+    ];
+
+    async action({ args, msg }: CommandParams) {
         if (!args[0]) {
             throw new MissingArg("anything");
         }
@@ -31,5 +31,7 @@ export default new Command({
         setTimeout(() => {
             Salty.message(msg, args.join(" "));
         }, delay);
-    },
-});
+    }
+}
+
+export default DelayCommand;
