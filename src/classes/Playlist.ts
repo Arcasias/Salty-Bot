@@ -1,4 +1,4 @@
-import { VoiceConnection } from "discord.js";
+import { VoiceConnection, VoiceChannel } from "discord.js";
 import ytdl from "ytdl-core";
 import Model, { FieldsDescriptor } from "./Model";
 import { randInt } from "../utils";
@@ -13,7 +13,7 @@ class Playlist extends Model {
     public connection: VoiceConnection | null = null;
     public continue: boolean = false;
     public pointer: number = -1;
-    public queue: Song[];
+    public queue: Song[] = [];
     public repeat: string = "off";
 
     protected static readonly fields: FieldsDescriptor = {
@@ -68,14 +68,18 @@ class Playlist extends Model {
     }
 
     public pause(): void {
-        if (!this.connection.dispatcher.paused) {
+        if (this.connection && !this.connection.dispatcher.paused) {
             this.connection.dispatcher.pause();
         }
     }
 
     public play(): void {
-        this.connection.play(ytdl(this.playing.url, { filter: "audioonly" }));
-        this.connection.dispatcher.on("end", () => this.onEnd());
+        if (this.connection) {
+            this.connection.play(
+                ytdl(this.playing.url, { filter: "audioonly" })
+            );
+            this.connection.dispatcher.on("end", () => this.onEnd());
+        }
     }
 
     public remove(...indices: number[]): void {
@@ -90,7 +94,7 @@ class Playlist extends Model {
     }
 
     public resume(): void {
-        if (this.connection.dispatcher.paused) {
+        if (this.connection?.dispatcher.paused) {
             this.connection.dispatcher.resume();
         }
     }
@@ -113,7 +117,7 @@ class Playlist extends Model {
         this.end();
     }
 
-    public async start(channel): Promise<void> {
+    public async start(channel: VoiceChannel): Promise<void> {
         this.continue = true;
         this.pointer = 0;
         this.connection = await channel.join();
@@ -130,7 +134,7 @@ class Playlist extends Model {
         this.next();
         if (this.continue) {
             this.play();
-        } else {
+        } else if (this.connection) {
             this.connection.channel.leave();
             this.connection = null;
         }

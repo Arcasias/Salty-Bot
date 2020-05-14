@@ -33,7 +33,7 @@ export function ellipsis(text: string, limit: number = 2000): string {
  * Returned string is formatted as "HH:mm:ss".
  * @param time
  */
-export function formatDuration(time: number = null): string {
+export function formatDuration(time: number | null = null): string {
     const d: Date = time ? new Date(time) : new Date();
     const formatted: number[] = [
         Math.max(d.getHours() - 1, 0),
@@ -108,26 +108,6 @@ export function levenshtein(a: string, b: string): number {
  */
 export function possessive(text: string): string {
     return "s" === text[text.length - 1] ? `${text}'` : `${text}'s`;
-}
-
-/**
- * Returns the given callback based function as a promise based one.
- * The given function will take the following function as argument:
- *      <callback: Function>(error: Error, result: any)
- * @param fn
- */
-export function promisify(
-    fn: (callback: (error: any, result: any) => void) => void
-): Promise<any> {
-    return new Promise((resolve, reject) => {
-        fn((error, result) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(result);
-            }
-        });
-    });
 }
 
 export function randInt(min: number = 0, max: number = 1): number {

@@ -1,6 +1,7 @@
 import Command, {
-    CommandVisiblity,
+    CommandAccess,
     CommandParams,
+    CommandChannel,
 } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
@@ -24,11 +25,11 @@ class ChannelCommand extends Command {
             effect: "Unsets this server's default channel",
         },
     ];
-    public visibility = <CommandVisiblity>"admin";
+    public access: CommandAccess = "admin";
+    public channel: CommandChannel = "guild";
 
     async action({ args, msg }: CommandParams) {
-        const guild = Guild.get(msg.guild.id);
-
+        const guild = Guild.get(msg.guild!.id)!;
         if (args[0] && add.includes(args[0])) {
             await Guild.update(guild.id, { default_channel: msg.channel.id });
             await Salty.success(
@@ -36,7 +37,7 @@ class ChannelCommand extends Command {
                 `channel **${
                     (<TextChannel>msg.channel).name
                 }** has been successfuly set as default bot channel for **${
-                    msg.guild.name
+                    msg.guild!.name
                 }**`
             );
         } else if (args[0] && remove.includes(args[0])) {

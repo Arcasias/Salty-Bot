@@ -1,4 +1,18 @@
-import Discord from "discord.js";
+import Discord, {
+    Collection,
+    MessageEmbedOptions,
+    PartialDMChannel,
+    Channel,
+    GuildChannel,
+    GuildMember,
+    Message,
+    MessageReaction,
+    MessageEmbed,
+    TextChannel,
+    MessageOptions,
+    PartialGuildMember,
+    PartialUser,
+} from "discord.js";
 import { readdir, readFileSync, statSync } from "fs";
 import { join, sep } from "path";
 import { devs, prefix, owner } from "../config";
@@ -8,11 +22,9 @@ import {
     clean,
     error as logError,
     log,
-    promisify,
     request,
     search,
     title,
-    debug,
     ellipsis,
 } from "../utils";
 import Command from "./Command";
@@ -37,12 +49,12 @@ interface CommandHelp {
 }
 
 interface CommandManager {
-    list: Discord.Collection<string, Command | QuickCommand>;
+    list: Collection<string, Command | QuickCommand>;
     keys: { [id: string]: string };
     help: { [id: string]: HelpManager };
 }
 
-export interface EmbedOptions extends Discord.MessageEmbedOptions {
+export interface EmbedOptions extends MessageEmbedOptions {
     actions?: any;
     content?: string;
     inline?: boolean;
@@ -57,7 +69,7 @@ interface HelpManager {
 const bot: Discord.Client = new Discord.Client();
 const commandsRootPath: string[] = ["src", "commands"];
 const commands: CommandManager = {
-    list: new Discord.Collection(),
+    list: new Collection(),
     keys: {},
     help: {},
 };
@@ -119,7 +131,7 @@ async function _loadCommand(
     commands.list.set(name, command);
     commands.keys[name] = name;
     // Links each key to the command name in command keys
-    keys.forEach((key) => {
+    keys.forEach((key: string) => {
         commands.keys[key] = name;
     });
     // Sets help content
@@ -131,8 +143,15 @@ async function _loadCommand(
  */
 async function _loadCommands(...paths: string[]): Promise<void> {
     const dirpath: string = join(...paths);
-    const files: string[] = await promisify(readdir.bind(null, dirpath));
-    const category: string = dirpath.split(sep).pop();
+    const files: string[] = await new Promise((res, rej) => {
+        readdir(dirpath, (err, files) => {
+            if (err) {
+                rej(err);
+            }
+            res(files);
+        });
+    });
+    const category: string = dirpath.split(sep).pop() || "";
     if (files.includes("__category__.json")) {
         const categoryInfoPath: string = join(dirpath, "__category__.json");
         const categoryInfo: CategoryInfo = JSON.parse(
@@ -146,11 +165,11 @@ async function _loadCommands(...paths: string[]): Promise<void> {
     const promises: Promise<void>[] = files.map((file) => {
         const fullpath: string = join(dirpath, file);
         const stats: any = statSync(fullpath);
-        const extension: string = file.split(".").pop();
+        const extension: string = file.split(".").pop() || "";
 
         if (stats.isDirectory()) {
             // If the file is a directory => executes the function inside
-            _loadCommands(fullpath);
+            return _loadCommands(fullpath);
         } else if (["ts", "js", "cjs", "mjs"].includes(extension)) {
             // If the file is a category info file => extracts its data
             try {
@@ -163,6 +182,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
                 logError(`Could not load file "${file}:"`, err.stack);
             }
         }
+        return Promise.resolve();
     });
     await Promise.all(promises);
 }
@@ -170,11 +190,18 @@ async function _loadCommands(...paths: string[]): Promise<void> {
 /**
  * @private
  */
-async function _onChannelDelete(channel: Discord.GuildChannel): Promise<void> {
+async function _onChannelDelete(
+    channel: PartialDMChannel | Channel
+): Promise<void> {
+    if (!(channel instanceof GuildChannel)) {
+        return;
+    }
     Guild.each((guild: Guild) => {
         if (guild.default_channel === channel.id) {
-            const guildDBId: number = Guild.get(channel.guild.id).id;
-            Guild.update(guildDBId, { default_channel: false });
+            const relatedGuild = Guild.get(channel.guild.id);
+            if (relatedGuild) {
+                Guild.update(relatedGuild.id, { default_channel: false });
+            }
         }
     });
 }
@@ -198,29 +225,34 @@ async function _onGuildCreate(guild: Discord.Guild): Promise<void> {
  * @private
  */
 async function _onGuildDelete(guild: Discord.Guild): Promise<void> {
-    if (guild.member(bot.user)) {
-        const guildDBId: number = Guild.get(guild.id).id;
-        Guild.remove(guildDBId);
+    if (guild.member(bot.user!)) {
+        const relatedGuild = Guild.get(guild.id);
+        if (relatedGuild) {
+            Guild.remove(relatedGuild.id);
+        }
     }
 }
 
 /**
  * @private
  */
-async function _onGuildMemberAdd(member: Discord.GuildMember): Promise<void> {
-    const guild: Guild = Guild.get(member.guild.id);
-    if (guild.default_channel) {
+async function _onGuildMemberAdd(
+    member: GuildMember | PartialGuildMember
+): Promise<void> {
+    const guild = Guild.get(member.guild.id);
+    if (guild?.default_channel) {
         const channel = getTextChannel(guild.default_channel);
         channel.send(
             `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
         );
     }
-    if (guild.default_role) {
+    if (guild?.default_role) {
         try {
             member.roles.add(guild.default_role);
         } catch (err) {
+            const name = member.user?.username || "unknown";
             logError(
-                `Couldn't add default role to ${member.user.username}: permission denied`
+                `Couldn't add default role to "${name}": permission denied`
             );
         }
     }
@@ -230,33 +262,32 @@ async function _onGuildMemberAdd(member: Discord.GuildMember): Promise<void> {
  * @private
  */
 async function _onGuildMemberRemove(
-    member: Discord.GuildMember
+    member: GuildMember | PartialGuildMember
 ): Promise<void> {
-    const guild: Guild = Guild.get(member.guild.id);
-    if (guild.default_channel) {
+    const guild = Guild.get(member.guild.id);
+    if (guild?.default_channel) {
         const channel = getTextChannel(guild.default_channel);
-        channel.send(
-            `Well, looks like ${member.user.username} got bored of us :c`
-        );
+        const name = member.user?.username || "unknown";
+        channel.send(`Well, looks like ${name} got bored of us :c`);
     }
 }
 
 /**
  * @private
  */
-async function _onMessage(msg: Discord.Message): Promise<void> {
+async function _onMessage(msg: Message): Promise<void> {
     const author: Discord.User = msg.author;
-    const user: User = User.get(author.id);
+    const user = User.get(author.id);
 
     // Ignore all bots
     if (author.bot) {
         return;
     }
 
-    const mention: Discord.User = msg.mentions.users.first();
-    const nickname: string = msg.guild.members.cache.get(bot.user.id).nickname;
+    const mention = msg.mentions.users.first();
+    const nickname = msg.guild?.members.cache.get(bot.user!.id)?.nickname;
     const botNameRegex: string =
-        bot.user.username + (nickname ? `|${clean(nickname)}` : "");
+        bot.user!.username + (nickname ? `|${clean(nickname)}` : "");
 
     // Look for username/nickname match or a mention if in a guild, else (DM) interaction
     // is always true.
@@ -264,7 +295,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     if (msg.guild) {
         interaction =
             new RegExp(botNameRegex, "i").test(msg.content) ||
-            (mention && mention.id === bot.user.id);
+            mention?.id === bot.user!.id;
     }
     // Look for a prefix. Deleted if found.
     if (msg.content.startsWith(prefix)) {
@@ -283,14 +314,14 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     }
 
     // Warning if blacklisted
-    if (user && user.black_listed) {
+    if (user?.black_listed) {
         return error(
             msg,
             "you seem to be blacklisted. To find out why, ask my glorious creator"
         );
     }
 
-    request(msg.guild.name, author.username, msg.content);
+    request(msg.guild?.name || "DM", author.username, msg.content);
 
     if (!msgArgs.length) {
         return message(msg, "yes?");
@@ -303,12 +334,12 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
     if (mention && !mention.bot && !User.get(mention.id)) {
         await User.create({ discord_id: mention.id });
     }
-    const commandName: string = msgArgs.shift();
-    const actualName: string = commands.keys[clean(commandName)];
-    const command: Command | QuickCommand = commands.list.get(actualName);
+    const commandName = msgArgs.shift() || "";
+    const actualName = commands.keys[clean(commandName)];
+    const command = commands.list.get(actualName);
     if (command) {
         if (msgArgs[0] && list.help.includes(msgArgs[0])) {
-            return commands.list.get("help").run(msg, [actualName]);
+            return commands.list.get("help")!.run(msg, [actualName]);
         } else {
             return command.run(msg, msgArgs);
         }
@@ -329,7 +360,7 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
             ).join(`*" or "*`)}*"?`
         );
     } else {
-        return commands.list.get("talk").run(msg, msgArgs);
+        return commands.list.get("talk")!.run(msg, msgArgs);
     }
 }
 
@@ -337,20 +368,20 @@ async function _onMessage(msg: Discord.Message): Promise<void> {
  * @private
  */
 async function _onMessageReactionAdd(
-    msgReact: Discord.MessageReaction,
-    author: Discord.User
+    msgReact: MessageReaction,
+    author: Discord.User | PartialUser
 ): Promise<void> {
     if (author.bot) {
         return;
     }
     const { emoji, message } = msgReact;
-    const dialog: Dialog = Dialog.find((d: Dialog) => d.author === author);
+    const dialog = Dialog.find((d: Dialog) => d.author === author);
 
     if (!dialog || message !== dialog.response) {
         return;
     }
     try {
-        await dialog.run(emoji.name);
+        dialog.run(emoji.name);
     } catch (err) {
         logError(err);
     }
@@ -361,9 +392,9 @@ async function _onMessageReactionAdd(
  */
 async function _onReady(): Promise<void> {
     const preGuilds: { discord_id: string }[] = [];
-    bot.user.setStatus("online"); // dnd , online , idle
+    bot.user!.setStatus("online"); // dnd , online , idle
     bot.guilds.cache.forEach((discordGuild) => {
-        const guild: Guild = Guild.get(discordGuild.id);
+        const guild = Guild.get(discordGuild.id);
         if (guild) {
             if (guild.default_channel) {
                 const channel = getTextChannel(guild.default_channel);
@@ -416,10 +447,7 @@ function destroy(): Promise<void> {
 /**
  * Sends an embed message in the channel of the given 'msg' object.
  */
-async function embed(
-    msg: Discord.Message,
-    options: EmbedOptions = {}
-): Promise<void> {
+async function embed(msg: Message, options: EmbedOptions = {}): Promise<void> {
     // Other options that might change
     let { react, actions } = options;
     const inline = options.inline || false;
@@ -434,7 +462,7 @@ async function embed(
     if (options.description) {
         options.description = formatter.format(title(options.description), msg);
     }
-    if (options.footer && options.footer.text) {
+    if (options.footer?.text) {
         options.footer.text = formatter.format(title(options.footer.text), msg);
     }
     if (options.fields) {
@@ -446,8 +474,8 @@ async function embed(
             };
         });
     }
-    const embed = new Discord.MessageEmbed(options);
-    const newMessage: Discord.Message = await message(
+    const embed = new MessageEmbed(options);
+    const newMessage: Message = await message(
         msg,
         ellipsis(title(formatter.format(content, msg))),
         {
@@ -472,7 +500,7 @@ async function embed(
  * Sends an embed with 'error' preset style.
  */
 function error(
-    msg: Discord.Message,
+    msg: Message,
     text: string = "error",
     options: any = {}
 ): Promise<void> {
@@ -489,9 +517,9 @@ function error(
     );
 }
 
-function getTextChannel(channelId: string): Discord.TextChannel {
-    const channel: Discord.Channel = bot.channels.cache.get(channelId);
-    if (!(channel instanceof Discord.TextChannel)) {
+function getTextChannel(channelId: string): TextChannel {
+    const channel = bot.channels.cache.get(channelId);
+    if (!(channel instanceof TextChannel)) {
         throw new SaltyException(`Default channel is not a text channel.`);
     }
     return channel;
@@ -521,7 +549,7 @@ function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
     return (
         isOwner(user) ||
         isDev(user) ||
-        guild.member(user).hasPermission("ADMINISTRATOR")
+        guild.member(user)!.hasPermission("ADMINISTRATOR")
     );
 }
 
@@ -529,9 +557,9 @@ function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
  * Sends a simply structured message in the channel of the given 'msg' object.
  */
 function message(
-    msg: Discord.Message,
+    msg: Message,
     text: string,
-    options?: Discord.MessageOptions
+    options?: MessageOptions
 ): Promise<any> {
     return msg.channel.send(
         ellipsis(title(formatter.format(text, msg))),
@@ -562,7 +590,7 @@ async function start(): Promise<void> {
     await Database.connect();
     await Promise.all([
         QuickCommand.load().then((commandData) =>
-            commandData.forEach(setQuickCommand)
+            commandData.forEach((c) => setQuickCommand(<QuickCommand>c))
         ),
         Guild.load(),
         User.load(),
@@ -577,7 +605,7 @@ async function start(): Promise<void> {
  * Sends an embed with 'success' preset style.
  */
 function success(
-    msg: Discord.Message,
+    msg: Message,
     text: string = "success",
     options: EmbedOptions = {}
 ): Promise<void> {

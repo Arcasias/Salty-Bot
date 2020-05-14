@@ -1,8 +1,5 @@
 import { TextChannel } from "discord.js";
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error } from "../../utils";
 import { IncorrectValue, SaltyException } from "../../classes/Exception";
@@ -14,8 +11,10 @@ async function purgeEndless(channel: TextChannel): Promise<void> {
     if (!purging) {
         return;
     }
-    await messages.first().delete();
-    return purgeEndless(channel);
+    if (messages.size) {
+        await messages.first()!.delete();
+        return purgeEndless(channel);
+    }
 }
 
 class PurgeCommand extends Command {
@@ -44,7 +43,7 @@ class PurgeCommand extends Command {
             effect: "Used to stop the endless purge",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
         switch (this.meaning(args[0])) {

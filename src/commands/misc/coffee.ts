@@ -26,7 +26,7 @@ class CoffeeCommand extends Command {
             color: 0x523415,
         };
         if (target.isMention) {
-            if (target.user.id === Salty.bot.user.id) {
+            if (target.user.id === Salty.bot.user!.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
                 options.description = `Made with ♥ by **${msg.member.displayName}** for **${target.member.displayName}**`;

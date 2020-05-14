@@ -5,13 +5,15 @@ import { SaltyException } from "./Exception";
 export type FieldsDescriptor = { [field: string]: any };
 
 class Model {
-    public id: number;
+    public id: number | undefined;
+    protected Class!: typeof Model;
 
     protected static instances: { [constructor: string]: any[] } = {};
     protected static readonly fields: FieldsDescriptor = {};
     protected static readonly table: string;
 
     constructor(values: FieldsValues = {}) {
+        this.Class = (<any>this).constructor;
         const { name, table, fields } = this.Class;
         if (!Model.instances[name]) {
             Model.instances[name] = [];
@@ -34,19 +36,15 @@ class Model {
             const toAssign = Object.assign({}, fields);
             for (const key in values) {
                 if (key in toAssign) {
-                    this[key] = values[key];
+                    this[<keyof Model>key] = values[key];
                     delete toAssign[key];
                 }
             }
             // Apply default values to unassigned fields
             for (const key in toAssign) {
-                this[key] = toAssign[key];
+                this[<keyof Model>key] = toAssign[key];
             }
         }
-    }
-
-    get Class(): typeof Model {
-        return (<any>this).constructor;
     }
 
     /**
@@ -112,15 +110,13 @@ class Model {
             );
         }
         const newInstances: Model[] = [];
-        const instances: Model[] = Model.instances[this.name];
-        for (let i = 0; i < instances.length; i++) {
-            if (ids.includes(instances[i].id)) {
-                await Database.remove(this.table, instances[i].id);
+        this.each(async (instance) => {
+            if (ids.includes(instance.id || -1)) {
+                await Database.remove(this.table, instance.id!);
             } else {
-                newInstances.push(instances[i]);
+                newInstances.push(instance);
             }
-        }
-        Model.instances[this.name] = newInstances;
+        });
     }
 
     /**
@@ -143,13 +139,13 @@ class Model {
         const results: any[] = await Database.update(this.table, ids, values);
         const instances: Model[] = results.map(
             (res: any): Model => {
-                const instance: Model = this.find(
+                const instance = this.find(
                     (instance: Model) => instance.id === res.id
                 );
-                for (let fieldName in values) {
-                    instance[fieldName] = values[fieldName];
+                for (const key in values) {
+                    instance![<keyof Model>key] = values[key];
                 }
-                return instance;
+                return instance!;
             }
         );
         return <M[]>instances;
@@ -160,31 +156,31 @@ class Model {
     }
 
     public static filter<M extends Model>(callbackfn: {
-        (instance?: M, index?: number): boolean;
+        (instance: M, index?: number): boolean;
     }): M[] {
         return Model.instances[this.name].filter(callbackfn);
     }
 
     public static find<M extends Model>(predicate: {
-        (instance?: M, index?: number): boolean;
-    }): M {
+        (instance: M, index?: number): boolean;
+    }): M | null {
         return Model.instances[this.name].find(predicate);
     }
 
     public static each<M extends Model>(callbackfn: {
-        (instance?: M, index?: number): void;
+        (instance: M, index?: number): void;
     }): void {
         return Model.instances[this.name].forEach(callbackfn);
     }
 
     public static map<M extends Model>(callbackfn: {
-        (instance?: M, index?: number): any;
+        (instance: M, index?: number): any;
     }): any[] {
         return Model.instances[this.name].map(callbackfn);
     }
 
     public static sort<M extends Model>(comparefn: {
-        (instance?: M, index?: number): number;
+        (instance: M, index?: number): number;
     }): M[] {
         return Model.instances[this.name].sort(comparefn);
     }

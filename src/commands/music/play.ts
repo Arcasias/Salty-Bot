@@ -4,8 +4,10 @@ import Command, { CommandParams } from "../../classes/Command";
 import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { choice, generate, promisify } from "../../utils";
+import { choice, generate } from "../../utils";
 import { surpriseSong } from "../../terms";
+import { Message } from "discord.js";
+import Playlist from "../../classes/Playlist";
 
 const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
@@ -13,13 +15,18 @@ const youtubeRegex = new RegExp(youtubeURL, "i");
 
 const SYMBOLS = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"];
 
-async function addSong(msg, playlist, songURL) {
+async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     if (generate(3)) {
         songURL = choice(surpriseSong);
     }
-    const { length_seconds, title } = await promisify(
-        ytdl.getInfo.bind(ytdl, songURL)
-    );
+    const { length_seconds, title } = await new Promise((res, rej) => {
+        ytdl.getInfo(songURL, (err, info) => {
+            if (err) {
+                rej(err);
+            }
+            res(info);
+        });
+    });
     Salty.success(
         msg,
         `**${msg.member.displayName}** added **${title}** to the queue`
@@ -76,7 +83,7 @@ class PlayCommand extends Command {
             throw new SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild.get(msg.guild.id);
-        const addSongBound = addSong.bind(this, msg, playlist);
+        const addSongBound = addSong.bind(null, msg, playlist);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
@@ -95,12 +102,17 @@ class PlayCommand extends Command {
             args.shift();
         }
 
-        const results = await promisify(
-            youtube.search.list.bind(
-                youtube.search,
-                generateQuery(args.join(" "))
-            )
-        );
+        const results = await new Promise((res, rej) => {
+            youtube.search.list(
+                generateQuery(args.join(" ")),
+                (err: any, info: any) => {
+                    if (err) {
+                        rej(err);
+                    }
+                    res(info);
+                }
+            );
+        });
 
         if (results.data.items.length === 0) {
             throw new SaltyException("no results found");
@@ -122,7 +134,7 @@ class PlayCommand extends Command {
                 description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
             });
             options.actions[SYMBOLS[i]] = addSong.bind(
-                this,
+                null,
                 msg,
                 playlist,
                 searchResults[i]

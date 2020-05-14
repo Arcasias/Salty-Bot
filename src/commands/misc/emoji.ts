@@ -1,7 +1,7 @@
 import { readdir } from "fs";
 import Command, { CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { choice, promisify } from "../../utils";
+import { choice } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
 
@@ -20,7 +20,14 @@ class EmojiCommand extends Command {
     ];
 
     async action({ args, msg }: CommandParams) {
-        const files: string[] = await promisify(readdir.bind(null, emojiPath));
+        const files: string[] = await new Promise((res, rej) => {
+            readdir(emojiPath, (err, files) => {
+                if (err) {
+                    rej(err);
+                }
+                res(files);
+            });
+        });
         const pngs = files.filter((file) => file.split(".").pop() === "png");
         const emojiNames = pngs.map((name) => name.split(".").shift());
 

@@ -26,7 +26,7 @@ class AvatarCommand extends Command {
             )} profile pic`,
             color: target.member.displayColor,
         };
-        if (target.user.id === Salty.bot.user.id) {
+        if (target.user.id === Salty.bot.user!.id) {
             // if Salty
             const files = fs.readdirSync("assets/img/salty");
             const pics = files.filter((f) => f.split(".").pop() === "png");

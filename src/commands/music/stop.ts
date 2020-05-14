@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
@@ -16,7 +13,7 @@ class StopCommand extends Command {
             effect: "Leaves the voice channel and deletes the queue",
         },
     ];
-    public visibility = <CommandVisiblity>"admin";
+    public access: CommandAccess = "admin";
 
     async action({ msg }: CommandParams) {
         const { playlist } = Guild.get(msg.guild.id);

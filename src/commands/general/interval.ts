@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import {
     EmptyObject,
     IncorrectValue,
@@ -24,7 +21,7 @@ class IntervalCommand extends Command {
             effect: "I'll tell what you want after a every **delay** seconds",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
         if (args[0] && clear.includes(args[0])) {

@@ -2,10 +2,11 @@ import Model, { FieldsDescriptor } from "./Model";
 import Playlist from "./Playlist";
 
 class Guild extends Model {
+    public id!: number;
     public playlist: Playlist = new Playlist({});
-    public discord_id: string;
-    public default_channel: string;
-    public default_role: string;
+    public discord_id!: string;
+    public default_channel!: string;
+    public default_role!: string;
 
     protected static readonly fields: FieldsDescriptor = {
         discord_id: "",
@@ -14,7 +15,7 @@ class Guild extends Model {
     };
     protected static readonly table: string = "guilds";
 
-    public static get(id: string): Guild {
+    public static get(id: string) {
         return this.find((guild: Guild) => guild.discord_id === id);
     }
 }

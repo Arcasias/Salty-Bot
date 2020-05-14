@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandParams, CommandAccess } from "../../classes/Command";
 import { MissingArg } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
@@ -16,7 +13,7 @@ const TAB = "    ";
 
 function stringify(variable: any, depth: number): string {
     if (MAXDEPTH < depth) {
-        return;
+        return "";
     }
     switch (Array.isArray(variable) ? "array" : typeof variable) {
         case "string":
@@ -57,7 +54,7 @@ class DebugCommand extends Command {
             effect: "Executes a ***JS code*** within Salty context",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
         if (!args[0]) {

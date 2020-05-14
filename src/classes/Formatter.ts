@@ -20,9 +20,8 @@ class Formatter {
     public format(raw: string, context: any): string {
         return raw.replace(FORMAT_REGEX, (match) => {
             const matchExpr = match.slice(1, -1);
-            const { replacer } = this.expressions.find(({ expr }) =>
-                expr.test(matchExpr)
-            );
+            const { replacer } =
+                this.expressions.find(({ expr }) => expr.test(matchExpr)) || {};
             if (replacer) {
                 return replacer(matchExpr, context);
             }

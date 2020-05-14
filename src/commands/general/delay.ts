@@ -17,17 +17,15 @@ class DelayCommand extends Command {
     ];
 
     async action({ args, msg }: CommandParams) {
-        if (!args[0]) {
+        if (!args.length) {
             throw new MissingArg("anything");
         }
-
         const delay =
             args[1] && !isNaN(Number(args[0]))
-                ? parseInt(args.shift()) * 1000
+                ? parseInt(args.shift()!) * 1000
                 : 5000;
 
         msg.delete().catch();
-
         setTimeout(() => {
             Salty.message(msg, args.join(" "));
         }, delay);

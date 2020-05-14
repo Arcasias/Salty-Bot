@@ -5,7 +5,6 @@ import Salty from "./Salty";
 import * as list from "../terms";
 
 const permissions = {
-    public: null,
     admin: Salty.isAdmin,
     dev: Salty.isDev,
     owner: Salty.isOwner,
@@ -22,30 +21,35 @@ const MEANING_ACTIONS = [
 
 interface CommandHelp {
     argument: string | null;
-    effect: string;
+    effect: string | null;
 }
 
 interface MessageTarget {
     user: User;
-    member: GuildMember;
+    member: GuildMember | null;
     isMention: boolean;
+    name: string;
 }
 
 export interface CommandParams {
-    args?: string[];
-    msg?: Message;
-    target?: MessageTarget;
+    args: string[];
+    msg: Message;
+    target: MessageTarget;
 }
 
-export type CommandVisiblity = "public" | "admin" | "dev" | "owner";
+export type CommandAccess = "public" | "admin" | "dev" | "owner";
+export type CommandEnvironment = "all" | "local" | "server";
+export type CommandChannel = "all" | "guild";
 
 abstract class Command {
-    public readonly env: "local" | "server";
-    public readonly help: CommandHelp[];
+    // Infos
+    public readonly help: CommandHelp[] = [];
     public readonly keys: string[] = [];
-    public readonly mode: string;
-    public readonly name: string;
-    public readonly visibility: CommandVisiblity = "public";
+    public readonly name: string = "";
+    // Restrictions
+    public readonly access: CommandAccess = "public";
+    public readonly environment: CommandEnvironment = "all";
+    public readonly channel: CommandChannel = "all";
 
     abstract async action(commandParams: CommandParams): Promise<void>;
 
@@ -55,24 +59,35 @@ abstract class Command {
     public async run(msg: Message, args: string[]) {
         try {
             if (
-                this.visibility !== "public" &&
-                !permissions[this.visibility].call(Salty, msg.author, msg.guild)
+                this.access !== "public" &&
+                msg.guild &&
+                !permissions[this.access].call(Salty, msg.author, msg.guild)
             ) {
-                throw new PermissionDenied(this.visibility);
+                throw new PermissionDenied(this.access);
             }
-            if (this.env && this.env !== process.env.MODE) {
-                debug(this.name, this.env);
+            if (
+                this.environment !== "all" &&
+                this.environment !== process.env.MODE
+            ) {
                 throw new SaltyException(
                     "WrongEnvironment",
                     "it looks like I'm not in the right environment to do that"
                 );
             }
+            if (this.channel === "guild" && !msg.guild) {
+                throw new SaltyException(
+                    "WrongChannel",
+                    "this is a direct message channel retard"
+                );
+            }
             const mentioned = Boolean(msg.mentions.users.size);
             const target: MessageTarget = {
-                user: mentioned ? msg.mentions.users.first() : msg.author,
-                member: mentioned ? msg.mentions.members.first() : msg.member,
+                user: mentioned ? msg.mentions.users.first()! : msg.author,
+                member: mentioned ? msg.mentions.members!.first()! : msg.member,
                 isMention: mentioned,
+                name: "",
             };
+            target.name = target.member?.displayName || target.user.username;
             const commandParams: CommandParams = { msg, args, target };
             await this.action(commandParams);
         } catch (err) {
@@ -87,9 +102,7 @@ abstract class Command {
     protected meaning(word?: string): string {
         if (word) {
             return (
-                MEANING_ACTIONS.find(
-                    (w) => list[w] && list[w].includes(word)
-                ) || "string"
+                MEANING_ACTIONS.find((w) => list[w]?.includes(word)) || "string"
             );
         } else {
             return "noarg";

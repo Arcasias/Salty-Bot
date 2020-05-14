@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 import User from "../../classes/User";
@@ -16,7 +13,7 @@ class StateCommand extends Command {
             effect: "Gets you some information about me",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ msg }: CommandParams) {
         const blacklist = User.filter((u: User) => u.black_listed);

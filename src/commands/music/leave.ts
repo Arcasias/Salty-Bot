@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { TextChannel } from "discord.js";
@@ -15,7 +12,7 @@ class LeaveCommand extends Command {
             effect: "Leaves the current voice channel",
         },
     ];
-    public visibility = <CommandVisiblity>"admin";
+    public access: CommandAccess = "admin";
 
     async action({ msg }: CommandParams) {
         const { playlist } = Guild.get(msg.guild.id);

@@ -1,6 +1,7 @@
 import Command, {
-    CommandVisiblity,
+    CommandAccess,
     CommandParams,
+    CommandChannel,
 } from "../../classes/Command";
 import {
     MissingArg,
@@ -28,11 +29,12 @@ class RoleCommand extends Command {
             effect: "Removes the default role",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
+    public channel: CommandChannel = "guild";
 
     async action({ args, msg }: CommandParams) {
-        const { guild } = msg;
-        const guildDBId = Guild.get(guild.id).id;
+        const guild = msg.guild!;
+        const guildDBId = Guild.get(guild.id)!.id;
 
         if (args[0] && add.includes(args[0])) {
             if (!args[1]) {
@@ -71,7 +73,7 @@ class RoleCommand extends Command {
                 );
             }
         } else if (args[0] && remove.includes(args[0])) {
-            if (!Guild.get(guild.id).default_channel) {
+            if (!Guild.get(guild.id)?.default_channel) {
                 throw new SaltyException("no default role set");
             }
             await Guild.update(guildDBId, { default_role: null });
@@ -80,16 +82,16 @@ class RoleCommand extends Command {
                 "default role has been successfuly removed"
             );
         } else {
-            if (!Guild.get(guild.id).default_role) {
+            if (!Guild.get(guild.id)?.default_role) {
                 return Salty.message(msg, "No default role set");
             } else {
                 const role = guild.roles.cache.get(
-                    Guild.get(guild.id).default_role
+                    Guild.get(guild.id)!.default_role
                 );
                 Salty.embed(msg, {
-                    title: `default role is ${role.name}`,
+                    title: `default role is ${role?.name}`,
                     description: "newcomers will automatically get this role",
-                    color: role.color,
+                    color: role?.color,
                 });
             }
         }

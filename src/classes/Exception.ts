@@ -31,7 +31,7 @@ export class IncorrectValue extends SaltyException {
 export class MissingArg extends SaltyException {
     public name: string = "MissingArg";
 
-    constructor(missingArgument) {
+    constructor(missingArgument: string) {
         super(`you must provide **${missingArgument}** for it to work`);
     }
 }

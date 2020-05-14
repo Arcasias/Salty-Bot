@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 
 class AdminCommand extends Command {
@@ -14,19 +14,20 @@ class AdminCommand extends Command {
             effect: "Tells you wether the ***mention*** is an admin",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ msg, target }: CommandParams) {
         const isRequestedUserAdmin: boolean = Salty.isAdmin(
             target.user,
-            msg.guild
+            msg.guild!
         );
 
         // Fuck if/else structures, long live ternary operators
-        await Salty.message(
+        Salty.message(
             msg,
             target.isMention
                 ? // mention
-                  target.user.id === Salty.bot.user.id
+                  target.user.id === Salty.bot.user!.id
                     ? // mention is Salty
                       isRequestedUserAdmin
                         ? // mention is Salty and is admin

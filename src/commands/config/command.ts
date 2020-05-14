@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandParams, CommandAccess } from "../../classes/Command";
 import {
     EmptyObject,
     MissingArg,
@@ -25,7 +22,7 @@ class CommandCommand extends Command {
                 "Creates a new command having ***command keys*** as its triggers. ***command effect*** will then be displayed as a response",
         },
     ];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
         switch (this.meaning(args[0])) {
@@ -34,8 +31,8 @@ class CommandCommand extends Command {
                 if (!commandName) {
                     throw new MissingArg("command");
                 }
-                const command: QuickCommand = QuickCommand.find(
-                    (cmd: QuickCommand) => cmd.keys.includes(commandName)
+                const command = QuickCommand.find((cmd: QuickCommand) =>
+                    cmd.keys.includes(commandName)
                 );
                 if (!command) {
                     throw new SaltyException(
@@ -56,22 +53,22 @@ class CommandCommand extends Command {
                 await Salty.embed(msg, {
                     title: "List of commands",
                     description: QuickCommand.map(
-                        (cmd: QuickCommand, i) => `${i + 1}) ${cmd.name}`
+                        (cmd: QuickCommand, i) => `${i! + 1}) ${cmd.name}`
                     ).join("\n"),
                 });
                 break;
             default:
                 const allArgs = args.join(" ").split("```");
 
-                if (!allArgs[1]) {
+                if (allArgs.length < 2) {
                     throw new MissingArg("effect");
                 }
-                let keys: string[] = allArgs
-                    .shift()
+                const keys: string[] = allArgs
+                    .shift()!
                     .split(",")
                     .filter((word) => word.trim() !== "");
                 const name: string = keys[0];
-                const effect: string = allArgs.shift().trim();
+                const effect: string = allArgs.shift()!.trim();
 
                 if (!keys[0]) {
                     throw new MissingArg("keys");

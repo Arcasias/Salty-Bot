@@ -1,7 +1,4 @@
-import Command, {
-    CommandVisiblity,
-    CommandParams,
-} from "../../classes/Command";
+import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { remove } from "../../terms";
 import { PresenceStatusData } from "discord.js";
@@ -23,32 +20,36 @@ const STATUSINFO: StatusInfos = {
 class PresenceCommand extends Command {
     public name = "presence";
     public keys = ["activity", "status"];
-    public visibility = <CommandVisiblity>"dev";
+    public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
         if (args[0] && remove.includes(args[0])) {
-            await Salty.bot.user.setPresence({ activity: null });
+            await Salty.bot.user!.setPresence({ activity: undefined });
             Salty.success(msg, "current presence removed");
         } else if (args[0]) {
             const status = args[0];
             if (status in STATUSINFO) {
                 // status
-                await Salty.bot.user.setStatus(<PresenceStatusData>status);
+                await Salty.bot.user!.setStatus(<PresenceStatusData>status);
                 Salty.success(
                     msg,
-                    `changed my status to **${STATUSINFO[status].title}**`,
-                    { color: STATUSINFO[status].color }
+                    `changed my status to **${
+                        STATUSINFO[<keyof StatusInfos>status].title
+                    }**`,
+                    { color: STATUSINFO[<keyof StatusInfos>status].color }
                 );
             } else {
                 // game
-                await Salty.bot.user.setPresence({
+                await Salty.bot.user!.setPresence({
                     activity: { name: status },
                 });
                 Salty.success(msg, `changed my presence to **${status}**`);
             }
         } else {
-            const { color, title } = STATUSINFO[Salty.bot.user.presence.status];
-            const description = Salty.bot.user.presence.status;
+            const { color, title } = STATUSINFO[
+                <keyof StatusInfos>Salty.bot.user!.presence.status
+            ];
+            const description = Salty.bot.user!.presence.status;
             Salty.embed(msg, { color, title, description });
         }
     }
