@@ -1,4 +1,19 @@
-export const add = [
+interface Meaning {
+    answers: string[];
+    list: string[];
+}
+
+interface Waifu {
+    name: string;
+    anime: string;
+    image: string[];
+}
+
+//-----------------------------------------------------------------------------
+// Meanings
+//-----------------------------------------------------------------------------
+
+export const add: string[] = [
     "add",
     "append",
     "create",
@@ -8,27 +23,11 @@ export const add = [
     "modify",
     "update",
 ];
-export const remove = ["delete", "remove", "del", "rm", "erase", "unset"];
-export const clear = ["clear", "cls", "empty", "cancel", "stop"];
-export const help = ["help", "halp", "info", "infos", "wtf", "?"];
-export const list = ["list", "ls", "l"];
-export const bot = ["bot", "salty"];
-export const buy = ["buy", "buying", "wtb"];
-export const sell = ["sell", "selling", "wts"];
-export const intro = [
-    "did you miss me?",
-    "here I come to salt the day!",
-    "surprise, I'm back!",
-    "your favorite bot is back online!",
-    "powered up and ready to salt!",
-    "IT'S ME BOIIIIS",
-    "mmmmh... looks like there's a serious lack of salt here!",
-    "I have been reborn!",
-    "looks like you're getting bored without me ;)",
-    "oh sweet, a whole server to fill with salt!",
-    "all aboard the salt train!",
-];
-export const meaning = {
+export const bot: string[] = ["bot", "salty"];
+export const clear: string[] = ["clear", "cls", "empty", "cancel", "stop"];
+export const help: string[] = ["help", "halp", "info", "infos", "wtf", "?"];
+export const list: string[] = ["list", "ls", "l"];
+export const meaning: { [key: string]: Meaning } = {
     yes: {
         answers: ["ack"],
         list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],
@@ -126,7 +125,20 @@ export const meaning = {
         ],
     },
 };
-export const answers = {
+export const remove: string[] = [
+    "delete",
+    "remove",
+    "del",
+    "rm",
+    "erase",
+    "unset",
+];
+
+//-----------------------------------------------------------------------------
+// Answers
+//-----------------------------------------------------------------------------
+
+export const answers: { [meaning: string]: string[] } = {
     yes: ["yes", "yeah", "of course", "affirmative", "yup", "definitely"],
     no: ["no", "nope", "absolutely no"],
     greet: ["hi", "hello", "yo", "howdy", "hey", "hey there", "greetings"],
@@ -218,7 +230,20 @@ export const answers = {
         "you sure you're old enough to use that word?",
     ],
 };
-export const jokes = [
+export const intro: string[] = [
+    "did you miss me?",
+    "here I come to salt the day!",
+    "surprise, I'm back!",
+    "your favorite bot is back online!",
+    "powered up and ready to salt!",
+    "IT'S ME BOIIIIS",
+    "mmmmh... looks like there's a serious lack of salt here!",
+    "I have been reborn!",
+    "looks like you're getting bored without me ;)",
+    "oh sweet, a whole server to fill with salt!",
+    "all aboard the salt train!",
+];
+export const jokes: string[] = [
     "your life",
     "the current Bitcoin value",
     "well your life is a joke anyway",
@@ -233,7 +258,7 @@ export const jokes = [
     "why aren't Microsoft developers wearing glasses?\n\n\nBecause they can C sharp",
     "what did the triceratops say to the dimetrodon?\n\n\nNothing. They lived at different epochs",
 ];
-export const pureSalt = [
+export const pureSalt: string[] = [
     "you're a complete retard",
     "you're retarded as fuck",
     "kill yourself",
@@ -263,51 +288,12 @@ export const pureSalt = [
     "i don't have the time nor the crayons to explain how dumb you are",
     'i wrote you a poem, it goes like this: "Roses are red, go fuck yourself"',
 ];
-export const surpriseSong = [
-    "https://www.youtube.com/watch?v=pjepDoTUvAI",
-    "https://www.youtube.com/watch?v=Q3E7L_RoyTU",
-    "https://www.youtube.com/watch?v=ShCBna7Eg1Q",
-    "https://www.youtube.com/watch?v=6ua6OahzdwQ",
-    "https://www.youtube.com/watch?v=FLdFL3TNoDo",
-];
-export const waifus = [
-    {
-        name: "Rory Mercury",
-        anime: "Gate: Jieitai Kanochi nite, Kaku Tatakaeri",
-        image: [
-            "http://img04.deviantart.net/c9a8/i/2015/227/7/8/rory_mercury__vectorised_super_hd__by_jaytec359-d95qpdn.png",
-            "https://i.pinimg.com/originals/ee/f0/b1/eef0b188f21037529c2b23b263333664.jpg",
-            "https://i.pinimg.com/736x/c0/55/88/c05588ea6dbda73d46fbf031e858d324.jpg",
-            "http://pre05.deviantart.net/3a9e/th/pre/i/2015/221/e/0/rory_mercury_by_ryuudog-d94wz89.jpg",
-        ],
-    },
-    {
-        name: "Kurumi Tokisaki",
-        anime: "Date A Live",
-        image: [
-            "https://i.pinimg.com/originals/a5/8f/87/a58f876c8821d04ce257ed8ba6963f73.png",
-            "https://kazasou.files.wordpress.com/2013/11/konachan-com-171295-black_hair-choker-cleavage-date_a_live-dress-garter_belt-gun-halloween-headdress-long_hair-red_eyes-ribbons-roland-gin-thighhighs-weapon-yellow_eyes.jpg",
-            "http://orig13.deviantart.net/78e0/f/2014/029/8/d/tokisaki_kurumi_by_pmazzuco-d749f3f.png",
-            "https://static.zerochan.net/Tokisaki.Kurumi.full.1718175.jpg",
-        ],
-    },
-    {
-        name: "Megumin",
-        anime: "Konosuba",
-        image: [
-            "https://static.zerochan.net/Megumin.%28KonoSuba%29.full.1986667.jpg",
-            "https://static.zerochan.net/Megumin.full.1984357.jpg",
-            "https://static.zerochan.net/Megumin.(KonoSuba).full.1978894.jpg",
-            "http://i1.kym-cdn.com/photos/images/original/001/207/257/f88.jpg",
-        ],
-    },
-];
-export const transactionSuccess = [
-    "A pleasure to make business with you",
-    "Come back anytime",
-    "Hope to see you soon",
-];
-export const fault = {
+
+//-----------------------------------------------------------------------------
+// Other
+//-----------------------------------------------------------------------------
+
+export const fault: { [step: string]: string[] } = {
     start: [
         "",
         "want to know why you lost? ",
@@ -361,7 +347,7 @@ export const fault = {
         "being assraped by a gang of 8 strong N-words",
     ],
 };
-export const predictions = [
+export const predictions: string[] = [
     "changer de sexe",
     "cuisiner avec Raph",
     "cuisiner Raph",
@@ -386,4 +372,75 @@ export const predictions = [
     "sortir avec un noir",
     "tomber en dépression",
     "tondre Madi",
+];
+export const surpriseSong: string[] = [
+    "https://www.youtube.com/watch?v=pjepDoTUvAI",
+    "https://www.youtube.com/watch?v=Q3E7L_RoyTU",
+    "https://www.youtube.com/watch?v=ShCBna7Eg1Q",
+    "https://www.youtube.com/watch?v=6ua6OahzdwQ",
+    "https://www.youtube.com/watch?v=FLdFL3TNoDo",
+];
+export const transactionSuccess: string[] = [
+    "A pleasure to make business with you",
+    "Come back anytime",
+    "Hope to see you soon",
+];
+
+export const waifus: Waifu[] = [
+    {
+        name: "Rory Mercury",
+        anime: "Gate: Jieitai Kanochi nite, Kaku Tatakaeri",
+        image: [
+            "http://img04.deviantart.net/c9a8/i/2015/227/7/8/rory_mercury__vectorised_super_hd__by_jaytec359-d95qpdn.png",
+            "https://i.pinimg.com/originals/ee/f0/b1/eef0b188f21037529c2b23b263333664.jpg",
+            "https://i.pinimg.com/736x/c0/55/88/c05588ea6dbda73d46fbf031e858d324.jpg",
+            "http://pre05.deviantart.net/3a9e/th/pre/i/2015/221/e/0/rory_mercury_by_ryuudog-d94wz89.jpg",
+        ],
+    },
+    {
+        name: "Kurumi Tokisaki",
+        anime: "Date A Live",
+        image: [
+            "https://i.pinimg.com/originals/a5/8f/87/a58f876c8821d04ce257ed8ba6963f73.png",
+            "https://kazasou.files.wordpress.com/2013/11/konachan-com-171295-black_hair-choker-cleavage-date_a_live-dress-garter_belt-gun-halloween-headdress-long_hair-red_eyes-ribbons-roland-gin-thighhighs-weapon-yellow_eyes.jpg",
+            "http://orig13.deviantart.net/78e0/f/2014/029/8/d/tokisaki_kurumi_by_pmazzuco-d749f3f.png",
+            "https://static.zerochan.net/Tokisaki.Kurumi.full.1718175.jpg",
+        ],
+    },
+    {
+        name: "Megumin",
+        anime: "Kono Subarashii Sekai ni Shukufuku wo!",
+        image: [
+            "https://static.zerochan.net/Megumin.%28KonoSuba%29.full.1986667.jpg",
+            "https://static.zerochan.net/Megumin.full.1984357.jpg",
+            "https://static.zerochan.net/Megumin.(KonoSuba).full.1978894.jpg",
+            "http://i1.kym-cdn.com/photos/images/original/001/207/257/f88.jpg",
+        ],
+    },
+    {
+        name: "Rem",
+        anime: "Re:Zero kara Hajimeru Isekai Seikatsu",
+        image: [
+            "https://i.pinimg.com/736x/95/58/74/955874e519e919f91d93a4b085f1c582.jpg",
+            "https://thehypedgeek.com/wp-content/uploads/2017/04/rem-re-zero.jpg",
+        ],
+    },
+    {
+        name: "Yoko Littner",
+        anime: "Tengen Toppa Gurren Lagann",
+        image: [
+            "https://cdn.wallpapersafari.com/85/73/6qLG2g.jpg",
+            "https://www.pngkit.com/png/detail/168-1683809_5-yoko-littner-gurren-lagann-yoko-gurren-lagann.png",
+            "https://vignette.wikia.nocookie.net/characterprofile/images/0/01/Yoko.png/revision/latest/scale-to-width-down/340?cb=20160325102505",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcThX3ygaEWdwFsyvhKyoFjZx8AQFMF2cvovkmLZg4H8zTo2yW4T&usqp=CAU",
+        ],
+    },
+    {
+        name: "Trash",
+        anime: "Your life",
+        image: [
+            "https://www.stickpng.com/assets/images/5c41d448e39d5d01c21da912.png",
+            "https://i.ya-webdesign.com/images/piles-of-garbage-png-5.png",
+        ],
+    },
 ];
