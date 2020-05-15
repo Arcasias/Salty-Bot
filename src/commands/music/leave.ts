@@ -1,4 +1,4 @@
-import Command, { CommandAccess, CommandParams } from "../../classes/Command";
+import Command, { CommandAccess, CommandParams, CommandChannel } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { TextChannel } from "discord.js";
@@ -13,9 +13,10 @@ class LeaveCommand extends Command {
         },
     ];
     public access: CommandAccess = "admin";
+    public channel: CommandChannel = "guild";
 
     async action({ msg }: CommandParams) {
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (playlist.connection) {
             playlist.end();

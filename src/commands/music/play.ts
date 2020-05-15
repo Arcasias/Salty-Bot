@@ -1,9 +1,9 @@
 import { youtube_v3 } from "googleapis";
 import ytdl from "ytdl-core";
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import Salty, { EmbedOptions } from "../../classes/Salty";
 import { choice, generate } from "../../utils";
 import { surpriseSong } from "../../terms";
 import { Message } from "discord.js";
@@ -19,6 +19,7 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     if (generate(3)) {
         songURL = choice(surpriseSong);
     }
+    const member = msg.member!;
     const { length_seconds, title } = await new Promise((res, rej) => {
         ytdl.getInfo(songURL, (err, info) => {
             if (err) {
@@ -29,7 +30,7 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     });
     Salty.success(
         msg,
-        `**${msg.member.displayName}** added **${title}** to the queue`
+        `**${member.displayName}** added **${title}** to the queue`
     );
     msg.delete();
     playlist.add({
@@ -38,19 +39,17 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
         url: songURL,
     });
     if (!playlist.connection) {
-        playlist.start(msg.member.voice.channel);
+        playlist.start(member.voice.channel!);
     }
 }
 
-function generateQuery(q) {
-    return {
-        key: process.env.GOOGLE_API,
-        maxResults: 5,
-        part: "snippet",
-        q,
-        type: "video",
-    };
-}
+const generateQuery = (q: string) => ({
+    key: process.env.GOOGLE_API,
+    maxResults: 5,
+    part: "snippet",
+    q,
+    type: "video",
+});
 
 class PlayCommand extends Command {
     public name = "play";
@@ -77,12 +76,14 @@ class PlayCommand extends Command {
                 "Searches for a video on YouTube and plays the first result",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ args, msg }: CommandParams) {
-        if (!msg.member.voice.channel) {
+        const voiceChannel = msg.member!.voice.channel;
+        if (!voiceChannel) {
             throw new SaltyException("you're not in a voice channel");
         }
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild!.id)!;
         const addSongBound = addSong.bind(null, msg, playlist);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
@@ -92,7 +93,7 @@ class PlayCommand extends Command {
             if (playlist.connection) {
                 throw new SaltyException("I'm already playing");
             }
-            playlist.start(msg.member.voice.channel);
+            playlist.start(voiceChannel);
         }
         if (arg.match(youtubeRegex)) {
             return addSongBound(arg);
@@ -102,36 +103,28 @@ class PlayCommand extends Command {
             args.shift();
         }
 
-        const results = await new Promise((res, rej) => {
-            youtube.search.list(
-                generateQuery(args.join(" ")),
-                (err: any, info: any) => {
-                    if (err) {
-                        rej(err);
-                    }
-                    res(info);
-                }
-            );
-        });
-
-        if (results.data.items.length === 0) {
+        const results = await youtube.search.list(
+            generateQuery(args.join(" "))
+        );
+        if (!results.data?.items?.length) {
             throw new SaltyException("no results found");
         }
         if (directPlay) {
-            return addSongBound(youtubeURL + results.data.items[0].id.videoId);
+            return addSongBound(youtubeURL + results.data.items[0].id!.videoId);
         }
-        const searchResults = [];
-        const options = {
+        const searchResults: string[] = [];
+        const options: EmbedOptions = {
             actions: {},
             fields: [],
             title: "search results",
         };
         results.data.items.forEach((video, i) => {
-            let videoURL = youtubeURL + video.id.videoId;
+            const videoURL = youtubeURL + video.id!.videoId;
+            const { title, channelTitle } = video.snippet!;
             searchResults.push(videoURL);
-            options.fields.push({
-                title: i + 1 + ") " + video.snippet.title,
-                description: `> From ${video.snippet.channelTitle}\n> [Open in browser](${videoURL})`,
+            options.fields!.push({
+                name: `${i + 1}) ${title}`,
+                value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
             });
             options.actions[SYMBOLS[i]] = addSong.bind(
                 null,

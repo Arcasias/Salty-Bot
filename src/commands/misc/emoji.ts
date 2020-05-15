@@ -29,7 +29,7 @@ class EmojiCommand extends Command {
             });
         });
         const pngs = files.filter((file) => file.split(".").pop() === "png");
-        const emojiNames = pngs.map((name) => name.split(".").shift());
+        const emojiNames = pngs.map((name) => name.split(".").shift()!);
 
         if (args[0]) {
             const arg = args[0].toLowerCase();

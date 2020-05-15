@@ -36,7 +36,7 @@ class MonkeyCommand extends Command {
         const runningMsg = await Salty.message(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(Number(args[0]), 10);
-        let list = [];
+        let list: number[] = [];
 
         const sortingTime = await new Promise((resolve) => {
             for (let i = 0; i < length; i++) {

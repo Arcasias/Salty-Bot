@@ -52,16 +52,16 @@ class HelpCommand extends Command {
 
                 help[categories[arg]].commands.forEach((cmd) => {
                     if (
-                        "public" === cmd.visibility ||
-                        ("admin" === cmd.visibility &&
-                            Salty.isAdmin(author, msg.guild)) ||
-                        ("dev" === cmd.visibility && Salty.isDev(author)) ||
-                        ("owner" === cmd.visibility && Salty.isOwner(author))
+                        "public" === cmd.access ||
+                        ("admin" === cmd.access &&
+                            (!msg.guild || Salty.isAdmin(author, msg.guild))) ||
+                        ("dev" === cmd.access && Salty.isDev(author)) ||
+                        ("owner" === cmd.access && Salty.isOwner(author))
                     ) {
                         const alternate = cmd.keys.length
                             ? ` (or ***${cmd.keys.join("***, ***")}***)`
                             : "";
-                        options.fields.push({
+                        options.fields!.push({
                             name: `**${title(cmd.name)}**${alternate}`,
                             value: `> \`${prefix}help ${cmd.name}\``,
                         });
@@ -70,12 +70,12 @@ class HelpCommand extends Command {
                 // query is a command name
             } else if (commands.includes(arg)) {
                 // arg === command
-                const command: Command | QuickCommand = Salty.commands.list.get(
+                const command = Salty.commands.list.get(
                     Salty.commands.keys[arg]
-                );
+                )!;
                 const category = Object.values(categories).find((cat) =>
                     help[cat].commands.find((cmd) => cmd.name === command.name)
-                );
+                )!;
                 options.title = `**${command.name.toUpperCase()}**`;
                 options.url = `${homepage}/tree/master/commands/${category}/${command.name.toLowerCase()}.js`;
                 options.description = `> ${title(category)}`;
@@ -88,7 +88,7 @@ class HelpCommand extends Command {
                 if (command instanceof Command) {
                     command.help.forEach((usage) => {
                         if (usage.effect) {
-                            options.fields.push({
+                            options.fields!.push({
                                 name: `${prefix}${command.name} ${
                                     usage.argument || ""
                                 }`,
@@ -110,7 +110,7 @@ class HelpCommand extends Command {
                 "these are the commands categories. To get more information about a specific category, use the command `$help category_name`";
             for (let category in help) {
                 const { name, icon } = help[category].info;
-                options.fields.push({
+                options.fields!.push({
                     name: `${icon} **${title(name)}**  (${
                         help[category].commands.length
                     } commands)`,

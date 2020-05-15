@@ -45,7 +45,7 @@ interface CategoryInfo {
 interface CommandHelp {
     keys: string[];
     name: string;
-    visibility: string;
+    access: string;
 }
 
 interface CommandManager {
@@ -79,37 +79,14 @@ const startTime: Date = new Date();
 // Not exported
 //-----------------------------------------------------------------------------
 
-/**
- * @private
- */
-async function _destroy(restart: boolean): Promise<void> {
-    log("Disconnecting ...");
-    bot.destroy();
-    if (restart) {
-        commands.list.clear();
-        commands.keys = {};
-        commands.help = {};
-        await _loadCommands(...commandsRootPath).then(() =>
-            log("Static commands loaded")
-        );
-        await bot.login(process.env.DISCORD_API);
-    } else {
-        await Database.disconnect();
-        process.exit();
-    }
-}
-
-/**
- * @private
- */
-async function _loadCommand(
+async function loadCommand(
     commandPath: string,
     category: string
 ): Promise<void> {
     const commandImport: any = await import(commandPath);
     const CommandConstructor = commandImport.default;
     const command = new CommandConstructor();
-    const { name, keys, visibility } = command;
+    const { name, keys, access } = command;
     if (process.env.DEBUG === "true") {
         for (let key of [name, ...keys]) {
             if (commands.list.get(key)) {
@@ -135,13 +112,10 @@ async function _loadCommand(
         commands.keys[key] = name;
     });
     // Sets help content
-    commands.help[category].commands.push({ name, keys, visibility });
+    commands.help[category].commands.push({ name, keys, access });
 }
 
-/**
- * @private
- */
-async function _loadCommands(...paths: string[]): Promise<void> {
+async function loadCommands(...paths: string[]): Promise<void> {
     const dirpath: string = join(...paths);
     const files: string[] = await new Promise((res, rej) => {
         readdir(dirpath, (err, files) => {
@@ -169,7 +143,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
 
         if (stats.isDirectory()) {
             // If the file is a directory => executes the function inside
-            return _loadCommands(fullpath);
+            return loadCommands(fullpath);
         } else if (["ts", "js", "cjs", "mjs"].includes(extension)) {
             // If the file is a category info file => extracts its data
             try {
@@ -177,7 +151,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
                     sep,
                     "/"
                 );
-                return _loadCommand(commandPath, category);
+                return loadCommand(commandPath, category);
             } catch (err) {
                 logError(`Could not load file "${file}:"`, err.stack);
             }
@@ -187,10 +161,7 @@ async function _loadCommands(...paths: string[]): Promise<void> {
     await Promise.all(promises);
 }
 
-/**
- * @private
- */
-async function _onChannelDelete(
+async function onChannelDelete(
     channel: PartialDMChannel | Channel
 ): Promise<void> {
     if (!(channel instanceof GuildChannel)) {
@@ -206,25 +177,16 @@ async function _onChannelDelete(
     });
 }
 
-/**
- * @private
- */
-async function _onError(err: Error): Promise<void> {
+async function onError(err: Error): Promise<void> {
     logError(err);
     restart();
 }
 
-/**
- * @private
- */
-async function _onGuildCreate(guild: Discord.Guild): Promise<void> {
+async function onGuildCreate(guild: Discord.Guild): Promise<void> {
     Guild.create({ discord_id: guild.id });
 }
 
-/**
- * @private
- */
-async function _onGuildDelete(guild: Discord.Guild): Promise<void> {
+async function onGuildDelete(guild: Discord.Guild): Promise<void> {
     if (guild.member(bot.user!)) {
         const relatedGuild = Guild.get(guild.id);
         if (relatedGuild) {
@@ -233,10 +195,7 @@ async function _onGuildDelete(guild: Discord.Guild): Promise<void> {
     }
 }
 
-/**
- * @private
- */
-async function _onGuildMemberAdd(
+async function onGuildMemberAdd(
     member: GuildMember | PartialGuildMember
 ): Promise<void> {
     const guild = Guild.get(member.guild.id);
@@ -258,10 +217,7 @@ async function _onGuildMemberAdd(
     }
 }
 
-/**
- * @private
- */
-async function _onGuildMemberRemove(
+async function onGuildMemberRemove(
     member: GuildMember | PartialGuildMember
 ): Promise<void> {
     const guild = Guild.get(member.guild.id);
@@ -272,10 +228,7 @@ async function _onGuildMemberRemove(
     }
 }
 
-/**
- * @private
- */
-async function _onMessage(msg: Message): Promise<void> {
+async function onMessage(msg: Message): Promise<void> {
     const author: Discord.User = msg.author;
     const user = User.get(author.id);
 
@@ -364,10 +317,7 @@ async function _onMessage(msg: Message): Promise<void> {
     }
 }
 
-/**
- * @private
- */
-async function _onMessageReactionAdd(
+async function onMessageReactionAdd(
     msgReact: MessageReaction,
     author: Discord.User | PartialUser
 ): Promise<void> {
@@ -387,10 +337,7 @@ async function _onMessageReactionAdd(
     }
 }
 
-/**
- * @private
- */
-async function _onReady(): Promise<void> {
+async function onReady(): Promise<void> {
     const preGuilds: { discord_id: string }[] = [];
     bot.user!.setStatus("online"); // dnd , online , idle
     bot.guilds.cache.forEach((discordGuild) => {
@@ -433,15 +380,26 @@ async function _onReady(): Promise<void> {
  * Restarts the bot instance by reloading the command files and recreate a bot
  * instance.
  */
-function restart(): Promise<void> {
-    return _destroy(true);
+async function restart(): Promise<void> {
+    log("Restarting ...");
+    bot.destroy();
+    commands.list.clear();
+    commands.keys = {};
+    commands.help = {};
+    await loadCommands(...commandsRootPath).then(() =>
+        log("Static commands loaded")
+    );
+    await bot.login(process.env.DISCORD_API);
 }
 
 /**
  * Terminates the bot instance.
  */
-function destroy(): Promise<void> {
-    return _destroy(false);
+async function destroy(): Promise<void> {
+    log("Disconnecting ...");
+    bot.destroy();
+    await Database.disconnect();
+    process.exit();
 }
 
 /**
@@ -558,11 +516,11 @@ function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
  */
 function message(
     msg: Message,
-    text: string,
+    text: string | null,
     options?: MessageOptions
 ): Promise<any> {
     return msg.channel.send(
-        ellipsis(title(formatter.format(text, msg))),
+        text && ellipsis(title(formatter.format(text, msg))),
         options
     );
 }
@@ -594,7 +552,7 @@ async function start(): Promise<void> {
         ),
         Guild.load(),
         User.load(),
-        _loadCommands(...commandsRootPath).then(() =>
+        loadCommands(...commandsRootPath).then(() =>
             log("Static commands loaded")
         ),
     ]);
@@ -632,15 +590,15 @@ function unsetQuickCommand(command: QuickCommand): void {
     commands.list.delete(command.name);
 }
 
-bot.on("channelDelete", _onChannelDelete);
-bot.on("error", _onError);
-bot.on("guildCreate", _onGuildCreate);
-bot.on("guildDelete", _onGuildDelete);
-bot.on("guildMemberAdd", _onGuildMemberAdd);
-bot.on("guildMemberRemove", _onGuildMemberRemove);
-bot.on("message", _onMessage);
-bot.on("messageReactionAdd", _onMessageReactionAdd);
-bot.on("ready", _onReady);
+bot.on("channelDelete", onChannelDelete);
+bot.on("error", onError);
+bot.on("guildCreate", onGuildCreate);
+bot.on("guildDelete", onGuildDelete);
+bot.on("guildMemberAdd", onGuildMemberAdd);
+bot.on("guildMemberRemove", onGuildMemberRemove);
+bot.on("message", onMessage);
+bot.on("messageReactionAdd", onMessageReactionAdd);
+bot.on("ready", onReady);
 
 export default {
     // Properties

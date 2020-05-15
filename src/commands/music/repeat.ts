@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
@@ -23,9 +23,10 @@ class RepeatCommand extends Command {
             effect: "Disables repeat",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ args, msg }: CommandParams) {
-        let { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild!.id)!;
 
         const single = () => {
             playlist.repeat = "single";

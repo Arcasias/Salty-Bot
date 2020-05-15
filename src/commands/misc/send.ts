@@ -33,7 +33,7 @@ class SendCommand extends Command {
 
     async action({ args, msg }: CommandParams) {
         if (!args[0]) {
-            return Salty.commands.list.get("talk").run(msg, args);
+            return Salty.commands.list.get("talk")!.run(msg, args);
         }
         let message;
         for (let sa of specialActions) {

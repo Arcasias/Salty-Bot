@@ -7,7 +7,7 @@ import {
 import Salty from "../../classes/Salty";
 import { clear } from "../../terms";
 
-const INTERVALS = {};
+const INTERVALS: { [guild: string]: NodeJS.Timeout } = {};
 
 class IntervalCommand extends Command {
     public name = "interval";
@@ -24,11 +24,12 @@ class IntervalCommand extends Command {
     public access: CommandAccess = "dev";
 
     async action({ args, msg }: CommandParams) {
+        const channel = msg.guild ? msg.guild.id : msg.author.id;
         if (args[0] && clear.includes(args[0])) {
-            if (!INTERVALS[msg.guild.id]) {
+            if (!INTERVALS[channel]) {
                 throw new EmptyObject("interval");
             }
-            clearInterval(INTERVALS[msg.guild.id]);
+            clearInterval(INTERVALS[channel]);
 
             Salty.success(msg, "Interval cleared");
         } else {
@@ -41,14 +42,14 @@ class IntervalCommand extends Command {
             if (!args[1]) {
                 throw new MissingArg("message");
             }
-            const delay = parseInt(args.shift()) * 1000;
+            const delay = parseInt(args.shift()!) * 1000;
 
             msg.delete().catch();
 
-            if (INTERVALS[msg.guild.id]) {
-                clearInterval(INTERVALS[msg.guild.id]);
+            if (INTERVALS[channel]) {
+                clearInterval(INTERVALS[channel]);
             }
-            INTERVALS[msg.guild.id] = setInterval(() => {
+            INTERVALS[channel] = setInterval(() => {
                 Salty.message(msg, args.join(" "));
             }, delay);
         }

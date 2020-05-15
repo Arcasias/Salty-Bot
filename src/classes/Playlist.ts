@@ -82,7 +82,7 @@ class Playlist extends Model {
         }
     }
 
-    public remove(...indices: number[]): void {
+    public remove(...indices: number[]): Song[] {
         const removed: Song[] = [];
         for (let i = indices.length; i >= 0; i--) {
             const [removedSong] = this.queue.splice(indices[i], 1);
@@ -91,6 +91,7 @@ class Playlist extends Model {
                 this.pointer--;
             }
         }
+        return removed;
     }
 
     public resume(): void {

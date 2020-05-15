@@ -42,7 +42,7 @@ class StateCommand extends Command {
             inline: true,
         };
         if (blacklist.length) {
-            options.fields.push({
+            options.fields!.push({
                 name: `Blacklist`,
                 value: `${blacklist.length} troublemakers`,
             });

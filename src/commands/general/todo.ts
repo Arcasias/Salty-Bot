@@ -23,7 +23,7 @@ class TodoCommand extends Command {
     ];
 
     async action({ args, msg }: CommandParams) {
-        let user = User.get(msg.author.id);
+        let user = User.get(msg.author.id)!;
 
         if (args[0] && remove.includes(args[0])) {
             let todoList = user.todo;

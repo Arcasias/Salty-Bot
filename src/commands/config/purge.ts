@@ -1,4 +1,4 @@
-import { TextChannel } from "discord.js";
+import { TextChannel, DMChannel, NewsChannel } from "discord.js";
 import Command, { CommandAccess, CommandParams } from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { error } from "../../utils";
@@ -6,7 +6,7 @@ import { IncorrectValue, SaltyException } from "../../classes/Exception";
 
 let purging: boolean = false;
 
-async function purgeEndless(channel: TextChannel): Promise<void> {
+async function purgeEndless(channel: TextChannel | DMChannel | NewsChannel): Promise<void> {
     const messages = await channel.messages.fetch({ limit: 1 });
     if (!purging) {
         return;
@@ -49,20 +49,20 @@ class PurgeCommand extends Command {
         switch (this.meaning(args[0])) {
             case "bot":
                 const messages = await msg.channel.messages.fetch();
-                let messagesToDelete = messages.filter(
+                const messagesToDelete = messages.filter(
                     (message) => message.author.bot
                 );
-                try {
-                    await (<TextChannel>msg.channel).bulkDelete(
-                        messagesToDelete
+                if (msg.channel instanceof DMChannel) {
+                    await Promise.all<any>(
+                        messagesToDelete.map((m) => msg.channel.delete(m.id))
                     );
-                    await Salty.success(
-                        msg,
-                        "most recent bot messages have been deleted"
-                    );
-                } catch (err) {
-                    error(err);
+                } else {
+                    await msg.channel.bulkDelete(messagesToDelete);
                 }
+                Salty.success(
+                    msg,
+                    "most recent bot messages have been deleted"
+                );
                 break;
             case "clear":
                 if (purging) {
@@ -75,7 +75,7 @@ class PurgeCommand extends Command {
             case "string":
                 if (args[0] === "endless") {
                     purging = true;
-                    return purgeEndless(<TextChannel>msg.channel);
+                    return purgeEndless(msg.channel);
                 }
             /* falls through */
             default:
@@ -89,7 +89,14 @@ class PurgeCommand extends Command {
                 }
                 const toDelete = Math.min(parseInt(args[0]), 100) || 100;
                 try {
-                    await (<TextChannel>msg.channel).bulkDelete(toDelete, true);
+                    if (msg.channel instanceof DMChannel) {
+                        const messages = await msg.channel.messages.fetch();
+                        await Promise.all<any>(
+                            messages.map((m) => msg.channel.delete(m.id))
+                        );
+                    } else {
+                        await msg.channel.bulkDelete(toDelete, true);
+                    }
                     await Salty.success(
                         msg,
                         `${toDelete} messages have been successfully deleted`

@@ -24,7 +24,6 @@
         "discord.js": "github:discordjs/discord.js",
         "erlpack": "github:discordapp/erlpack",
         "googleapis": "^50.0.0",
-        "imgur": "^0.3.1",
         "npm": "^6.14.5",
         "pg": "^8.1.0",
         "prettier": "^2.0.5",

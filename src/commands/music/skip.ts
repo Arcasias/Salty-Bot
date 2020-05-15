@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
@@ -11,9 +11,10 @@ class SkipCommand extends Command {
             effect: "Skips to the next song",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ msg }: CommandParams) {
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (playlist.connection) {
             playlist.skip();

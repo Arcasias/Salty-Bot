@@ -2,22 +2,22 @@ import { Message, User, GuildMember } from "discord.js";
 import { debug, error } from "../utils";
 import { PermissionDenied, SaltyException } from "./Exception";
 import Salty from "./Salty";
-import * as list from "../terms";
+import { add, bot, clear, help, list, remove } from "../terms";
+
+const MEANING_ACTIONS: { [meaning: string]: string[] } = {
+    add,
+    bot,
+    clear,
+    help,
+    list,
+    remove,
+};
 
 const permissions = {
     admin: Salty.isAdmin,
     dev: Salty.isDev,
     owner: Salty.isOwner,
 };
-const MEANING_ACTIONS = [
-    "add",
-    "remove",
-    "clear",
-    "list",
-    "bot",
-    "buy",
-    "sell",
-];
 
 interface CommandHelp {
     argument: string | null;
@@ -101,9 +101,12 @@ abstract class Command {
 
     protected meaning(word?: string): string {
         if (word) {
-            return (
-                MEANING_ACTIONS.find((w) => list[w]?.includes(word)) || "string"
-            );
+            for (const key in MEANING_ACTIONS) {
+                if (MEANING_ACTIONS[key].includes(word)) {
+                    return key;
+                }
+            }
+            return "string";
         } else {
             return "noarg";
         }

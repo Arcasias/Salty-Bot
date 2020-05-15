@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import Salty, { EmbedOptions } from "../../classes/Salty";
 
 class CoffeeCommand extends Command {
@@ -14,6 +14,7 @@ class CoffeeCommand extends Command {
             effect: "Gets the ***mention*** a nice hot coffee",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ msg, target }: CommandParams) {
         const options: EmbedOptions = {
@@ -29,7 +30,7 @@ class CoffeeCommand extends Command {
             if (target.user.id === Salty.bot.user!.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
-                options.description = `Made with ♥ by **${msg.member.displayName}** for **${target.member.displayName}**`;
+                options.description = `Made with ♥ by **${msg.member!.displayName}** for **${target.name}**`;
             }
         }
         await Salty.embed(msg, options);

@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import {
     EmptyObject,
     IncorrectValue,
@@ -31,9 +31,10 @@ class QueueCommand extends Command {
             effect: "Clears the queue",
         },
     ];
+    public channel: CommandChannel = "guild";
 
     async action({ args, msg }: CommandParams) {
-        const { playlist } = Guild.get(msg.guild.id);
+        const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (args[0] && remove.includes(args[0])) {
             if (!playlist.queue[0]) {
