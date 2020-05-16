@@ -9,9 +9,7 @@ if (process.env.SERVER) {
 log(`Running on ${process.env.MODE} environment`);
 
 process.env.DEBUG = String(debugMode);
-if (process.env.DEBUG) {
-    debug(`Debug is active`);
-}
+debug(`Debug is active`);
 
 // Initialize bot
 Salty.start();

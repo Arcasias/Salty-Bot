@@ -5,6 +5,8 @@ import Salty, { EmbedOptions } from "../../classes/Salty";
 import { choice, possessive } from "../../utils";
 import { owner } from "../../config";
 
+const SALTY_IMAGES_PATH = "assets/img/salty";
+
 class AvatarCommand extends Command {
     public name = "avatar";
     public keys = ["pic", "picture", "pp"];
@@ -28,10 +30,10 @@ class AvatarCommand extends Command {
         };
         if (target.user.id === Salty.bot.user!.id) {
             // if Salty
-            const files = fs.readdirSync("assets/img/salty");
+            const files = fs.readdirSync(SALTY_IMAGES_PATH);
             const pics = files.filter((f) => f.split(".").pop() === "png");
-            options.title = `how cute, you asked for my profile pic ^-^`;
-            options.files = [path.join("assets/img/salty/", choice(pics))];
+            options.title = `This is a picture of me. `;
+            options.files = [path.join(SALTY_IMAGES_PATH, choice(pics))];
         } else {
             if (target.user.bot) {
                 options.description = "That's just a crappy bot"; // bot

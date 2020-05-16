@@ -325,8 +325,7 @@ async function onMessageReactionAdd(
         return;
     }
     const { emoji, message } = msgReact;
-    const dialog = Dialog.find((d: Dialog) => d.author === author);
-
+    const dialog = User.get(author.id)?.dialog;
     if (!dialog || message !== dialog.response) {
         return;
     }
@@ -444,13 +443,13 @@ async function embed(msg: Message, options: EmbedOptions = {}): Promise<void> {
     if (react && !msg.deleted) {
         msg.react(react).catch();
     }
-    const dialog = new Dialog(msg, newMessage, actions);
-    const reactions = Object.keys(dialog.actions);
-    for (let i = 0; i < reactions.length; i++) {
+    const user = User.get(msg.author.id)!;
+    user.dialog = new Dialog(newMessage, actions);
+    for (const reaction of Object.keys(actions)) {
         if (newMessage.deleted) {
             break;
         }
-        await newMessage.react(reactions[i]);
+        await newMessage.react(reaction);
     }
 }
 

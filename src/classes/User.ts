@@ -1,10 +1,12 @@
 import Model, { FieldsDescriptor } from "./Model";
+import Dialog from "./Dialog";
 
 class User extends Model {
     public id!: number;
     public discord_id!: string;
     public black_listed!: boolean;
     public todo!: string[];
+    public dialog: Dialog | null = null;
 
     protected static readonly fields: FieldsDescriptor = {
         discord_id: "",

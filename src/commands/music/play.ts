@@ -4,7 +4,7 @@ import Command, { CommandParams, CommandChannel } from "../../classes/Command";
 import { EmptyObject, SaltyException } from "../../classes/Exception";
 import Guild from "../../classes/Guild";
 import Salty, { EmbedOptions } from "../../classes/Salty";
-import { choice, generate } from "../../utils";
+import { choice, generate, debug } from "../../utils";
 import { surpriseSong } from "../../terms";
 import { Message } from "discord.js";
 import Playlist from "../../classes/Playlist";
@@ -43,14 +43,6 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     }
 }
 
-const generateQuery = (q: string) => ({
-    key: process.env.GOOGLE_API,
-    maxResults: 5,
-    part: "snippet",
-    q,
-    type: "video",
-});
-
 class PlayCommand extends Command {
     public name = "play";
     public keys = ["sing", "song", "video", "youtube", "yt"];
@@ -84,7 +76,6 @@ class PlayCommand extends Command {
             throw new SaltyException("you're not in a voice channel");
         }
         const { playlist } = Guild.get(msg.guild!.id)!;
-        const addSongBound = addSong.bind(null, msg, playlist);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
@@ -96,42 +87,45 @@ class PlayCommand extends Command {
             playlist.start(voiceChannel);
         }
         if (arg.match(youtubeRegex)) {
-            return addSongBound(arg);
+            return addSong(msg, playlist, arg);
         }
         const directPlay = ["first", "direct", "1"].includes(args[0]);
         if (directPlay) {
             args.shift();
         }
 
-        const results = await youtube.search.list(
-            generateQuery(args.join(" "))
-        );
+        const results = await youtube.search.list({
+            key: process.env.GOOGLE_API,
+            maxResults: 5,
+            part: "snippet",
+            q: args.join(" "),
+            type: "video",
+        });
         if (!results.data?.items?.length) {
             throw new SaltyException("no results found");
         }
         if (directPlay) {
-            return addSongBound(youtubeURL + results.data.items[0].id!.videoId);
+            const firstValidSong = results.data.items.find(v => v.id);
+            if (firstValidSong) {
+                return addSong(msg, playlist, youtubeURL + firstValidSong.id!.videoId);
+            }
         }
-        const searchResults: string[] = [];
         const options: EmbedOptions = {
             actions: {},
             fields: [],
             title: "search results",
         };
-        results.data.items.forEach((video, i) => {
-            const videoURL = youtubeURL + video.id!.videoId;
-            const { title, channelTitle } = video.snippet!;
-            searchResults.push(videoURL);
+        results.data.items.forEach(({ id, snippet }, index) => {
+            if (!id) {
+                return;
+            }
+            const videoURL = youtubeURL + id.videoId;
+            const { title, channelTitle } = snippet!;
             options.fields!.push({
-                name: `${i + 1}) ${title}`,
+                name: `${index + 1}) ${title}`,
                 value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
             });
-            options.actions[SYMBOLS[i]] = addSong.bind(
-                null,
-                msg,
-                playlist,
-                searchResults[i]
-            );
+            options.actions[SYMBOLS[index]] = () => addSong(msg, playlist, videoURL);
         });
         Salty.embed(msg, options);
     }
