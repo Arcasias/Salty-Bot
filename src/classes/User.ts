@@ -1,21 +1,20 @@
-import Model, { FieldsDescriptor } from "./Model";
-import Dialog from "./Dialog";
+import { FieldsDescriptor } from "../types";
+import Model from "./Model";
 
 class User extends Model {
     public id!: number;
     public discord_id!: string;
     public black_listed!: boolean;
-    public todo!: string[];
-    public dialog: Dialog | null = null;
+    public todos!: string[];
 
     protected static readonly fields: FieldsDescriptor = {
         discord_id: "",
-        black_listed: "",
-        todo: "",
+        black_listed: false,
+        todos: [],
     };
     protected static readonly table = "users";
 
-    public static get(id: string) {
+    public static get(id: string): User | null {
         return this.find((user: User) => user.discord_id === id);
     }
 }

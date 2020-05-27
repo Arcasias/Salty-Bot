@@ -1,5 +1,4 @@
-import Command, { CommandParams, CommandAccess } from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
@@ -7,9 +6,6 @@ import { debug, ellipsis } from "../../utils";
 
 const MAXDEPTH = 3;
 const TAB = "    ";
-
-// Avoid linter to consider these useless
-((a, b) => null)(Guild, User);
 
 function stringify(variable: any, depth: number): string {
     if (MAXDEPTH < depth) {
@@ -43,24 +39,25 @@ function stringify(variable: any, depth: number): string {
 }
 
 function evalInContext(code: string): any {
+    const G = Guild;
+    const U = User;
     return eval(code);
 }
 
-class DebugCommand extends Command {
-    public name = "debug";
-    public help = [
+Command.register({
+    name: "debug",
+    help: [
         {
             argument: "***JS code***",
             effect: "Executes a ***JS code*** within Salty context",
         },
-    ];
-    public access: CommandAccess = "dev";
+    ],
+    access: "dev",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         if (!args[0]) {
-            throw new MissingArg("instructions");
+            return Salty.warn(msg, "No code to execute.");
         }
-
         const evalResult = evalInContext.call(Salty, args.join(" "));
         const result = `${args.join(
             " "
@@ -68,7 +65,5 @@ class DebugCommand extends Command {
         const message = ellipsis(result, 1985);
         Salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
         debug(message);
-    }
-}
-
-export default DebugCommand;
+    },
+});

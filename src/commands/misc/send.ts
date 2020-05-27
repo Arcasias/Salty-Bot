@@ -1,4 +1,4 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { prefix } from "../../config";
 
@@ -17,10 +17,10 @@ const specialActions = [
     },
 ];
 
-class SendCommand extends Command {
-    public name = "send";
-    public keys = ["say", prefix];
-    public help = [
+Command.register({
+    name: "send",
+    keys: ["say", prefix],
+    help: [
         {
             argument: null,
             effect: null,
@@ -29,11 +29,11 @@ class SendCommand extends Command {
             argument: "***anything***",
             effect: "Sends something. Who knows what?",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg, target }) {
         if (!args[0]) {
-            return Salty.commands.list.get("talk")!.run(msg, args);
+            return Command.list.get("talk")!.run(msg, args, target);
         }
         let message;
         for (let sa of specialActions) {
@@ -46,7 +46,5 @@ class SendCommand extends Command {
             message = args.join(" ");
         }
         await Salty.message(msg, message);
-    }
-}
-
-export default SendCommand;
+    },
+});

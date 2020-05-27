@@ -1,11 +1,11 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
-class RepeatCommand extends Command {
-    public name = "repeat";
-    public keys = ["loop", "rep", "replay"];
-    public help = [
+Command.register({
+    name: "repeat",
+    keys: ["loop", "rep", "replay"],
+    help: [
         {
             argument: null,
             effect: "Toggles repeat all/off for the queue",
@@ -22,10 +22,10 @@ class RepeatCommand extends Command {
             argument: "off",
             effect: "Disables repeat",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
 
         const single = () => {
@@ -58,7 +58,5 @@ class RepeatCommand extends Command {
                 off();
             }
         }
-    }
-}
-
-export default RepeatCommand;
+    },
+});

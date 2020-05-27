@@ -1,26 +1,24 @@
-import Command, { CommandParams } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
 import { waifus } from "../../terms";
+import { choice } from "../../utils";
 
-class WaifuCommand extends Command {
-    public name = "waifu";
-    public keys = ["waifus"];
-    public help = [
+Command.register({
+    name: "waifu",
+    keys: ["waifus"],
+    help: [
         {
             argument: null,
             effect: "Gets you a proper waifu. It's about time",
         },
-    ];
+    ],
 
-    async action({ msg }: CommandParams) {
+    async action({ msg }) {
         const { name, anime, image } = choice(waifus);
         await Salty.embed(msg, {
             title: name,
             description: `anime: ${anime}`,
             image: { url: choice(image) },
         });
-    }
-}
-
-export default WaifuCommand;
+    },
+});

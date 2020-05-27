@@ -1,13 +1,4 @@
-interface Meaning {
-    answers: string[];
-    list: string[];
-}
-
-interface Waifu {
-    name: string;
-    anime: string;
-    image: string[];
-}
+import { MeaningInfo, Waifu } from "./types";
 
 //-----------------------------------------------------------------------------
 // Meanings
@@ -27,7 +18,7 @@ export const bot: string[] = ["bot", "salty"];
 export const clear: string[] = ["clear", "cls", "empty", "cancel", "stop"];
 export const help: string[] = ["help", "halp", "info", "infos", "wtf", "?"];
 export const list: string[] = ["list", "ls", "l"];
-export const meaning: { [key: string]: Meaning } = {
+export const meaning: { [key: string]: MeaningInfo } = {
     yes: {
         answers: ["ack"],
         list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],

@@ -1,9 +1,10 @@
-import Model, { FieldsDescriptor } from "./Model";
+import { FieldsDescriptor } from "../types";
+import Model from "./Model";
 import Playlist from "./Playlist";
 
 class Guild extends Model {
     public id!: number;
-    public playlist: Playlist = new Playlist({});
+    public playlist: Playlist = new Playlist();
     public discord_id!: string;
     public default_channel!: string;
     public default_role!: string;

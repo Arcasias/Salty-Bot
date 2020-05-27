@@ -1,6 +1,7 @@
 import Salty from "./classes/Salty";
-import { debug, log } from "./utils";
+import "./commands";
 import { debugMode } from "./config";
+import { debug, log } from "./utils";
 
 // Set ENV according to the presence of a SERVER env variable
 if (process.env.SERVER) {

@@ -1,12 +1,12 @@
-import Command, { CommandParams, CommandAccess } from "../../classes/Command";
-import { MissingMention, SaltyException } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
+import { isDev, meaning } from "../../utils";
 
-class BlackListCommand extends Command {
-    public name = "blacklist";
-    public keys = ["bl"];
-    public help = [
+Command.register({
+    name: "blacklist",
+    keys: ["bl"],
+    help: [
         {
             argument: null,
             effect: "Tells you wether you're an admin",
@@ -15,15 +15,15 @@ class BlackListCommand extends Command {
             argument: "***mention***",
             effect: "Tells you wether the ***mention*** is an admin",
         },
-    ];
-    public access: CommandAccess = "dev";
+    ],
+    access: "dev",
 
-    async action({ msg, args, target }: CommandParams) {
+    async action({ msg, args, target }) {
         const user = User.get(target.user.id)!;
-        switch (this.meaning(args[0])) {
+        switch (meaning(args[0])) {
             case "add":
                 if (!target.isMention) {
-                    throw new MissingMention();
+                    return Salty.warn(msg, "You need to mention someone.");
                 }
                 if (target.user.id === Salty.bot.user!.id) {
                     return Salty.message(
@@ -31,7 +31,7 @@ class BlackListCommand extends Command {
                         "Woa woa woa! You can't just put me in my own blacklist you punk!"
                     );
                 }
-                if (Salty.isDev(target.user)) {
+                if (isDev(target.user)) {
                     return Salty.message(
                         msg,
                         "Can't add a Salty dev to the blacklist: they're too nice for that!"
@@ -42,7 +42,7 @@ class BlackListCommand extends Command {
                 break;
             case "remove":
                 if (!target.isMention) {
-                    throw new MissingMention();
+                    return Salty.warn(msg, "You need to mention someone.");
                 }
                 if (target.user.id === Salty.bot.user!.id) {
                     return Salty.message(
@@ -51,8 +51,9 @@ class BlackListCommand extends Command {
                     );
                 }
                 if (!user.black_listed) {
-                    throw new SaltyException(
-                        `**${target.name}** is not in the blacklist`
+                    return Salty.warn(
+                        msg,
+                        `**${target.name}** is not in the blacklist.`
                     );
                 }
                 await User.update(user.id, { black_listed: false });
@@ -96,7 +97,5 @@ class BlackListCommand extends Command {
                     }
                 }
         }
-    }
-}
-
-export default BlackListCommand;
+    },
+});

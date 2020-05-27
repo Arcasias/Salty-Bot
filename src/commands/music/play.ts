@@ -1,13 +1,13 @@
+import { Message } from "discord.js";
 import { youtube_v3 } from "googleapis";
 import ytdl from "ytdl-core";
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
-import { EmptyObject, SaltyException } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty, { EmbedOptions } from "../../classes/Salty";
-import { choice, generate, debug } from "../../utils";
-import { surpriseSong } from "../../terms";
-import { Message } from "discord.js";
 import Playlist from "../../classes/Playlist";
+import Salty from "../../classes/Salty";
+import { surpriseSong } from "../../terms";
+import { SaltyEmbedOptions } from "../../types";
+import { choice, generate } from "../../utils";
 
 const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
@@ -43,10 +43,10 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     }
 }
 
-class PlayCommand extends Command {
-    public name = "play";
-    public keys = ["sing", "song", "video", "youtube", "yt"];
-    public help = [
+Command.register({
+    name: "play",
+    keys: ["sing", "song", "video", "youtube", "yt"],
+    help: [
         {
             argument: null,
             effect:
@@ -67,22 +67,22 @@ class PlayCommand extends Command {
             effect:
                 "Searches for a video on YouTube and plays the first result",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const voiceChannel = msg.member!.voice.channel;
         if (!voiceChannel) {
-            throw new SaltyException("you're not in a voice channel");
+            return Salty.warn(msg, "You're not in a voice channel.");
         }
         const { playlist } = Guild.get(msg.guild!.id)!;
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+                return Salty.warn(msg, "Can't play the queue if it's empty.");
             }
             if (playlist.connection) {
-                throw new SaltyException("I'm already playing");
+                return Salty.warn(msg, "I'm already playing.");
             }
             playlist.start(voiceChannel);
         }
@@ -102,16 +102,28 @@ class PlayCommand extends Command {
             type: "video",
         });
         if (!results.data?.items?.length) {
-            throw new SaltyException("no results found");
+            return Salty.warn(msg, "No results found.");
         }
         if (directPlay) {
-            const firstValidSong = results.data.items.find(v => v.id);
+            const firstValidSong = results.data.items.find((v) => v.id);
             if (firstValidSong) {
-                return addSong(msg, playlist, youtubeURL + firstValidSong.id!.videoId);
+                return addSong(
+                    msg,
+                    playlist,
+                    youtubeURL + firstValidSong.id!.videoId
+                );
             }
         }
-        const options: EmbedOptions = {
-            actions: {},
+        const messageUrls: { [reaction: string]: string } = {};
+        const options: SaltyEmbedOptions = {
+            actions: {
+                reactions: SYMBOLS,
+                onAdd({ emoji }, user) {
+                    if (user.id === msg.author.id) {
+                        addSong(msg, playlist, messageUrls[emoji.name]);
+                    }
+                },
+            },
             fields: [],
             title: "search results",
         };
@@ -125,10 +137,8 @@ class PlayCommand extends Command {
                 name: `${index + 1}) ${title}`,
                 value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
             });
-            options.actions[SYMBOLS[index]] = () => addSong(msg, playlist, videoURL);
+            messageUrls[SYMBOLS[index]] = videoURL;
         });
         Salty.embed(msg, options);
-    }
-}
-
-export default PlayCommand;
+    },
+});

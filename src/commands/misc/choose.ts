@@ -1,12 +1,11 @@
-import Command, { CommandParams } from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
 
-class ChooseCommand extends Command {
-    public name = "choose";
-    public keys = ["choice", "chose", "shoes"];
-    public help = [
+Command.register({
+    name: "choose",
+    keys: ["choice", "chose", "shoes"],
+    help: [
         {
             argument: null,
             effect: null,
@@ -16,17 +15,15 @@ class ChooseCommand extends Command {
             effect:
                 "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok?",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
-        if (!args[0] || !args[1]) {
-            throw new MissingArg("choices");
+    async action({ args, msg }) {
+        if (args.length < 2) {
+            return Salty.warn(msg, "You need to give at least 2 choices.");
         }
         await Salty.message(
             msg,
             `I choose ${choice(args.join(" ").split("/"))}`
         );
-    }
-}
-
-export default ChooseCommand;
+    },
+});

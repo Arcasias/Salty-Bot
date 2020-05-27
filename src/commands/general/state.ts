@@ -1,23 +1,24 @@
-import Command, { CommandAccess, CommandParams } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty, { EmbedOptions } from "../../classes/Salty";
+import Salty from "../../classes/Salty";
 import User from "../../classes/User";
-import { devs, owner, homepage } from "../../config";
+import { devs, homepage, owner } from "../../config";
+import { SaltyEmbedOptions } from "../../types";
 
-class StateCommand extends Command {
-    public name = "state";
-    public keys = ["git", "local", "server"];
-    public help = [
+Command.register({
+    name: "state",
+    keys: ["git", "local", "server"],
+    help: [
         {
             argument: null,
             effect: "Gets you some information about me",
         },
-    ];
-    public access: CommandAccess = "dev";
+    ],
+    access: "dev",
 
-    async action({ msg }: CommandParams) {
+    async action({ msg }) {
         const blacklist = User.filter((u: User) => u.black_listed);
-        const options: EmbedOptions = {
+        const options: SaltyEmbedOptions = {
             title: `Salty Bot`,
             url: homepage,
             description: `Last started on ${
@@ -51,7 +52,5 @@ class StateCommand extends Command {
             options.footer = { text: `Debug mode active` };
         }
         await Salty.embed(msg, options);
-    }
-}
-
-export default StateCommand;
+    },
+});

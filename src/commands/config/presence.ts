@@ -1,14 +1,8 @@
-import Command, { CommandAccess, CommandParams } from "../../classes/Command";
+import { PresenceStatusData } from "discord.js";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { remove } from "../../terms";
-import { PresenceStatusData } from "discord.js";
-
-interface StatusInfo {
-    title: string;
-    color?: number;
-}
-
-type StatusInfos = { [status in PresenceStatusData]: StatusInfo };
+import { StatusInfos } from "../../types";
 
 const STATUSINFO: StatusInfos = {
     dnd: { title: "do not disturb", color: 15746887 },
@@ -17,12 +11,12 @@ const STATUSINFO: StatusInfos = {
     invisible: { title: "invisible" },
 };
 
-class PresenceCommand extends Command {
-    public name = "presence";
-    public keys = ["activity", "status"];
-    public access: CommandAccess = "dev";
+Command.register({
+    name: "presence",
+    keys: ["activity", "status"],
+    access: "dev",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         if (args[0] && remove.includes(args[0])) {
             await Salty.bot.user!.setPresence({ activity: undefined });
             Salty.success(msg, "current presence removed");
@@ -52,7 +46,5 @@ class PresenceCommand extends Command {
             const description = Salty.bot.user!.presence.status;
             Salty.embed(msg, { color, title, description });
         }
-    }
-}
-
-export default PresenceCommand;
+    },
+});

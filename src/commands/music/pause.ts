@@ -1,19 +1,19 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
-class PauseCommand extends Command {
-    public name = "pause";
-    public keys = ["freeze"];
-    public help = [
+Command.register({
+    name: "pause",
+    keys: ["freeze"],
+    help: [
         {
             argument: null,
             effect: "Pauses the song currently playing",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ msg }: CommandParams) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (playlist.connection) {
@@ -28,7 +28,5 @@ class PauseCommand extends Command {
         } else {
             Salty.error(msg, "there's nothing playing");
         }
-    }
-}
-
-export default PauseCommand;
+    },
+});

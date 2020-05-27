@@ -1,19 +1,19 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
-class SkipCommand extends Command {
-    public name = "skip";
-    public keys = ["next"];
-    public help = [
+Command.register({
+    name: "skip",
+    keys: ["next"],
+    help: [
         {
             argument: null,
             effect: "Skips to the next song",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ msg }: CommandParams) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (playlist.connection) {
@@ -26,7 +26,5 @@ class SkipCommand extends Command {
         } else {
             Salty.error(msg, "I'm not connected to a voice channel");
         }
-    }
-}
-
-export default SkipCommand;
+    },
+});

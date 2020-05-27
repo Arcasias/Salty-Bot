@@ -1,15 +1,47 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
+import { FieldsDescriptor } from "../types";
 import { debug, error, log } from "../utils";
 
-export type FieldsValues = { [field: string]: any };
-
+const SEPARATOR = "//";
+const SEPARATOR_REGEX = new RegExp(SEPARATOR);
 let client: Client;
 
-function _sanitizeTable(table: string): string {
+//-----------------------------------------------------------------------------
+// Helpers
+//-----------------------------------------------------------------------------
+
+function formatValues(values: FieldsDescriptor) {
+    for (const key in values) {
+        if (Array.isArray(values[key])) {
+            values[key] = values[key].join(SEPARATOR);
+        }
+    }
+    return values;
+}
+
+function parseResult({ rows }: QueryResult) {
+    for (const row of rows) {
+        for (const key in row) {
+            if (
+                typeof row[key] === "string" &&
+                SEPARATOR_REGEX.test(row[key])
+            ) {
+                row[key] = row[key].split(SEPARATOR);
+            }
+        }
+    }
+    return rows;
+}
+
+function sanitizeTable(table: string): string {
     return table.toLowerCase().replace(/[^a-z_]/g, "");
 }
 
-async function connect(): Promise<void> {
+//-----------------------------------------------------------------------------
+// Exported
+//-----------------------------------------------------------------------------
+
+export async function connect(): Promise<void> {
     if (!client) {
         client = new Client({
             database: process.env.DATABASE_DATABASE,
@@ -27,7 +59,7 @@ async function connect(): Promise<void> {
     }
 }
 
-async function disconnect(): Promise<void> {
+export async function disconnect(): Promise<void> {
     try {
         await client.end();
     } catch (err) {
@@ -35,49 +67,51 @@ async function disconnect(): Promise<void> {
     }
 }
 
-async function create(
+export async function create(
     table: string,
-    ...allValues: FieldsValues[]
+    ...allValues: FieldsDescriptor[]
 ): Promise<QueryResultRow[]> {
-    const queryString: string[] = ["INSERT INTO", _sanitizeTable(table)];
+    const queryArray: string[] = ["INSERT INTO", sanitizeTable(table)];
     const variables: string[] = [];
     let varCount: number = 0;
 
     // column names should come from Model and should be safe to use.
-    queryString.push(`(${Object.keys(allValues[0]).join()}) VALUES`);
+    queryArray.push(`(${Object.keys(allValues[0]).join()}) VALUES`);
 
     const allFormattedValues: string[] = [];
-    allValues.forEach((values: FieldsValues) => {
+    allValues.forEach((values: FieldsDescriptor) => {
+        const formattedValues = formatValues(values);
         allFormattedValues.push(
-            `(${Object.values(values)
+            `(${Object.values(formattedValues)
                 .map(() => `$${++varCount}`)
                 .join()})`
         );
-        variables.push(...Object.values(values));
+        variables.push(...Object.values(formattedValues));
     });
-    queryString.push(allFormattedValues.join());
-    queryString.push("RETURNING *;");
+    queryArray.push(allFormattedValues.join());
+    queryArray.push("RETURNING *");
 
-    debug({ query: queryString.join(" ") }, variables);
+    console.log({ variables: variables.join() });
+
+    const query = queryArray.join(" ") + ";";
+    debug({ query }, variables);
 
     try {
-        const result: QueryResult = await client.query(
-            queryString.join(" "),
-            variables
-        );
+        return [];
+        const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" created.`);
-        return result.rows;
+        return parseResult(result);
     } catch (err) {
         error(err.stack);
         return [];
     }
 }
 
-async function remove(
+export async function remove(
     table: string,
     ids: number | number[]
 ): Promise<QueryResultRow[]> {
-    const queryString: string[] = ["DELETE FROM", _sanitizeTable(table)];
+    const queryArray: string[] = ["DELETE FROM", sanitizeTable(table)];
     const variables: number[] = [];
     let varCount = 0;
 
@@ -85,32 +119,30 @@ async function remove(
         ids = [ids];
     }
 
-    queryString.push(
+    queryArray.push(
         `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`
     );
     variables.push(...ids);
 
-    debug({ query: queryString.join(" ") }, variables);
+    const query = queryArray.join(" ") + ";";
+    debug({ query }, variables);
 
     try {
-        const result: QueryResult = await client.query(
-            queryString.join(" "),
-            variables
-        );
+        const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" removed.`);
-        return result.rows;
+        return parseResult(result);
     } catch (err) {
         error(err.stack);
         return [];
     }
 }
 
-async function read(
+export async function read(
     table: string,
-    ids?: string | string[],
+    where?: { [key: string]: any },
     fields?: string[]
 ): Promise<QueryResultRow[]> {
-    const queryString: string[] = ["SELECT"];
+    const queryArray: string[] = ["SELECT"];
     const variables: string[] = [];
     let varCount: number = 0;
 
@@ -118,42 +150,47 @@ async function read(
         if (!fields.includes("id")) {
             fields.unshift("id");
         }
-        queryString.push(fields.map(() => `$${++varCount}`).join());
+        queryArray.push(fields.map(() => `$${++varCount}`).join());
         variables.push(...fields);
     } else {
-        queryString.push("*");
+        queryArray.push("*");
     }
 
-    queryString.push(`FROM ${_sanitizeTable(table)}`);
+    queryArray.push(`FROM ${sanitizeTable(table)}`);
 
-    if (ids) {
-        if (!Array.isArray(ids)) {
-            ids = [ids];
+    if (where) {
+        const whereString = [];
+        for (const key in where) {
+            if (Array.isArray(where[key])) {
+                const values = where[key].map(() => `$${++varCount}`);
+                whereString.push(`${key} IN (${values})`);
+                variables.push(...where[key]);
+            } else if (typeof key === "string") {
+                whereString.push(`${key} = $${++varCount}`);
+                variables.push(where[key]);
+            }
         }
-        queryString.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)});`);
-        variables.push(...ids);
+        queryArray.push("WHERE", whereString.join(" AND "));
     }
 
-    debug({ query: queryString.join(" ") }, variables);
+    const query = queryArray.join(" ") + ";";
+    debug({ query }, variables);
 
     try {
-        const result: QueryResult = await client.query(
-            queryString.join(" "),
-            variables
-        );
-        return result.rows;
+        const result = await client.query(query, variables);
+        return parseResult(result);
     } catch (err) {
         error(err.stack);
         return [];
     }
 }
 
-async function update(
+export async function update(
     table: string,
     ids: number | number[],
-    values: FieldsValues
+    values: FieldsDescriptor
 ): Promise<QueryResultRow[]> {
-    const queryString = ["UPDATE", _sanitizeTable(table), "SET"];
+    const queryArray = ["UPDATE", sanitizeTable(table), "SET"];
     const variables = [];
     let varCount = 0;
 
@@ -162,24 +199,23 @@ async function update(
     }
 
     const valuesArray: string[] = [];
-    for (let fieldName in values) {
+    const formattedValues = formatValues(values);
+    for (let fieldName in formattedValues) {
         valuesArray.push(`${fieldName}=$${++varCount}`);
-        variables.push(values[fieldName]);
+        variables.push(formattedValues[fieldName]);
     }
 
-    queryString.push(valuesArray.join());
-    queryString.push(
+    queryArray.push(valuesArray.join());
+    queryArray.push(
         `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`
     );
     variables.push(...ids);
 
-    debug({ query: queryString.join(" ") }, variables);
+    const query = queryArray.join(" ") + ";";
+    debug({ query }, variables);
 
     try {
-        const result: QueryResult = await client.query(
-            queryString.join(" "),
-            variables
-        );
+        const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" updated.`);
         return result.rows;
     } catch (err) {
@@ -187,12 +223,3 @@ async function update(
         return [];
     }
 }
-
-export default {
-    connect,
-    create,
-    disconnect,
-    remove,
-    read,
-    update,
-};

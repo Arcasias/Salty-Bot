@@ -1,165 +1,48 @@
 import Discord, {
-    Collection,
-    MessageEmbedOptions,
-    PartialDMChannel,
     Channel,
     GuildChannel,
     GuildMember,
     Message,
-    MessageReaction,
     MessageEmbed,
-    TextChannel,
     MessageOptions,
+    PartialDMChannel,
     PartialGuildMember,
-    PartialUser,
+    TextChannel,
 } from "discord.js";
-import { readdir, readFileSync, statSync } from "fs";
-import { join, sep } from "path";
-import { devs, prefix, owner } from "../config";
+import { prefix } from "../config";
 import * as list from "../terms";
+import {
+    FieldsDescriptor,
+    MessageTarget,
+    Runnable,
+    SaltyEmbedOptions,
+} from "../types";
 import {
     choice,
     clean,
+    ellipsis,
     error as logError,
+    isAdmin,
+    isDev,
+    isOwner,
     log,
     request,
     search,
     title,
-    ellipsis,
 } from "../utils";
 import Command from "./Command";
-import Database from "./Database";
-import Dialog from "./Dialog";
+import { connect, disconnect } from "./Database";
+import formatter from "./Formatter";
 import Guild from "./Guild";
 import QuickCommand from "./QuickCommand";
 import User from "./User";
-import { SaltyException } from "./Exception";
-import formatter from "./Formatter";
-
-interface CategoryInfo {
-    description: string;
-    icon: string;
-    name: string;
-}
-
-interface CommandHelp {
-    keys: string[];
-    name: string;
-    access: string;
-}
-
-interface CommandManager {
-    list: Collection<string, Command | QuickCommand>;
-    keys: { [id: string]: string };
-    help: { [id: string]: HelpManager };
-}
-
-export interface EmbedOptions extends MessageEmbedOptions {
-    actions?: any;
-    content?: string;
-    inline?: boolean;
-    react?: string;
-}
-
-interface HelpManager {
-    info: CategoryInfo;
-    commands: CommandHelp[];
-}
 
 const bot: Discord.Client = new Discord.Client();
-const commandsRootPath: string[] = ["src", "commands"];
-const commands: CommandManager = {
-    list: new Collection(),
-    keys: {},
-    help: {},
-};
 const startTime: Date = new Date();
 
 //-----------------------------------------------------------------------------
 // Not exported
 //-----------------------------------------------------------------------------
-
-async function loadCommand(
-    commandPath: string,
-    category: string
-): Promise<void> {
-    const commandImport: any = await import(commandPath);
-    const CommandConstructor = commandImport.default;
-    const command = new CommandConstructor();
-    const { name, keys, access } = command;
-    if (process.env.DEBUG === "true") {
-        for (let key of [name, ...keys]) {
-            if (commands.list.get(key)) {
-                throw new Error(
-                    `Key "${key}" of command ${name} conflicts with command of the same name.`
-                );
-            }
-            if (key in commands.keys) {
-                throw new Error(`Duplicate key "${key}" in command "${name}".`);
-            }
-            if (key in commands.help || category === key) {
-                throw new Error(
-                    `Key "${key}" of command "${name}" is already a category.`
-                );
-            }
-        }
-    }
-    // Registers command
-    commands.list.set(name, command);
-    commands.keys[name] = name;
-    // Links each key to the command name in command keys
-    keys.forEach((key: string) => {
-        commands.keys[key] = name;
-    });
-    // Sets help content
-    commands.help[category].commands.push({ name, keys, access });
-}
-
-async function loadCommands(...paths: string[]): Promise<void> {
-    const dirpath: string = join(...paths);
-    const files: string[] = await new Promise((res, rej) => {
-        readdir(dirpath, (err, files) => {
-            if (err) {
-                rej(err);
-            }
-            res(files);
-        });
-    });
-    const category: string = dirpath.split(sep).pop() || "";
-    if (files.includes("__category__.json")) {
-        const categoryInfoPath: string = join(dirpath, "__category__.json");
-        const categoryInfo: CategoryInfo = JSON.parse(
-            String(readFileSync(categoryInfoPath))
-        );
-        commands.help[category] = {
-            info: categoryInfo,
-            commands: [],
-        };
-    }
-    const promises: Promise<void>[] = files.map((file) => {
-        const fullpath: string = join(dirpath, file);
-        const stats: any = statSync(fullpath);
-        const extension: string = file.split(".").pop() || "";
-
-        if (stats.isDirectory()) {
-            // If the file is a directory => executes the function inside
-            return loadCommands(fullpath);
-        } else if (["ts", "js", "cjs", "mjs"].includes(extension)) {
-            // If the file is a category info file => extracts its data
-            try {
-                const commandPath: string = join("..", "..", fullpath).replace(
-                    sep,
-                    "/"
-                );
-                return loadCommand(commandPath, category);
-            } catch (err) {
-                logError(`Could not load file "${file}:"`, err.stack);
-            }
-        }
-        return Promise.resolve();
-    });
-    await Promise.all(promises);
-}
 
 async function onChannelDelete(
     channel: PartialDMChannel | Channel
@@ -167,7 +50,7 @@ async function onChannelDelete(
     if (!(channel instanceof GuildChannel)) {
         return;
     }
-    Guild.each((guild: Guild) => {
+    Guild.each(async (guild: Guild) => {
         if (guild.default_channel === channel.id) {
             const relatedGuild = Guild.get(channel.guild.id);
             if (relatedGuild) {
@@ -206,14 +89,7 @@ async function onGuildMemberAdd(
         );
     }
     if (guild?.default_role) {
-        try {
-            member.roles.add(guild.default_role);
-        } catch (err) {
-            const name = member.user?.username || "unknown";
-            logError(
-                `Couldn't add default role to "${name}": permission denied`
-            );
-        }
+        member.roles.add(guild.default_role);
     }
 }
 
@@ -228,44 +104,44 @@ async function onGuildMemberRemove(
     }
 }
 
-async function onMessage(msg: Message): Promise<void> {
-    const author: Discord.User = msg.author;
-    const user = User.get(author.id);
+async function onMessage(msg: Message): Promise<any> {
+    const { author, guild, mentions } = msg;
+    let { content } = msg;
 
     // Ignore all bots
     if (author.bot) {
         return;
     }
 
-    const mention = msg.mentions.users.first();
-    const nickname = msg.guild?.members.cache.get(bot.user!.id)?.nickname;
+    const user = User.get(author.id);
+    const mention = mentions.users.first();
+    const mentioned = Boolean(msg.mentions.users.size);
+    const target: MessageTarget = {
+        user: mentioned ? msg.mentions.users.first()! : msg.author,
+        member: mentioned ? msg.mentions.members!.first()! : msg.member,
+        isMention: mentioned,
+        name: "",
+    };
+    const nickname = guild?.members.cache.get(bot.user!.id)?.nickname;
     const botNameRegex: string =
         bot.user!.username + (nickname ? `|${clean(nickname)}` : "");
 
     // Look for username/nickname match or a mention if in a guild, else (DM) interaction
     // is always true.
-    let interaction: boolean = true;
-    if (msg.guild) {
+    let interaction = content.startsWith(prefix);
+    // Look for a prefix. Deleted if found.
+    if (interaction) {
+        content = content.slice(1);
+    } else if (msg.guild) {
         interaction =
-            new RegExp(botNameRegex, "i").test(msg.content) ||
+            new RegExp(botNameRegex, "i").test(content) ||
             mention?.id === bot.user!.id;
     }
-    // Look for a prefix. Deleted if found.
-    if (msg.content.startsWith(prefix)) {
-        msg.content = msg.content.slice(1);
-        interaction = true;
-    }
-
-    // Clean the message of any undesired spaces
-    const msgArgs: string[] = msg.content
-        .split(" ")
-        .filter((word) => word.trim() !== "");
-
     // Need an interaction passed point. Everything else is a "normal" message.
     if (!interaction) {
         return;
     }
-
+    request(msg.guild?.name || "DM", author.username, content);
     // Warning if blacklisted
     if (user?.black_listed) {
         return error(
@@ -273,71 +149,56 @@ async function onMessage(msg: Message): Promise<void> {
             "you seem to be blacklisted. To find out why, ask my glorious creator"
         );
     }
-
-    request(msg.guild?.name || "DM", author.username, msg.content);
-
-    if (!msgArgs.length) {
-        return message(msg, "yes?");
-    }
-
     // Ensures the user and all mentions are already registered
     if (!user) {
         await User.create({ discord_id: author.id });
     }
-    if (mention && !mention.bot && !User.get(mention.id)) {
-        await User.create({ discord_id: mention.id });
+    if (mention && !mention.bot) {
+        const mentionUser = User.get(mention.id);
+        if (!mentionUser) {
+            await User.create({ discord_id: mention.id });
+        }
     }
-    const commandName = msgArgs.shift() || "";
-    const actualName = commands.keys[clean(commandName)];
-    const command = commands.list.get(actualName);
-    if (command) {
-        if (msgArgs[0] && list.help.includes(msgArgs[0])) {
-            return commands.list.get("help")!.run(msg, [actualName]);
+    // Clean the message of any undesired spaces
+    const msgArgs = content.split(" ").filter((word) => Boolean(word.trim()));
+    if (!msgArgs.length) {
+        return message(msg, "yes?");
+    }
+    const actionName = msgArgs.shift() || "";
+    const commandName = Command.aliases.get(clean(actionName));
+    let command: Runnable;
+    let commandArgs = msgArgs;
+    if (commandName) {
+        if (list.help.includes(msgArgs[0])) {
+            commandArgs = [commandName];
+            command = Command.list.get("help")!;
         } else {
-            return command.run(msg, msgArgs);
+            command = Command.list.get(commandName)!;
         }
-    }
-    const closests = search(Object.keys(commands.keys), commandName, 2);
-    if (closests.length) {
-        const cmds: { [key: string]: string } = {};
-        for (const key of closests) {
-            const cmdName = commands.keys[key];
-            if (!(cmdName in cmds)) {
-                cmds[cmdName] = key;
-            }
-        }
-        return message(
-            msg,
-            `command "*${commandName}*" doesn't exist. Did you mean "*${Object.values(
-                cmds
-            ).join(`*" or "*`)}*"?`
-        );
     } else {
-        return commands.list.get("talk")!.run(msg, msgArgs);
+        const closests = search([...Command.aliases.keys()], actionName, 2);
+        if (closests.length) {
+            const cmds: { [key: string]: string } = {};
+            for (const key of closests) {
+                const cmdName = Command.aliases.get(key)!;
+                if (!(cmdName in cmds)) {
+                    cmds[cmdName] = key;
+                }
+            }
+            return message(
+                msg,
+                `command "*${actionName}*" doesn't exist. Did you mean "*${Object.values(
+                    cmds
+                ).join(`*" or "*`)}*"?`
+            );
+        }
+        command = Command.list.get("talk")!;
     }
-}
-
-async function onMessageReactionAdd(
-    msgReact: MessageReaction,
-    author: Discord.User | PartialUser
-): Promise<void> {
-    if (author.bot) {
-        return;
-    }
-    const { emoji, message } = msgReact;
-    const dialog = User.get(author.id)?.dialog;
-    if (!dialog || message !== dialog.response) {
-        return;
-    }
-    try {
-        dialog.run(emoji.name);
-    } catch (err) {
-        logError(err);
-    }
+    command.run(msg, commandArgs, target);
 }
 
 async function onReady(): Promise<void> {
-    const preGuilds: { discord_id: string }[] = [];
+    const preGuilds: FieldsDescriptor[] = [];
     bot.user!.setStatus("online"); // dnd , online , idle
     bot.guilds.cache.forEach((discordGuild) => {
         const guild = Guild.get(discordGuild.id);
@@ -351,18 +212,13 @@ async function onReady(): Promise<void> {
         }
     });
     if (preGuilds.length) {
-        Guild.create(...preGuilds);
+        await Guild.create(...preGuilds);
     }
-
     const loadingTime: number =
         Math.floor((Date.now() - startTime.getTime()) / 100) / 10;
 
     log(
-        `${commands.list.array().length} commands and ${
-            QuickCommand.size
-        } generic commands loaded. ${
-            Object.keys(commands.keys).length
-        } keys in total.`
+        `${Command.list.size} commands loaded. ${Command.aliases.size} keys in total.`
     );
     log(
         `Salty loaded in ${loadingTime} second${
@@ -375,6 +231,25 @@ async function onReady(): Promise<void> {
 // Exported
 //-----------------------------------------------------------------------------
 
+function checkPermission(
+    access: string,
+    user: Discord.User,
+    guild: Discord.Guild | null = null
+): boolean {
+    if (access === "public") {
+        return true;
+    }
+    switch (access) {
+        case "admin":
+            return guild ? isAdmin(user, guild) : false;
+        case "dev":
+            return isDev(user);
+        case "owner":
+            return isOwner(user);
+    }
+    return false;
+}
+
 /**
  * Restarts the bot instance by reloading the command files and recreate a bot
  * instance.
@@ -382,12 +257,6 @@ async function onReady(): Promise<void> {
 async function restart(): Promise<void> {
     log("Restarting ...");
     bot.destroy();
-    commands.list.clear();
-    commands.keys = {};
-    commands.help = {};
-    await loadCommands(...commandsRootPath).then(() =>
-        log("Static commands loaded")
-    );
     await bot.login(process.env.DISCORD_API);
 }
 
@@ -397,16 +266,19 @@ async function restart(): Promise<void> {
 async function destroy(): Promise<void> {
     log("Disconnecting ...");
     bot.destroy();
-    await Database.disconnect();
+    await disconnect();
     process.exit();
 }
 
 /**
  * Sends an embed message in the channel of the given 'msg' object.
  */
-async function embed(msg: Message, options: EmbedOptions = {}): Promise<void> {
+async function embed(
+    msg: Message,
+    options: SaltyEmbedOptions = {}
+): Promise<Message> {
     // Other options that might change
-    let { react, actions } = options;
+    let { actions, react } = options;
     const inline = options.inline || false;
     const content = options.content || "";
 
@@ -443,31 +315,64 @@ async function embed(msg: Message, options: EmbedOptions = {}): Promise<void> {
     if (react && !msg.deleted) {
         msg.react(react).catch();
     }
-    const user = User.get(msg.author.id)!;
-    user.dialog = new Dialog(newMessage, actions);
-    for (const reaction of Object.keys(actions)) {
-        if (newMessage.deleted) {
-            break;
+    if (actions) {
+        const { reactions, onAdd, onRemove, onEnd } = actions;
+        const collector = newMessage.createReactionCollector(
+            (reaction, user) =>
+                !user.bot && reactions.includes(reaction.emoji.name),
+            { time: 3 * 60 * 1000 }
+        );
+        if (onAdd) {
+            collector.on("collect", async (reaction, user) => {
+                await Promise.all(reactionPromises);
+                return onAdd(reaction, user);
+            });
         }
-        await newMessage.react(reaction);
+        if (onRemove) {
+            collector.on("remove", async (reaction, user) => {
+                await Promise.all(reactionPromises);
+                return onRemove(reaction, user);
+            });
+        }
+        collector.on("end", async (collected, reason) => {
+            await Promise.all(reactionPromises);
+            newMessage.reactions.removeAll();
+            collector.empty();
+            if (onEnd) {
+                return onEnd(collected, reason);
+            }
+        });
+        const reactionPromises: Promise<any>[] = [];
+        for (const reaction of reactions) {
+            if (newMessage.deleted) {
+                break;
+            }
+            const reactionPromise = newMessage.react(reaction);
+            reactionPromises.push(reactionPromise);
+            await reactionPromise;
+        }
     }
+    return newMessage;
 }
 
 /**
  * Sends an embed with 'error' preset style.
+ * @param msg
+ * @param text
+ * @param options
  */
 function error(
     msg: Message,
     text: string = "error",
     options: any = {}
-): Promise<void> {
+): Promise<Message> {
     return embed(
         msg,
         Object.assign(
             {
                 title: text,
                 react: "❌",
-                color: 0xaa0000,
+                color: 0xc80000,
             },
             options
         )
@@ -475,39 +380,12 @@ function error(
 }
 
 function getTextChannel(channelId: string): TextChannel {
+    console.log({ channelId });
     const channel = bot.channels.cache.get(channelId);
     if (!(channel instanceof TextChannel)) {
-        throw new SaltyException(`Default channel is not a text channel.`);
+        throw new Error(`Channel "${channelId}" is not a text channel.`);
     }
     return channel;
-}
-
-/**
- * Returns true if the given user has owner level privileges.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-function isOwner(user: Discord.User): boolean {
-    return user.id === owner.id;
-}
-
-/**
- * Returns true if the given user has developer level privileges or higher.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-function isDev(user: Discord.User): boolean {
-    return isOwner(user) || devs.includes(user.id);
-}
-
-/**
- * Returns true if the given user has admin level privileges or higher.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-function isAdmin(user: Discord.User, guild: Discord.Guild): boolean {
-    return (
-        isOwner(user) ||
-        isDev(user) ||
-        guild.member(user)!.hasPermission("ADMINISTRATOR")
-    );
 }
 
 /**
@@ -525,54 +403,41 @@ function message(
 }
 
 /**
- * Registers a command object in the current commands list.
- */
-function setQuickCommand(command: QuickCommand): void {
-    command.keys.split(",").forEach((key) => {
-        commands.keys[key] = command.name;
-    });
-    commands.list.set(command.name, command);
-}
-
-/**
  * Entry point of the module. This function is responsible of executing the following
  * actions in the given order:
  * 1. Establish a connection with the PostgreSQL database
- * 2. Load the models: QuickCommand, Guild and User (order is irrelevant) and the
- *    command scripts
+ * 2. Load the models: QuickCommand, Guild and User (order is irrelevant)
  * 3. Log into Discord through the API
  */
 async function start(): Promise<void> {
     log("Initializing Salty");
-    await Database.connect();
+    await connect();
     await Promise.all([
-        QuickCommand.load().then((commandData) =>
-            commandData.forEach((c) => setQuickCommand(<QuickCommand>c))
-        ),
-        Guild.load(),
-        User.load(),
-        loadCommands(...commandsRootPath).then(() =>
-            log("Static commands loaded")
-        ),
+        QuickCommand.load<QuickCommand>(),
+        User.load<User>(),
+        Guild.load<Guild>(),
     ]);
     await bot.login(process.env.DISCORD_API);
 }
 
 /**
  * Sends an embed with 'success' preset style.
+ * @param msg
+ * @param text
+ * @param options
  */
 function success(
     msg: Message,
     text: string = "success",
-    options: EmbedOptions = {}
-): Promise<void> {
+    options: SaltyEmbedOptions = {}
+): Promise<Message> {
     return embed(
         msg,
         Object.assign(
             {
                 title: text,
                 react: "✅",
-                color: 0x32a032,
+                color: 0x00c800,
             },
             options
         )
@@ -580,42 +445,68 @@ function success(
 }
 
 /**
- * Unregisters a command object from the current commands list.
+ * Sends an embed with 'warning' preset style.
+ * @param msg
+ * @param text
+ * @param options
  */
-function unsetQuickCommand(command: QuickCommand): void {
-    command.keys.split(",").forEach((key) => {
-        delete commands.keys[key];
-    });
-    commands.list.delete(command.name);
+function warn(
+    msg: Message,
+    text: string = "success",
+    options: SaltyEmbedOptions = {}
+): Promise<Message> {
+    return embed(
+        msg,
+        Object.assign(
+            {
+                title: text,
+                react: "⚠️",
+                color: 0xc8c800,
+            },
+            options
+        )
+    );
 }
 
-bot.on("channelDelete", onChannelDelete);
-bot.on("error", onError);
-bot.on("guildCreate", onGuildCreate);
-bot.on("guildDelete", onGuildDelete);
-bot.on("guildMemberAdd", onGuildMemberAdd);
-bot.on("guildMemberRemove", onGuildMemberRemove);
-bot.on("message", onMessage);
-bot.on("messageReactionAdd", onMessageReactionAdd);
-bot.on("ready", onReady);
+function wtf(msg: Message) {
+    return error(msg, "What the fuck");
+}
+
+function catchHandler(
+    handler: (...args: any[]) => any
+): (...args: any[]) => any {
+    return function () {
+        try {
+            return handler(...arguments);
+        } catch (err) {
+            logError(err);
+        }
+    };
+}
+
+bot.on("channelDelete", catchHandler(onChannelDelete));
+bot.on("error", catchHandler(onError));
+bot.on("guildCreate", catchHandler(onGuildCreate));
+bot.on("guildDelete", catchHandler(onGuildDelete));
+bot.on("guildMemberAdd", catchHandler(onGuildMemberAdd));
+bot.on("guildMemberRemove", catchHandler(onGuildMemberRemove));
+bot.on("message", catchHandler(onMessage));
+bot.on("ready", catchHandler(onReady));
 
 export default {
     // Properties
     bot,
-    commands,
     startTime,
     // Functions
+    checkPermission,
     destroy,
     embed,
     error,
     getTextChannel,
     start,
-    isAdmin,
-    isDev,
-    isOwner,
     message,
     restart,
-    setQuickCommand,
     success,
-    unsetQuickCommand,
+    warn,
+    wtf,
 };

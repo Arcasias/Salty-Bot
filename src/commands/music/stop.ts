@@ -1,22 +1,22 @@
-import Command, { CommandAccess, CommandParams, CommandChannel } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
-import { choice } from "../../utils";
 import { answers } from "../../terms";
+import { choice } from "../../utils";
 
-class StopCommand extends Command {
-    public name = "stop";
-    public keys = [];
-    public help = [
+Command.register({
+    name: "stop",
+    keys: [],
+    help: [
         {
             argument: null,
             effect: "Leaves the voice channel and deletes the queue",
         },
-    ];
-    public access: CommandAccess = "admin";
-    public channel: CommandChannel = "guild";
+    ],
+    access: "admin",
+    channel: "guild",
 
-    async action({ msg }: CommandParams) {
+    async action({ msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (playlist.connection) {
@@ -27,7 +27,5 @@ class StopCommand extends Command {
         } else {
             Salty.error(msg, "I'm not in a voice channel");
         }
-    }
-}
-
-export default StopCommand;
+    },
+});

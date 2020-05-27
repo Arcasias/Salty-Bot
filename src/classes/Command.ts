@@ -1,115 +1,92 @@
-import { Message, User, GuildMember } from "discord.js";
-import { debug, error } from "../utils";
-import { PermissionDenied, SaltyException } from "./Exception";
+import { Collection, Guild, Message, User } from "discord.js";
+import {
+    CommandAccess,
+    CommandAction,
+    CommandCategoryInfo,
+    CommandChannel,
+    CommandDescriptor,
+    CommandHelpDescriptor,
+    CommandHelpSection,
+    MessageTarget,
+    Runnable,
+} from "../types";
+import { isAdmin, isDev, isOwner } from "../utils";
+import QuickCommand from "./QuickCommand";
 import Salty from "./Salty";
-import { add, bot, clear, help, list, remove } from "../terms";
 
-const MEANING_ACTIONS: { [meaning: string]: string[] } = {
-    add,
-    bot,
-    clear,
-    help,
-    list,
-    remove,
+const permissions: {
+    [key in CommandAccess]: (user: User, guild: Guild) => boolean;
+} = {
+    admin: isAdmin,
+    dev: isDev,
+    owner: isOwner,
+    public: () => true,
 };
 
-const permissions = {
-    admin: Salty.isAdmin,
-    dev: Salty.isDev,
-    owner: Salty.isOwner,
-};
-
-interface CommandHelp {
-    argument: string | null;
-    effect: string | null;
-}
-
-interface MessageTarget {
-    user: User;
-    member: GuildMember | null;
-    isMention: boolean;
-    name: string;
-}
-
-export interface CommandParams {
-    args: string[];
-    msg: Message;
-    target: MessageTarget;
-}
-
-export type CommandAccess = "public" | "admin" | "dev" | "owner";
-export type CommandEnvironment = "all" | "local" | "server";
-export type CommandChannel = "all" | "guild";
-
-abstract class Command {
+class Command implements CommandDescriptor, Runnable {
+    // Action
+    public action: CommandAction;
     // Infos
-    public readonly help: CommandHelp[] = [];
-    public readonly keys: string[] = [];
-    public readonly name: string = "";
+    public help: CommandHelpSection[];
+    public keys: string[];
+    public name: string;
     // Restrictions
-    public readonly access: CommandAccess = "public";
-    public readonly environment: CommandEnvironment = "all";
-    public readonly channel: CommandChannel = "all";
+    public access: CommandAccess;
+    public channel: CommandChannel;
 
-    abstract async action(commandParams: CommandParams): Promise<void>;
+    public static aliases = new Collection<string, string>();
+    public static categories = new Collection<string, CommandCategoryInfo>();
+    public static doc = new Collection<string, CommandHelpDescriptor>();
+    public static list = new Collection<string, Command | QuickCommand>();
+
+    constructor({
+        action,
+        help,
+        keys,
+        name,
+        access,
+        channel,
+    }: CommandDescriptor) {
+        this.action = action;
+        this.name = name;
+        this.help = help || [];
+        this.keys = keys || [];
+        this.access = access || "public";
+        this.channel = channel || "all";
+    }
 
     /**
      * Runs the command action
      */
-    public async run(msg: Message, args: string[]) {
-        try {
-            if (
-                this.access !== "public" &&
-                msg.guild &&
-                !permissions[this.access].call(Salty, msg.author, msg.guild)
-            ) {
-                throw new PermissionDenied(this.access);
-            }
-            if (
-                this.environment !== "all" &&
-                this.environment !== process.env.MODE
-            ) {
-                throw new SaltyException(
-                    "WrongEnvironment",
-                    "it looks like I'm not in the right environment to do that"
-                );
-            }
-            if (this.channel === "guild" && !msg.guild) {
-                throw new SaltyException(
-                    "WrongChannel",
-                    "this is a direct message channel retard"
-                );
-            }
-            const mentioned = Boolean(msg.mentions.users.size);
-            const target: MessageTarget = {
-                user: mentioned ? msg.mentions.users.first()! : msg.author,
-                member: mentioned ? msg.mentions.members!.first()! : msg.member,
-                isMention: mentioned,
-                name: "",
-            };
-            target.name = target.member?.displayName || target.user.username;
-            const commandParams: CommandParams = { msg, args, target };
-            await this.action(commandParams);
-        } catch (err) {
-            if (err instanceof SaltyException) {
-                return Salty.error(msg, err.message);
-            } else {
-                error(err.stack);
-            }
+    public async run(msg: Message, args: string[], target: MessageTarget) {
+        if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
+            return Salty.warn(msg, this.access);
         }
+        if (this.channel === "guild" && !msg.guild) {
+            return Salty.warn(msg, "this is a direct message channel retard");
+        }
+        const commandParams = { msg, args, target };
+        await this.action(commandParams);
     }
 
-    protected meaning(word?: string): string {
-        if (word) {
-            for (const key in MEANING_ACTIONS) {
-                if (MEANING_ACTIONS[key].includes(word)) {
-                    return key;
-                }
+    public static register(descriptor: CommandDescriptor) {
+        const command = new this(descriptor);
+        const { access, channel, help, keys, name } = command;
+        this.list.set(name, command);
+        for (const key of [name, ...keys]) {
+            if (this.aliases.has(key)) {
+                throw new Error(`Duplicate key "${key}" in command "${name}".`);
             }
-            return "string";
-        } else {
-            return "noarg";
+            this.aliases.set(key, name);
         }
+        // this.doc.set(name, {
+        //     access,
+        //     category,
+        //     channel,
+        //     keys,
+        //     name,
+        //     sections: help,
+        // });
     }
 }
 

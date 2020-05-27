@@ -1,25 +1,14 @@
-import { VoiceConnection, VoiceChannel } from "discord.js";
+import { VoiceChannel, VoiceConnection } from "discord.js";
 import ytdl from "ytdl-core";
-import Model, { FieldsDescriptor } from "./Model";
+import { Song } from "../types";
 import { randInt } from "../utils";
 
-interface Song {
-    duration: number;
-    title: string;
-    url: string;
-}
-
-class Playlist extends Model {
+class Playlist {
     public connection: VoiceConnection | null = null;
     public continue: boolean = false;
     public pointer: number = -1;
     public queue: Song[] = [];
     public repeat: string = "off";
-
-    protected static readonly fields: FieldsDescriptor = {
-        queue: [],
-        repeat: "off",
-    };
 
     public get playing(): Song {
         return this.queue[this.pointer];

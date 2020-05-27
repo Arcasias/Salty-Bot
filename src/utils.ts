@@ -1,3 +1,27 @@
+import { Guild, User } from "discord.js";
+import { devs, owner } from "./config";
+import { add, bot, clear, help, list, remove } from "./terms";
+
+const CONSOLE_RED = "\x1b[31m";
+const CONSOLE_GREEN = "\x1b[32m";
+const CONSOLE_YELLOW = "\x1b[33m";
+const CONSOLE_BLUE = "\x1b[34m";
+const CONSOLE_MAGENTA = "\x1b[35m";
+const CONSOLE_CYAN = "\x1b[36m";
+const CONSOLE_RESET = "\x1b[0m"; // default
+// Weights used in the Levenshtein matrix
+const LVD_REPLACE = 1.5;
+const LVD_INSERT = 1;
+const LVD_DELETE = 1;
+const MEANING_ACTIONS: { [meaning: string]: string[] } = {
+    add,
+    bot,
+    clear,
+    help,
+    list,
+    remove,
+};
+
 //-----------------------------------------------------------------------------
 // Utility functions
 //-----------------------------------------------------------------------------
@@ -19,7 +43,7 @@ export function choice<T>(array: T[]): T {
  */
 export function clean(text: string): string {
     return text
-        .replace(/[,."'`\-_]/g, "")
+        .replace(/["'`\-_]/g, "")
         .trim()
         .toLowerCase();
 }
@@ -52,6 +76,34 @@ export function generate(percentage: number): boolean {
 }
 
 /**
+ * Returns true if the given user has admin level privileges or higher.
+ * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+ */
+export function isAdmin(user: User, guild: Guild): boolean {
+    return (
+        isOwner(user) ||
+        isDev(user) ||
+        guild.member(user)!.hasPermission("ADMINISTRATOR")
+    );
+}
+
+/**
+ * Returns true if the given user has developer level privileges or higher.
+ * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+ */
+export function isDev(user: User): boolean {
+    return isOwner(user) || devs.includes(user.id);
+}
+
+/**
+ * Returns true if the given user has owner level privileges.
+ * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+ */
+export function isOwner(user: User): boolean {
+    return user.id === owner.id;
+}
+
+/**
  * Returns true if the given array is sorted:
  * - alphabetically if an array of strings
  * - sequentially if an array of numbers
@@ -65,11 +117,6 @@ export function isSorted(array: string[] | number[]): boolean {
     }
     return true;
 }
-
-// Weights used in the Levenshtein matrix
-const LVD_REPLACE = 1.5;
-const LVD_INSERT = 1;
-const LVD_DELETE = 1;
 
 /**
  * Returns the edit distance between 2 given strings
@@ -103,6 +150,26 @@ export function levenshtein(a: string, b: string): number {
 }
 
 /**
+ * Returns the general meaning of a given word.
+ * @param word
+ */
+export function meaning(word?: string): string | null {
+    if (!word) {
+        return null;
+    }
+    for (const key in MEANING_ACTIONS) {
+        if (MEANING_ACTIONS[key].includes(word)) {
+            return key;
+        }
+    }
+    return "string";
+}
+
+export function pingable(id: string): string {
+    return `<@&${id}>`;
+}
+
+/**
  * Returns the given word with its appropriate possessive form.
  * @param text
  */
@@ -110,6 +177,11 @@ export function possessive(text: string): string {
     return "s" === text[text.length - 1] ? `${text}'` : `${text}'s`;
 }
 
+/**
+ * Returns a random integer between the two given boundaries.
+ * @param min
+ * @param max
+ */
 export function randInt(min: number = 0, max: number = 1): number {
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -162,18 +234,6 @@ export function title(string: string) {
 // Log functions
 //-----------------------------------------------------------------------------
 
-const colors = {
-    RED: "\x1b[31m",
-    GREEN: "\x1b[32m",
-    YELLOW: "\x1b[33m",
-    BLUE: "\x1b[34m",
-    MAGENTA: "\x1b[35m",
-    CYAN: "\x1b[36m",
-
-    // default
-    RESET: "\x1b[0m",
-};
-
 /**
  * @param message
  */
@@ -183,9 +243,9 @@ export function debug(...message: any[]) {
     }
     if (process.env.MODE === "local") {
         message.unshift(
-            `${colors.RESET + formatDuration()} ${colors.MAGENTA}DEBUG${
-                colors.RESET
-            } :`
+            `${
+                CONSOLE_RESET + formatDuration()
+            } ${CONSOLE_MAGENTA}DEBUG${CONSOLE_RESET} :`
         );
     }
     console.log(...message);
@@ -197,9 +257,9 @@ export function debug(...message: any[]) {
 export function error(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
-            `${colors.RESET + formatDuration()} ${colors.RED}ERROR${
-                colors.RESET
-            } :`
+            `${
+                CONSOLE_RESET + formatDuration()
+            } ${CONSOLE_RED}ERROR${CONSOLE_RESET} :`
         );
     }
     console.error(...message);
@@ -211,9 +271,9 @@ export function error(...message: any[]) {
 export function log(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
-            `${colors.RESET + formatDuration()} ${colors.CYAN}INFO${
-                colors.RESET
-            } :`
+            `${
+                CONSOLE_RESET + formatDuration()
+            } ${CONSOLE_CYAN}INFO${CONSOLE_RESET} :`
         );
     }
     console.log(...message);
@@ -226,15 +286,15 @@ export function log(...message: any[]) {
  */
 export function request(guild: string, user: string, msg: string) {
     const content = msg
-        ? `${colors.GREEN}"${msg}"${colors.RESET}`
-        : `${colors.RED}[EMPTY MESSAGE]${colors.RESET}`;
+        ? `${CONSOLE_GREEN}"${msg}"${CONSOLE_RESET}`
+        : `${CONSOLE_RED}[EMPTY MESSAGE]${CONSOLE_RESET}`;
     const message = [
-        `${colors.YELLOW + guild + colors.RESET} > ${
-            colors.YELLOW + user + colors.RESET
+        `${CONSOLE_YELLOW + guild + CONSOLE_RESET} > ${
+            CONSOLE_YELLOW + user + CONSOLE_RESET
         } : ${content}`,
     ];
     if (process.env.MODE === "local") {
-        message.unshift(`${colors.RESET + formatDuration()}`);
+        message.unshift(`${CONSOLE_RESET + formatDuration()}`);
     }
     console.log(...message);
 }
@@ -245,9 +305,9 @@ export function request(guild: string, user: string, msg: string) {
 export function warn(...message: any[]) {
     if (process.env.MODE === "local") {
         message.unshift(
-            `${colors.RESET + formatDuration()} ${colors.YELLOW}WARNING${
-                colors.RESET
-            } :`
+            `${
+                CONSOLE_RESET + formatDuration()
+            } ${CONSOLE_YELLOW}WARNING${CONSOLE_RESET} :`
         );
     }
     console.warn(...message);

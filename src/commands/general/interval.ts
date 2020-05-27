@@ -1,17 +1,12 @@
-import Command, { CommandAccess, CommandParams } from "../../classes/Command";
-import {
-    EmptyObject,
-    IncorrectValue,
-    MissingArg,
-} from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { clear } from "../../terms";
 
 const INTERVALS: { [guild: string]: NodeJS.Timeout } = {};
 
-class IntervalCommand extends Command {
-    public name = "interval";
-    public help = [
+Command.register({
+    name: "interval",
+    help: [
         {
             argument: null,
             effect: null,
@@ -20,27 +15,36 @@ class IntervalCommand extends Command {
             argument: "*delay* ***anything***",
             effect: "I'll tell what you want after a every **delay** seconds",
         },
-    ];
-    public access: CommandAccess = "dev";
+    ],
+    access: "dev",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const channel = msg.guild ? msg.guild.id : msg.author.id;
         if (args[0] && clear.includes(args[0])) {
             if (!INTERVALS[channel]) {
-                throw new EmptyObject("interval");
+                return Salty.warn(msg, "There is no interval on this channel.");
             }
             clearInterval(INTERVALS[channel]);
 
             Salty.success(msg, "Interval cleared");
         } else {
             if (!args[0]) {
-                throw new MissingArg("delay");
+                return Salty.warn(
+                    msg,
+                    "You need to specify the interval length in milliseconds."
+                );
             }
             if (isNaN(Number(args[0]))) {
-                throw new IncorrectValue("delay", "number");
+                return Salty.warn(
+                    msg,
+                    "You need to specify the interval length in milliseconds."
+                );
             }
             if (!args[1]) {
-                throw new MissingArg("message");
+                return Salty.warn(
+                    msg,
+                    "You need to tell me what to say after each interval."
+                );
             }
             const delay = parseInt(args.shift()!) * 1000;
 
@@ -53,7 +57,5 @@ class IntervalCommand extends Command {
                 Salty.message(msg, args.join(" "));
             }, delay);
         }
-    }
-}
-
-export default IntervalCommand;
+    },
+});

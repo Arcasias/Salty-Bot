@@ -1,16 +1,10 @@
+import { ExpressionDescriptor, ExpressionReplacer } from "../types";
 import { possessive } from "../utils";
 
 const FORMAT_REGEX = /<\w+>/g;
 
-type ExpressionReplacer = (match: string, context: any) => string;
-
-interface Expression {
-    expr: RegExp;
-    replacer: ExpressionReplacer;
-}
-
 class Formatter {
-    private expressions: Expression[] = [];
+    private expressions: ExpressionDescriptor[] = [];
 
     public define(expr: RegExp, replacer: ExpressionReplacer): this {
         this.expressions.push({ expr, replacer });

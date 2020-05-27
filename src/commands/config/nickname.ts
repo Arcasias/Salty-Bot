@@ -1,10 +1,5 @@
 import { GuildMember, Message } from "discord.js";
-import Command, {
-    CommandParams,
-    CommandAccess,
-    CommandChannel,
-} from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import PromiseManager from "../../classes/PromiseManager";
 import Salty from "../../classes/Salty";
 import { add as addList, remove as removeList } from "../../terms";
@@ -49,10 +44,10 @@ async function changeNames(
     Salty.success(msg, "nicknames successfully changed");
 }
 
-class NickNameCommand extends Command {
-    public name = "nickname";
-    public keys = ["name", "nick", "pseudo"];
-    public help = [
+Command.register({
+    name: "nickname",
+    keys: ["name", "nick", "pseudo"],
+    help: [
         {
             argument: null,
             effect: null,
@@ -66,34 +61,33 @@ class NickNameCommand extends Command {
             argument: "remove ***particle***",
             effect: "Removes the ***particle*** from each matching nickname",
         },
-    ];
-    public access: CommandAccess = "admin";
-    public channel: CommandChannel = "guild";
+    ],
+    access: "admin",
+    channel: "guild",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const particle = args.slice(1).join(" ");
         const particleRegex = new RegExp(particle, "g");
-        if (!args.length) {
-            throw new MissingArg("add or delete + particle");
+        if (addList.includes(args[0])) {
+            await changeNames.call(this, msg, (nickname: string) =>
+                nickname.match(particleRegex)
+                    ? nickname
+                    : `${nickname.trim()} ${particle}`
+            );
+        } else if (removeList.includes(args[0])) {
+            await changeNames.call(this, msg, (nickname: string) =>
+                nickname.replace(particleRegex, "").trim()
+            );
+        } else if (args.length) {
+            return Salty.warn(
+                msg,
+                "You need to specify what nickname particle will be targeted."
+            );
         } else {
-            if (!particle) {
-                throw new MissingArg("nickname particle");
-            }
-            if (addList.includes(args[0])) {
-                await changeNames.call(this, msg, (nickname: string) =>
-                    nickname.match(particleRegex)
-                        ? nickname
-                        : `${nickname.trim()} ${particle}`
-                );
-            } else if (removeList.includes(args[0])) {
-                await changeNames.call(this, msg, (nickname: string) =>
-                    nickname.replace(particleRegex, "").trim()
-                );
-            } else {
-                throw new MissingArg("add or delete + particle");
-            }
+            return Salty.warn(
+                msg,
+                "You need to tell whether to add or delete a global nickname particle."
+            );
         }
-    }
-}
-
-export default NickNameCommand;
+    },
+});

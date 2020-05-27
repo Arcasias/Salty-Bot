@@ -1,10 +1,10 @@
-import Command, { CommandParams } from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
+import Salty from "../../classes/Salty";
 
-class TtsCommand extends Command {
-    public name = "tts";
-    public keys = ["speak"];
-    public help = [
+Command.register({
+    name: "tts",
+    keys: ["speak"],
+    help: [
         {
             argument: null,
             effect: null,
@@ -13,16 +13,14 @@ class TtsCommand extends Command {
             argument: "***something to say***",
             effect: "Says something out loud",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         // Just sends the arguments as a TTS message
         if (!args[0]) {
-            throw new MissingArg("message");
+            return Salty.warn(msg, "You need to tell me what to say.");
         }
         msg.delete();
         await msg.channel.send(args.join(" "), { tts: true });
-    }
-}
-
-export default TtsCommand;
+    },
+});

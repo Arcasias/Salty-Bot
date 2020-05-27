@@ -1,19 +1,18 @@
-import Command, { CommandParams } from "../../classes/Command";
-import { IncorrectValue, MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { isSorted, shuffle } from "../../utils";
 
-class MonkeyCommand extends Command {
-    public name = "monkey";
-    public keys = [
+Command.register({
+    name: "monkey",
+    keys: [
         "bogosort",
         "monkeysort",
         "permutationsort",
         "shotgunsort",
         "slowsort",
         "stupidsort",
-    ];
-    public help = [
+    ],
+    help: [
         {
             argument: null,
             effect: "Monkey sorts a 10 elements array",
@@ -23,14 +22,17 @@ class MonkeyCommand extends Command {
             effect:
                 "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we?)",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         if (!args[0]) {
-            throw new MissingArg("length");
+            return Salty.warn(msg, "Missing the length of the array.");
         }
         if (Number(args[0]) < 1) {
-            throw new IncorrectValue("length", "number between 1 and 10");
+            return Salty.warn(
+                msg,
+                "Array length must be a number between 1 and 10."
+            );
         }
 
         const runningMsg = await Salty.message(msg, "monkey sorting ...");
@@ -60,7 +62,5 @@ class MonkeyCommand extends Command {
             `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`,
             { react: "🐒" }
         );
-    }
-}
-
-export default MonkeyCommand;
+    },
+});

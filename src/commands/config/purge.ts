@@ -1,12 +1,13 @@
-import { TextChannel, DMChannel, NewsChannel } from "discord.js";
-import Command, { CommandAccess, CommandParams } from "../../classes/Command";
+import { DMChannel, NewsChannel, TextChannel } from "discord.js";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { error } from "../../utils";
-import { IncorrectValue, SaltyException } from "../../classes/Exception";
+import { error, meaning } from "../../utils";
 
 let purging: boolean = false;
 
-async function purgeEndless(channel: TextChannel | DMChannel | NewsChannel): Promise<void> {
+async function purgeEndless(
+    channel: TextChannel | DMChannel | NewsChannel
+): Promise<void> {
     const messages = await channel.messages.fetch({ limit: 1 });
     if (!purging) {
         return;
@@ -17,10 +18,10 @@ async function purgeEndless(channel: TextChannel | DMChannel | NewsChannel): Pro
     }
 }
 
-class PurgeCommand extends Command {
-    public name = "purge";
-    public keys = ["prune"];
-    public help = [
+Command.register({
+    name: "purge",
+    keys: ["prune"],
+    help: [
         {
             argument: null,
             effect: "Deletes the last 100 messages",
@@ -42,11 +43,11 @@ class PurgeCommand extends Command {
             argument: "clear",
             effect: "Used to stop the endless purge",
         },
-    ];
-    public access: CommandAccess = "dev";
+    ],
+    access: "dev",
 
-    async action({ args, msg }: CommandParams) {
-        switch (this.meaning(args[0])) {
+    async action({ args, msg }) {
+        switch (meaning(args[0])) {
             case "bot":
                 const messages = await msg.channel.messages.fetch();
                 const messagesToDelete = messages.filter(
@@ -80,11 +81,15 @@ class PurgeCommand extends Command {
             /* falls through */
             default:
                 if (isNaN(Number(args[0]))) {
-                    throw new IncorrectValue("length", "number");
+                    return Salty.warn(
+                        msg,
+                        "Given length must be a valid number."
+                    );
                 }
                 if (parseInt(args[0]) === 0) {
-                    throw new SaltyException(
-                        "you must delete at least 1 message"
+                    return Salty.warn(
+                        msg,
+                        "You must delete at least 1 message."
                     );
                 }
                 const toDelete = Math.min(parseInt(args[0]), 100) || 100;
@@ -105,7 +110,5 @@ class PurgeCommand extends Command {
                     error(err);
                 }
         }
-    }
-}
-
-export default PurgeCommand;
+    },
+});

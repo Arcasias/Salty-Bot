@@ -1,10 +1,12 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
+import { isAdmin } from "../../utils";
 
-class AdminCommand extends Command {
-    public name = "admin";
-    public keys = ["administrator"];
-    public help = [
+Command.register({
+    name: "admin",
+    keys: ["administrator"],
+    channel: "guild",
+    help: [
         {
             argument: null,
             effect: "Tells you wether you're an admin",
@@ -13,14 +15,9 @@ class AdminCommand extends Command {
             argument: "***mention***",
             effect: "Tells you wether the ***mention*** is an admin",
         },
-    ];
-    public channel: CommandChannel = "guild";
-
-    async action({ msg, target }: CommandParams) {
-        const isRequestedUserAdmin: boolean = Salty.isAdmin(
-            target.user,
-            msg.guild!
-        );
+    ],
+    async action({ msg, target }) {
+        const isRequestedUserAdmin: boolean = isAdmin(target.user, msg.guild!);
 
         // Fuck if/else structures, long live ternary operators
         Salty.message(
@@ -47,7 +44,5 @@ class AdminCommand extends Command {
                 : // author is not admin
                   "nope, you're not an admin"
         );
-    }
-}
-
-export default AdminCommand;
+    },
+});

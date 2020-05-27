@@ -8,51 +8,51 @@ const path_1 = __importDefault(require("path"));
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const utils_1 = require("../../utils");
-const config_1 = require("../../config");
-class AvatarCommand extends Command_1.default {
-    constructor() {
-        super(...arguments);
-        this.name = "avatar";
-        this.keys = ["pic", "picture", "pp"];
-        this.help = [
-            {
-                argument: null,
-                effect: "Shows a bigger version of your profile picture",
-            },
-            {
-                argument: "***mention***",
-                effect: "Shows a bigger version of ***mention***'s profile picture",
-            },
-        ];
-    }
+const SALTY_IMAGES_PATH = "assets/img/salty";
+Command_1.default.register({
+    name: "avatar",
+    keys: ["pic", "picture", "pp"],
+    help: [
+        {
+            argument: null,
+            effect: "Shows a bigger version of your profile picture",
+        },
+        {
+            argument: "***mention***",
+            effect: "Shows a bigger version of ***mention***'s profile picture",
+        },
+    ],
     async action({ msg, target }) {
+        var _a;
         const options = {
-            title: `this is ${utils_1.possessive(target.member.displayName)} profile pic`,
-            color: target.member.displayColor,
+            title: `this is ${utils_1.possessive(target.name)} profile pic`,
+            color: (_a = target.member) === null || _a === void 0 ? void 0 : _a.displayColor,
         };
         if (target.user.id === Salty_1.default.bot.user.id) {
-            const files = fs_1.default.readdirSync("assets/img/salty");
+            const files = fs_1.default.readdirSync(SALTY_IMAGES_PATH);
             const pics = files.filter((f) => f.split(".").pop() === "png");
-            options.title = `how cute, you asked for my profile pic ^-^`;
-            options.files = [path_1.default.join("assets/img/salty/", utils_1.choice(pics))];
+            options.title = `This is a picture of me. `;
+            options.files = [path_1.default.join(SALTY_IMAGES_PATH, utils_1.choice(pics))];
         }
         else {
             if (target.user.bot) {
                 options.description = "That's just a crappy bot";
             }
-            else if (target.user.id === config_1.owner.id) {
+            else if (utils_1.isOwner(target.user)) {
                 options.description = "He's the coolest guy i know ^-^";
             }
-            else if (Salty_1.default.isAdmin(target.user, msg.guild)) {
+            else if (msg.guild && utils_1.isAdmin(target.user, msg.guild)) {
                 options.description = "It's a cute piece of shit";
             }
             else {
                 options.description = "This is a huge piece of shit";
             }
-            options.image = { url: target.user.avatarURL({ size: 1024 }) };
+            const url = target.user.avatarURL({ size: 1024 });
+            if (url) {
+                options.image = { url };
+            }
         }
         await Salty_1.default.embed(msg, options);
-    }
-}
-exports.default = AvatarCommand;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXZhdGFyLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL2NvbW1hbmRzL2ltYWdlL2F2YXRhci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7OztBQUFBLDRDQUFvQjtBQUNwQixnREFBd0I7QUFDeEIsb0VBQStEO0FBQy9ELGdFQUEwRDtBQUMxRCx1Q0FBaUQ7QUFDakQseUNBQXFDO0FBRXJDLE1BQU0sYUFBYyxTQUFRLGlCQUFPO0lBQW5DOztRQUNXLFNBQUksR0FBRyxRQUFRLENBQUM7UUFDaEIsU0FBSSxHQUFHLENBQUMsS0FBSyxFQUFFLFNBQVMsRUFBRSxJQUFJLENBQUMsQ0FBQztRQUNoQyxTQUFJLEdBQUc7WUFDVjtnQkFDSSxRQUFRLEVBQUUsSUFBSTtnQkFDZCxNQUFNLEVBQUUsZ0RBQWdEO2FBQzNEO1lBQ0Q7Z0JBQ0ksUUFBUSxFQUFFLGVBQWU7Z0JBQ3pCLE1BQU0sRUFBRSwyREFBMkQ7YUFDdEU7U0FDSixDQUFDO0lBNkJOLENBQUM7SUEzQkcsS0FBSyxDQUFDLE1BQU0sQ0FBQyxFQUFFLEdBQUcsRUFBRSxNQUFNLEVBQWlCO1FBQ3ZDLE1BQU0sT0FBTyxHQUFpQjtZQUMxQixLQUFLLEVBQUUsV0FBVyxrQkFBVSxDQUN4QixNQUFNLENBQUMsTUFBTSxDQUFDLFdBQVcsQ0FDNUIsY0FBYztZQUNmLEtBQUssRUFBRSxNQUFNLENBQUMsTUFBTSxDQUFDLFlBQVk7U0FDcEMsQ0FBQztRQUNGLElBQUksTUFBTSxDQUFDLElBQUksQ0FBQyxFQUFFLEtBQUssZUFBSyxDQUFDLEdBQUcsQ0FBQyxJQUFLLENBQUMsRUFBRSxFQUFFO1lBRXZDLE1BQU0sS0FBSyxHQUFHLFlBQUUsQ0FBQyxXQUFXLENBQUMsa0JBQWtCLENBQUMsQ0FBQztZQUNqRCxNQUFNLElBQUksR0FBRyxLQUFLLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDLEdBQUcsRUFBRSxLQUFLLEtBQUssQ0FBQyxDQUFDO1lBQy9ELE9BQU8sQ0FBQyxLQUFLLEdBQUcsNENBQTRDLENBQUM7WUFDN0QsT0FBTyxDQUFDLEtBQUssR0FBRyxDQUFDLGNBQUksQ0FBQyxJQUFJLENBQUMsbUJBQW1CLEVBQUUsY0FBTSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQztTQUNsRTthQUFNO1lBQ0gsSUFBSSxNQUFNLENBQUMsSUFBSSxDQUFDLEdBQUcsRUFBRTtnQkFDakIsT0FBTyxDQUFDLFdBQVcsR0FBRywwQkFBMEIsQ0FBQzthQUNwRDtpQkFBTSxJQUFJLE1BQU0sQ0FBQyxJQUFJLENBQUMsRUFBRSxLQUFLLGNBQUssQ0FBQyxFQUFFLEVBQUU7Z0JBQ3BDLE9BQU8sQ0FBQyxXQUFXLEdBQUcsaUNBQWlDLENBQUM7YUFDM0Q7aUJBQU0sSUFBSSxlQUFLLENBQUMsT0FBTyxDQUFDLE1BQU0sQ0FBQyxJQUFJLEVBQUUsR0FBRyxDQUFDLEtBQUssQ0FBQyxFQUFFO2dCQUM5QyxPQUFPLENBQUMsV0FBVyxHQUFHLDJCQUEyQixDQUFDO2FBQ3JEO2lCQUFNO2dCQUNILE9BQU8sQ0FBQyxXQUFXLEdBQUcsOEJBQThCLENBQUM7YUFDeEQ7WUFDRCxPQUFPLENBQUMsS0FBSyxHQUFHLEVBQUUsR0FBRyxFQUFFLE1BQU0sQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLEVBQUUsSUFBSSxFQUFFLElBQUksRUFBRSxDQUFDLEVBQUUsQ0FBQztTQUNsRTtRQUNELE1BQU0sZUFBSyxDQUFDLEtBQUssQ0FBQyxHQUFHLEVBQUUsT0FBTyxDQUFDLENBQUM7SUFDcEMsQ0FBQztDQUNKO0FBRUQsa0JBQWUsYUFBYSxDQUFDIn0=
+    },
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXZhdGFyLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vc3JjL2NvbW1hbmRzL2ltYWdlL2F2YXRhci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7OztBQUFBLDRDQUFvQjtBQUNwQixnREFBd0I7QUFDeEIsb0VBQTRDO0FBQzVDLGdFQUF3QztBQUV4Qyx1Q0FBbUU7QUFFbkUsTUFBTSxpQkFBaUIsR0FBRyxrQkFBa0IsQ0FBQztBQUU3QyxpQkFBTyxDQUFDLFFBQVEsQ0FBQztJQUNiLElBQUksRUFBRSxRQUFRO0lBQ2QsSUFBSSxFQUFFLENBQUMsS0FBSyxFQUFFLFNBQVMsRUFBRSxJQUFJLENBQUM7SUFDOUIsSUFBSSxFQUFFO1FBQ0Y7WUFDSSxRQUFRLEVBQUUsSUFBSTtZQUNkLE1BQU0sRUFBRSxnREFBZ0Q7U0FDM0Q7UUFDRDtZQUNJLFFBQVEsRUFBRSxlQUFlO1lBQ3pCLE1BQU0sRUFBRSwyREFBMkQ7U0FDdEU7S0FDSjtJQUVELEtBQUssQ0FBQyxNQUFNLENBQUMsRUFBRSxHQUFHLEVBQUUsTUFBTSxFQUFFOztRQUN4QixNQUFNLE9BQU8sR0FBc0I7WUFDL0IsS0FBSyxFQUFFLFdBQVcsa0JBQVUsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLGNBQWM7WUFDdkQsS0FBSyxRQUFFLE1BQU0sQ0FBQyxNQUFNLDBDQUFFLFlBQVk7U0FDckMsQ0FBQztRQUNGLElBQUksTUFBTSxDQUFDLElBQUksQ0FBQyxFQUFFLEtBQUssZUFBSyxDQUFDLEdBQUcsQ0FBQyxJQUFLLENBQUMsRUFBRSxFQUFFO1lBRXZDLE1BQU0sS0FBSyxHQUFHLFlBQUUsQ0FBQyxXQUFXLENBQUMsaUJBQWlCLENBQUMsQ0FBQztZQUNoRCxNQUFNLElBQUksR0FBRyxLQUFLLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxFQUFFLEVBQUUsQ0FBQyxDQUFDLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDLEdBQUcsRUFBRSxLQUFLLEtBQUssQ0FBQyxDQUFDO1lBQy9ELE9BQU8sQ0FBQyxLQUFLLEdBQUcsMkJBQTJCLENBQUM7WUFDNUMsT0FBTyxDQUFDLEtBQUssR0FBRyxDQUFDLGNBQUksQ0FBQyxJQUFJLENBQUMsaUJBQWlCLEVBQUUsY0FBTSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQztTQUNoRTthQUFNO1lBQ0gsSUFBSSxNQUFNLENBQUMsSUFBSSxDQUFDLEdBQUcsRUFBRTtnQkFDakIsT0FBTyxDQUFDLFdBQVcsR0FBRywwQkFBMEIsQ0FBQzthQUNwRDtpQkFBTSxJQUFJLGVBQU8sQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLEVBQUU7Z0JBQzdCLE9BQU8sQ0FBQyxXQUFXLEdBQUcsaUNBQWlDLENBQUM7YUFDM0Q7aUJBQU0sSUFBSSxHQUFHLENBQUMsS0FBSyxJQUFJLGVBQU8sQ0FBQyxNQUFNLENBQUMsSUFBSSxFQUFFLEdBQUcsQ0FBQyxLQUFLLENBQUMsRUFBRTtnQkFDckQsT0FBTyxDQUFDLFdBQVcsR0FBRywyQkFBMkIsQ0FBQzthQUNyRDtpQkFBTTtnQkFDSCxPQUFPLENBQUMsV0FBVyxHQUFHLDhCQUE4QixDQUFDO2FBQ3hEO1lBQ0QsTUFBTSxHQUFHLEdBQUcsTUFBTSxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsRUFBRSxJQUFJLEVBQUUsSUFBSSxFQUFFLENBQUMsQ0FBQztZQUNsRCxJQUFJLEdBQUcsRUFBRTtnQkFDTCxPQUFPLENBQUMsS0FBSyxHQUFHLEVBQUUsR0FBRyxFQUFFLENBQUM7YUFDM0I7U0FDSjtRQUNELE1BQU0sZUFBSyxDQUFDLEtBQUssQ0FBQyxHQUFHLEVBQUUsT0FBTyxDQUFDLENBQUM7SUFDcEMsQ0FBQztDQUNKLENBQUMsQ0FBQyJ9

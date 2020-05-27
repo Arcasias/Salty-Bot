@@ -1,21 +1,16 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
-import {
-    EmptyObject,
-    IncorrectValue,
-    MissingArg,
-    OutOfRange,
-} from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty, { EmbedOptions } from "../../classes/Salty";
-import { formatDuration } from "../../utils";
+import Salty from "../../classes/Salty";
 import { clear, remove } from "../../terms";
+import { SaltyEmbedOptions } from "../../types";
+import { formatDuration } from "../../utils";
 
 const DISPLAY_LIMIT = 25;
 
-class QueueCommand extends Command {
-    public name = "queue";
-    public keys = ["playlist", "q"];
-    public help = [
+Command.register({
+    name: "queue",
+    keys: ["playlist", "q"],
+    help: [
         {
             argument: null,
             effect:
@@ -30,18 +25,21 @@ class QueueCommand extends Command {
             argument: "clear",
             effect: "Clears the queue",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
 
         if (args[0] && remove.includes(args[0])) {
             if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+                return Salty.warn(msg, "The queue is already empty.");
             }
             if (!args[1]) {
-                throw new MissingArg("song number");
+                return Salty.warn(
+                    msg,
+                    "You need to specify which song to remove."
+                );
             } else {
                 args.shift();
             }
@@ -54,11 +52,17 @@ class QueueCommand extends Command {
             for (let i = 0; i < songIds.length; i++) {
                 let songId = Number(songIds[i]);
                 if (isNaN(songId)) {
-                    throw new IncorrectValue("song", "number");
+                    return Salty.warn(
+                        msg,
+                        "Specified song must be the index of a song in the queue."
+                    );
                 }
                 songId--; // converting logical index to array index
                 if (playlist.queue.length <= songId || songId < 0) {
-                    throw new OutOfRange(songId);
+                    return Salty.warn(
+                        msg,
+                        "Specified song number is out of the list indices."
+                    );
                 }
             }
 
@@ -75,12 +79,12 @@ class QueueCommand extends Command {
 
             Salty.success(msg, "queue cleared");
         } else {
-            if (!playlist.queue[0]) {
-                throw new EmptyObject("queue");
+            if (!playlist.queue.length) {
+                return Salty.message(msg, "The queue is empty.");
             }
             // Returns an embed message displaying all songs
             let totalDuration = 0;
-            const options: EmbedOptions = {
+            const options: SaltyEmbedOptions = {
                 title: "current queue",
                 fields: [],
                 footer: { text: `repeat: ${playlist.repeat}` },
@@ -111,7 +115,5 @@ class QueueCommand extends Command {
             }
             Salty.embed(msg, options);
         }
-    }
-}
-
-export default QueueCommand;
+    },
+});

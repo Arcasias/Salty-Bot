@@ -1,14 +1,14 @@
 import { readdir } from "fs";
-import Command, { CommandParams } from "../../classes/Command";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { choice } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
 
-class EmojiCommand extends Command {
-    public name = "emoji";
-    public keys = ["emojis", "saltmoji", "saltmojis"];
-    public help = [
+Command.register({
+    name: "emoji",
+    keys: ["emojis", "saltmoji", "saltmojis"],
+    help: [
         {
             argument: null,
             effect: "Shows my emojis list",
@@ -17,9 +17,9 @@ class EmojiCommand extends Command {
             argument: "***emoji name***",
             effect: "Sends the indicated emoji",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const files: string[] = await new Promise((res, rej) => {
             readdir(emojiPath, (err, files) => {
                 if (err) {
@@ -51,7 +51,5 @@ class EmojiCommand extends Command {
             title: "list of saltmojis",
             description: emojiNames.join("\n"),
         });
-    }
-}
-
-export default EmojiCommand;
+    },
+});

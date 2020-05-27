@@ -1,10 +1,11 @@
-import Command, { CommandParams, CommandChannel } from "../../classes/Command";
-import Salty, { EmbedOptions } from "../../classes/Salty";
+import Command from "../../classes/Command";
+import Salty from "../../classes/Salty";
+import { SaltyEmbedOptions } from "../../types";
 
-class CoffeeCommand extends Command {
-    public name = "coffee";
-    public keys = ["cof", "covfefe"];
-    public help = [
+Command.register({
+    name: "coffee",
+    keys: ["cof", "covfefe"],
+    help: [
         {
             argument: null,
             effect: "Gets you a nice hot coffee",
@@ -13,11 +14,11 @@ class CoffeeCommand extends Command {
             argument: "***mention***",
             effect: "Gets the ***mention*** a nice hot coffee",
         },
-    ];
-    public channel: CommandChannel = "guild";
+    ],
+    channel: "guild",
 
-    async action({ msg, target }: CommandParams) {
-        const options: EmbedOptions = {
+    async action({ msg, target }) {
+        const options: SaltyEmbedOptions = {
             title: "this is a nice coffee",
             description: "specially made for you ;)",
             image: {
@@ -30,11 +31,11 @@ class CoffeeCommand extends Command {
             if (target.user.id === Salty.bot.user!.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             } else {
-                options.description = `Made with ♥ by **${msg.member!.displayName}** for **${target.name}**`;
+                options.description = `Made with ♥ by **${
+                    msg.member!.displayName
+                }** for **${target.name}**`;
             }
         }
         await Salty.embed(msg, options);
-    }
-}
-
-export default CoffeeCommand;
+    },
+});

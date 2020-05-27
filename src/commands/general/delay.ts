@@ -1,11 +1,10 @@
-import Command, { CommandParams } from "../../classes/Command";
-import { MissingArg } from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 
-class DelayCommand extends Command {
-    public name = "delay";
-    public keys = ["sleep", "timeout"];
-    public help = [
+Command.register({
+    name: "delay",
+    keys: ["sleep", "timeout"],
+    help: [
         {
             argument: null,
             effect: null,
@@ -14,11 +13,14 @@ class DelayCommand extends Command {
             argument: "*delay* ***anything***",
             effect: "I'll tell what you want after a provided delay",
         },
-    ];
+    ],
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         if (!args.length) {
-            throw new MissingArg("anything");
+            return Salty.warn(
+                msg,
+                "You must tell me what to say after the delay."
+            );
         }
         const delay =
             args[1] && !isNaN(Number(args[0]))
@@ -29,7 +31,5 @@ class DelayCommand extends Command {
         setTimeout(() => {
             Salty.message(msg, args.join(" "));
         }, delay);
-    }
-}
-
-export default DelayCommand;
+    },
+});

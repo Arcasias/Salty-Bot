@@ -1,20 +1,11 @@
-import Command, {
-    CommandAccess,
-    CommandParams,
-    CommandChannel,
-} from "../../classes/Command";
-import {
-    MissingArg,
-    PermissionDenied,
-    SaltyException,
-} from "../../classes/Exception";
+import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import { add, remove } from "../../terms";
 
-class RoleCommand extends Command {
-    public name = "role";
-    public help = [
+Command.register({
+    name: "role",
+    help: [
         {
             argument: null,
             effect: "Shows the current default role",
@@ -28,17 +19,20 @@ class RoleCommand extends Command {
             argument: "unset",
             effect: "Removes the default role",
         },
-    ];
-    public access: CommandAccess = "dev";
-    public channel: CommandChannel = "guild";
+    ],
+    access: "dev",
+    channel: "guild",
 
-    async action({ args, msg }: CommandParams) {
+    async action({ args, msg }) {
         const guild = msg.guild!;
-        const guildDBId = Guild.get(guild.id)!.id;
+        const dbGuild = Guild.get(guild.id)!;
 
         if (args[0] && add.includes(args[0])) {
             if (!args[1]) {
-                throw new MissingArg("new role");
+                return Salty.warn(
+                    msg,
+                    "You need to specify the name of the new role"
+                );
             }
             let role = msg.mentions.roles.first();
             const roleName = args.slice(1).join(" ");
@@ -54,40 +48,38 @@ class RoleCommand extends Command {
                         },
                         reason: `Created by ${msg.author.username}`,
                     });
-                    await Guild.update(guildDBId, { default_role: role.id });
+                    await Guild.update(dbGuild.id, { default_role: role.id });
                     await Salty.success(
                         msg,
                         `role **${role.name}** has been successfuly created and set as default role for **${guild.name}**`
                     );
                 } catch (error) {
-                    throw new PermissionDenied(
-                        "authorized to create new roles",
-                        "I"
+                    return Salty.warn(
+                        msg,
+                        "I'm not allowed to create new roles."
                     );
                 }
             } else {
-                await Guild.update(guildDBId, { default_role: role.id });
+                await Guild.update(dbGuild.id, { default_role: role.id });
                 await Salty.success(
                     msg,
                     `role **${role.name}** has been successfuly set as default role for **${guild.name}**`
                 );
             }
         } else if (args[0] && remove.includes(args[0])) {
-            if (!Guild.get(guild.id)?.default_channel) {
-                throw new SaltyException("no default role set");
+            if (!dbGuild.default_channel) {
+                return Salty.warn(msg, "No default role set.");
             }
-            await Guild.update(guildDBId, { default_role: null });
+            await Guild.update(dbGuild.id, { default_role: null });
             await Salty.success(
                 msg,
                 "default role has been successfuly removed"
             );
         } else {
-            if (!Guild.get(guild.id)?.default_role) {
+            if (!dbGuild.default_role) {
                 return Salty.message(msg, "No default role set");
             } else {
-                const role = guild.roles.cache.get(
-                    Guild.get(guild.id)!.default_role
-                );
+                const role = guild.roles.cache.get(dbGuild.default_role);
                 Salty.embed(msg, {
                     title: `default role is ${role?.name}`,
                     description: "newcomers will automatically get this role",
@@ -95,7 +87,5 @@ class RoleCommand extends Command {
                 });
             }
         }
-    }
-}
-
-export default RoleCommand;
+    },
+});

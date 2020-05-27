@@ -1,37 +1,25 @@
+import { FieldsDescriptor } from "../types";
 import { log } from "../utils";
-import Database, { FieldsValues } from "./Database";
-import { SaltyException } from "./Exception";
-
-export type FieldsDescriptor = { [field: string]: any };
+import { create, read, remove, update } from "./Database";
 
 class Model {
-    public id: number | undefined;
+    public id!: number;
     protected Class!: typeof Model;
 
     protected static instances: { [constructor: string]: any[] } = {};
     protected static readonly fields: FieldsDescriptor = {};
     protected static readonly table: string;
 
-    constructor(values: FieldsValues = {}) {
+    constructor(values: FieldsDescriptor = {}) {
         this.Class = (<any>this).constructor;
-        const { name, table, fields } = this.Class;
-        if (!Model.instances[name]) {
-            Model.instances[name] = [];
-        }
+        const { name, fields } = this.Class;
         Model.instances[name].push(this);
 
-        // Model is stored in database
-        if (table) {
-            if ("id" in values) {
-                this.id = values.id;
-                delete values.id;
-            } else {
-                throw new SaltyException(
-                    `Missing field "id" on stored model ${name}.`
-                );
-            }
+        if (!("id" in values)) {
+            throw new Error(`Missing field "id" on stored model ${name}.`);
         }
-        // Model has a fields descriptor
+        this.id = values.id!;
+        delete values.id;
         if (Object.keys(fields).length) {
             const toAssign = Object.assign({}, fields);
             for (const key in values) {
@@ -61,6 +49,10 @@ class Model {
         Model.instances[this.constructor.name] = newInstances;
     }
 
+    //-------------------------------------------------------------------------
+    // Static
+    //-------------------------------------------------------------------------
+
     public static get size(): number {
         return Model.instances[this.name].length;
     }
@@ -68,66 +60,74 @@ class Model {
     /**
      * Returns the list of instances fetched from the attached database table.
      */
-    public static async load<M extends Model>(): Promise<M[]> {
+    public static async load<T extends Model>(): Promise<T[]> {
         if (!this.table) {
-            throw new SaltyException(
+            throw new Error(
                 `Model "${this.name}" is not stored in the database.`
             );
         }
-        const records: FieldsValues[] = await Database.read(this.table);
-        const instances = records.map((values) => new this(values));
-        log(`${records.length} ${this.name}(s) loaded`);
-        return <M[]>instances;
+        Model.instances[this.name] = [];
+        const records: FieldsDescriptor[] = await read(this.table);
+        const instances = records.map((values) => <T>new this(values));
+        log(`${instances.length} ${this.name}(s) loaded`);
+        return instances;
     }
 
     /**
      * Creates new model instances with the given values (one instance for each
      * value) and returns the list of instantiated objects.
      */
-    public static async create<M extends Model>(
+    public static async create<T extends Model>(
         ...allValues: any[]
-    ): Promise<M[]> {
+    ): Promise<T[]> {
         if (!this.table) {
-            throw new SaltyException(
+            throw new Error(
                 `Model "${this.name}" is not stored in the database. Use 'new ${this.name}(...)' instead.`
             );
         }
-        const records: FieldsValues[] = await Database.create(
-            this.table,
-            ...allValues
+        const validValues = allValues.map((values) =>
+            Object.assign({}, this.fields, values)
         );
-        const instances = records.map((values) => new this(values));
-        return <M[]>instances;
+        const records: FieldsDescriptor[] = await create(
+            this.table,
+            ...validValues
+        );
+        const instances = records.map((values) => <T>new this(values));
+        return instances;
     }
 
     /**
      * Destroys the instances linked to the given ids.
      */
-    static async remove(...ids: number[]): Promise<void> {
+    static async remove<T extends Model>(...ids: number[]): Promise<T[]> {
         if (!this.table) {
-            throw new SaltyException(
+            throw new Error(
                 `Model "${this.name}" is not stored in the database.`
             );
         }
-        const newInstances: Model[] = [];
-        this.each(async (instance) => {
+        const newInstances: T[] = [];
+        const removed: T[] = [];
+        const removing: Promise<any>[] = [];
+        this.each(async (instance: T) => {
             if (ids.includes(instance.id || -1)) {
-                await Database.remove(this.table, instance.id!);
+                removing.push(remove(this.table, instance.id!));
+                removed.push(instance);
             } else {
                 newInstances.push(instance);
             }
         });
+        return removed;
     }
 
     /**
      * Writes the given values on all records matching the given ids.
      */
-    static async update<M extends Model>(
+    static async update<T extends Model>(
         ids: number | number[],
         values: any
-    ): Promise<M[]> {
+    ): Promise<T[]> {
         if (!this.table) {
-            throw new SaltyException(
+            throw new Error(
                 `Model "${
                     this.name
                 }" is not stored in the database. Use 'Object.assign(${this.name.toLocaleLowerCase()}, ...)' instead.`
@@ -136,52 +136,52 @@ class Model {
         if (!Array.isArray(ids)) {
             ids = [ids];
         }
-        const results: any[] = await Database.update(this.table, ids, values);
-        const instances: Model[] = results.map(
-            (res: any): Model => {
+        const results: any[] = await update(this.table, ids, values);
+        const instances: T[] = results.map(
+            (res: any): T => {
                 const instance = this.find(
-                    (instance: Model) => instance.id === res.id
+                    (instance: T) => instance.id === res.id
                 );
                 for (const key in values) {
-                    instance![<keyof Model>key] = values[key];
+                    instance![<keyof T>key] = values[key];
                 }
                 return instance!;
             }
         );
-        return <M[]>instances;
+        return instances;
     }
 
-    public static all<M extends Model>(): M[] {
+    public static all<T extends Model>(): T[] {
         return Model.instances[this.name];
     }
 
-    public static filter<M extends Model>(callbackfn: {
-        (instance: M, index?: number): boolean;
-    }): M[] {
+    public static filter<T extends Model>(
+        callbackfn: (object: T, index: number) => boolean
+    ): T[] {
         return Model.instances[this.name].filter(callbackfn);
     }
 
-    public static find<M extends Model>(predicate: {
-        (instance: M, index?: number): boolean;
-    }): M | null {
+    public static find<T extends Model>(
+        predicate: (object: T, index: number) => boolean
+    ): T | null {
         return Model.instances[this.name].find(predicate);
     }
 
-    public static each<M extends Model>(callbackfn: {
-        (instance: M, index?: number): void;
-    }): void {
+    public static each<T extends Model>(
+        callbackfn: (object: T, index: number) => any
+    ): void {
         return Model.instances[this.name].forEach(callbackfn);
     }
 
-    public static map<M extends Model>(callbackfn: {
-        (instance: M, index?: number): any;
-    }): any[] {
+    public static map<T extends Model>(
+        callbackfn: (object: T, index: number) => any
+    ): any[] {
         return Model.instances[this.name].map(callbackfn);
     }
 
-    public static sort<M extends Model>(comparefn: {
-        (instance: M, index?: number): number;
-    }): M[] {
+    public static sort<T extends Model>(
+        comparefn: (object: T, index: number) => number
+    ): T[] {
         return Model.instances[this.name].sort(comparefn);
     }
 }
