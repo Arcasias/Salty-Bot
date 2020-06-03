@@ -11,8 +11,8 @@ import QuickCommand from "./QuickCommand";
 import User from "./User";
 
 const bot: Discord.Client = new Discord.Client();
+const runningCollectors: Dictionnary<ReactionCollector> = {};
 const startTime: Date = new Date();
-const runningActions: Dictionnary<ReactionCollector> = {};
 
 //-----------------------------------------------------------------------------
 // Not exported
@@ -230,6 +230,9 @@ function checkPermission(
  */
 async function restart(): Promise<void> {
     log("Restarting ...");
+    for (const collector of Object.values(runningCollectors)) {
+        collector.stop("restarted");
+    }
     bot.destroy();
     await bot.login(process.env.DISCORD_API);
 }
@@ -239,6 +242,9 @@ async function restart(): Promise<void> {
  */
 async function destroy(): Promise<void> {
     log("Disconnecting ...");
+    for (const collector of Object.values(runningCollectors)) {
+        collector.stop("disconnected");
+    }
     bot.destroy();
     await disconnect();
     process.exit();
@@ -290,8 +296,8 @@ async function embed(
         msg.react(react).catch();
     }
     if (actions) {
-        if (msg.author.id in runningActions) {
-            runningActions[msg.author.id].stop("newer-collector");
+        if (msg.author.id in runningCollectors) {
+            runningCollectors[msg.author.id].stop("newer-collector");
         }
         const { reactions, onAdd, onRemove, onEnd } = actions;
         const collector = newMessage.createReactionCollector(
@@ -299,7 +305,7 @@ async function embed(
                 !user.bot && reactions.includes(reaction.emoji.name),
             { time: 3 * 60 * 1000 }
         );
-        runningActions[msg.author.id] = collector;
+        runningCollectors[msg.author.id] = collector;
         const abort = () => collector.stop("option-selected");
         if (onAdd) {
             collector.on("collect", async (reaction, user) => {
@@ -314,7 +320,7 @@ async function embed(
             });
         }
         collector.on("end", async (collected, reason) => {
-            delete runningActions[msg.author.id];
+            delete runningCollectors[msg.author.id];
             await Promise.all(reactionPromises);
             newMessage.reactions.removeAll();
             collector.empty();
