@@ -1,6 +1,7 @@
 import { Guild, User } from "discord.js";
 import { devs, owner } from "./config";
 import { add, bot, clear, help, list, remove } from "./terms";
+import { Dictionnary } from "./types";
 
 const CONSOLE_RED = "\x1b[31m";
 const CONSOLE_GREEN = "\x1b[32m";
@@ -13,7 +14,7 @@ const CONSOLE_RESET = "\x1b[0m"; // default
 const LVD_REPLACE = 1.5;
 const LVD_INSERT = 1;
 const LVD_DELETE = 1;
-const MEANING_ACTIONS: { [meaning: string]: string[] } = {
+const MEANING_ACTIONS: Dictionnary<string[]> = {
     add,
     bot,
     clear,
@@ -21,6 +22,18 @@ const MEANING_ACTIONS: { [meaning: string]: string[] } = {
     list,
     remove,
 };
+const NUMBER_REACTIONS = [
+    "1️⃣",
+    "2️⃣",
+    "3️⃣",
+    "4️⃣",
+    "5️⃣",
+    "6️⃣",
+    "7️⃣",
+    "8️⃣",
+    "9️⃣",
+    "🔟",
+];
 
 //-----------------------------------------------------------------------------
 // Utility functions
@@ -36,16 +49,12 @@ export function choice<T>(array: T[]): T {
 
 /**
  * Returns a "cleaned" version of the given string:
- * - stripped of characters deemed unnecessary
  * - trimmed of trailing white spaces
  * - lower cased
  * @param text
  */
 export function clean(text: string): string {
-    return text
-        .replace(/["'`\-_]/g, "")
-        .trim()
-        .toLowerCase();
+    return text.trim().toLowerCase();
 }
 
 export function ellipsis(text: string, limit: number = 2000): string {
@@ -73,6 +82,14 @@ export function formatDuration(time: number | null = null): string {
  */
 export function generate(percentage: number): boolean {
     return Math.random() * 100 <= percentage;
+}
+
+/**
+ * Gets the queried amount of number emojis.
+ * @param length
+ */
+export function getNumberReactions(length?: number) {
+    return NUMBER_REACTIONS.slice(0, length);
 }
 
 /**
@@ -187,17 +204,26 @@ export function randInt(min: number = 0, max: number = 1): number {
 }
 
 /**
+ * Rounds a given number to the given precision.
+ * @param num
+ * @param digit
+ */
+export function round(num: number | undefined, digit = 3) {
+    return Math.round(Number(num) * (10 ** digit)) / (10 ** digit);
+}
+
+/**
  * Searches an array of string for a given target. Returns a list of the closest
  * results having an edit distance above given threshold, sorted by accuracy.
  * @param array
  * @param target
  * @param threshold
  */
-export function search(array: string[], target: string, threshold: number) {
+export function search(array: string[], target: string, threshold?: number) {
     const closests: Array<[string, number]> = [];
     for (const str of array) {
         const lvd = levenshtein(target, str);
-        if (lvd <= threshold) {
+        if (!threshold || lvd <= threshold) {
             closests.push([str, lvd]);
         }
     }

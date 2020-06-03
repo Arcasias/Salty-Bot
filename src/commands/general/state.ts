@@ -7,7 +7,8 @@ import { SaltyEmbedOptions } from "../../types";
 
 Command.register({
     name: "state",
-    keys: ["git", "local", "server"],
+    aliases: ["git", "local", "server"],
+    category: "general",
     help: [
         {
             argument: null,

@@ -30,6 +30,7 @@
         "prettier": "^2.0.5",
         "pureimage": "^0.2.1",
         "qunit": "^2.10.0",
+        "warframe-items": "^1.917.0",
         "ytdl-core": "^2.1.2"
     },
     "devDependencies": {

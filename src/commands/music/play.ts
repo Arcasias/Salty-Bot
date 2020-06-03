@@ -1,40 +1,34 @@
 import { Message } from "discord.js";
 import { youtube_v3 } from "googleapis";
-import ytdl from "ytdl-core";
+import { promisify } from "util";
+import ytdl, { videoInfo } from "ytdl-core";
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Playlist from "../../classes/Playlist";
 import Salty from "../../classes/Salty";
 import { surpriseSong } from "../../terms";
-import { SaltyEmbedOptions } from "../../types";
-import { choice, generate } from "../../utils";
+import { Dictionnary, SaltyEmbedOptions } from "../../types";
+import { choice, generate, getNumberReactions } from "../../utils";
 
+const RESULT_LIMIT = 5;
 const youtube = new youtube_v3.Youtube({});
 const youtubeURL = "https://www.youtube.com/watch?v=";
 const youtubeRegex = new RegExp(youtubeURL, "i");
-
-const SYMBOLS = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣"];
+const getInfo = promisify(ytdl.getInfo.bind(ytdl));
 
 async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     if (generate(3)) {
         songURL = choice(surpriseSong);
     }
     const member = msg.member!;
-    const { length_seconds, title } = await new Promise((res, rej) => {
-        ytdl.getInfo(songURL, (err, info) => {
-            if (err) {
-                rej(err);
-            }
-            res(info);
-        });
-    });
+    const { length_seconds, title } = <videoInfo>await getInfo(songURL);
     Salty.success(
         msg,
         `**${member.displayName}** added **${title}** to the queue`
     );
     msg.delete();
     playlist.add({
-        duration: length_seconds * 1000,
+        duration: Number(length_seconds) * 1000,
         title: title,
         url: songURL,
     });
@@ -45,7 +39,8 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
 
 Command.register({
     name: "play",
-    keys: ["sing", "song", "video", "youtube", "yt"],
+    aliases: ["sing", "song", "video", "youtube", "yt"],
+    category: "music",
     help: [
         {
             argument: null,
@@ -96,7 +91,7 @@ Command.register({
 
         const results = await youtube.search.list({
             key: process.env.GOOGLE_API,
-            maxResults: 5,
+            maxResults: RESULT_LIMIT,
             part: "snippet",
             q: args.join(" "),
             type: "video",
@@ -114,12 +109,14 @@ Command.register({
                 );
             }
         }
-        const messageUrls: { [reaction: string]: string } = {};
+        const messageUrls: Dictionnary<string> = {};
+        const numberReactions = getNumberReactions(RESULT_LIMIT);
         const options: SaltyEmbedOptions = {
             actions: {
-                reactions: SYMBOLS,
-                onAdd({ emoji }, user) {
+                reactions: numberReactions,
+                onAdd({ emoji }, user, abort) {
                     if (user.id === msg.author.id) {
+                        abort();
                         addSong(msg, playlist, messageUrls[emoji.name]);
                     }
                 },
@@ -137,7 +134,7 @@ Command.register({
                 name: `${index + 1}) ${title}`,
                 value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
             });
-            messageUrls[SYMBOLS[index]] = videoURL;
+            messageUrls[numberReactions[index]] = videoURL;
         });
         Salty.embed(msg, options);
     },

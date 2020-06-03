@@ -46,6 +46,7 @@ function evalInContext(code: string): any {
 
 Command.register({
     name: "debug",
+    category: "config",
     help: [
         {
             argument: "***JS code***",

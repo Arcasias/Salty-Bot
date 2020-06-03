@@ -1,13 +1,5 @@
-import {
-    Collection,
-    GuildMember,
-    Message,
-    MessageEmbedOptions,
-    MessageReaction,
-    PresenceStatusData,
-    Snowflake,
-    User,
-} from "discord.js";
+import { Collection, GuildMember, Message, MessageEmbedOptions, MessageReaction, PresenceStatusData, Snowflake, User } from "discord.js";
+import { Item } from "warframe-items";
 
 export interface ActionParameters {
     readonly args: string[];
@@ -24,17 +16,18 @@ export interface CommandCategoryInfo extends CommandCategoryDoc {
 }
 export interface CommandDescriptor {
     readonly action: CommandAction;
+    readonly category: AvailableCategories;
     readonly name: string;
     readonly help?: CommandHelpSection[];
-    readonly keys?: string[];
+    readonly aliases?: string[];
     readonly access?: CommandAccess;
     readonly channel?: CommandChannel;
 }
 export interface CommandHelpDescriptor {
     access: CommandAccess;
+    aliases: string[];
     category: string;
     channel: CommandChannel;
-    keys: string[];
     name: string;
     sections: CommandHelpSection[];
 }
@@ -67,8 +60,8 @@ export interface Runnable {
 export interface SaltyEmbedOptions extends MessageEmbedOptions {
     actions?: {
         reactions: string[];
-        onAdd?: (reaction: MessageReaction, user: User) => void;
-        onRemove?: (reaction: MessageReaction, user: User) => void;
+        onAdd?: (reaction: MessageReaction, user: User, abort: () => void) => void;
+        onRemove?: (reaction: MessageReaction, user: User, abort: () => void) => void;
         onEnd?: (
             collected: Collection<Snowflake, MessageReaction>,
             reason: string
@@ -93,10 +86,24 @@ export interface Waifu {
     readonly image: string[];
 }
 
-export type Categories = { [category: string]: string };
+export interface Weapon extends Item {
+    multishot?: number;
+    range?: number;
+}
+
+export type AvailableCategories =
+    | "config"
+    | "general"
+    | "image"
+    | "misc"
+    | "music"
+    | "text"
+    | "warframe";
+export type Categories = { [key in AvailableCategories]: string };
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
 export type CommandChannel = "all" | "guild";
+export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
-export type FieldsDescriptor = { [field: string]: any };
+export type FieldsDescriptor = Dictionnary<any>;
 export type StatusInfos = { [status in PresenceStatusData]: StatusInfo };

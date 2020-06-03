@@ -4,7 +4,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "shuffle",
-    keys: ["mix"],
+    aliases: ["mix"],
+    category: "music",
     help: [
         {
             argument: null,

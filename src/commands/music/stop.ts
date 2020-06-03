@@ -6,7 +6,7 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "stop",
-    keys: [],
+    category: "music",
     help: [
         {
             argument: null,

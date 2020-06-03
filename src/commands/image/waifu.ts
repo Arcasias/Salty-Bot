@@ -5,7 +5,8 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "waifu",
-    keys: ["waifus"],
+    aliases: ["waifus"],
+    category: "image",
     help: [
         {
             argument: null,

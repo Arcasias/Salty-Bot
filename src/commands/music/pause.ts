@@ -4,7 +4,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "pause",
-    keys: ["freeze"],
+    aliases: ["freeze"],
+    category: "music",
     help: [
         {
             argument: null,

@@ -4,7 +4,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "repeat",
-    keys: ["loop", "rep", "replay"],
+    aliases: ["loop", "rep", "replay"],
+    category: "music",
     help: [
         {
             argument: null,

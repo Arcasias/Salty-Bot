@@ -1,5 +1,6 @@
 import { CommandCategoryDoc } from "../../types";
 import "./avatar";
+import "./emoji";
 import "./waifu";
 
 const categoryInfo: CommandCategoryDoc = {

@@ -5,7 +5,8 @@ import { isDev, meaning } from "../../utils";
 
 Command.register({
     name: "blacklist",
-    keys: ["bl"],
+    aliases: ["bl"],
+    category: "config",
     help: [
         {
             argument: null,

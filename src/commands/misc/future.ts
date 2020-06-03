@@ -5,7 +5,8 @@ import { ellipsis, randInt, shuffle } from "../../utils";
 
 Command.register({
     name: "future",
-    keys: ["predict"],
+    aliases: ["predict"],
+    category: "misc",
     help: [
         {
             argument: null,

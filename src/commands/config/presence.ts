@@ -13,7 +13,8 @@ const STATUSINFO: StatusInfos = {
 
 Command.register({
     name: "presence",
-    keys: ["activity", "status"],
+    aliases: ["activity", "status"],
+    category: "config",
     access: "dev",
 
     async action({ args, msg }) {

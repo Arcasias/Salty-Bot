@@ -3,29 +3,24 @@ import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
 Command.register({
-    name: "skip",
-    aliases: ["next"],
+    name: "join",
     category: "music",
     help: [
         {
             argument: null,
-            effect: "Skips to the next song",
+            effect: "Joins your voice channel",
         },
     ],
     channel: "guild",
 
     async action({ msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
-
         if (playlist.connection) {
-            playlist.skip();
-            Salty.success(
-                msg,
-                `skipped **${playlist.playing.title}**, but it was trash anyway`,
-                { react: "⏩" }
-            );
-        } else {
-            Salty.error(msg, "I'm not connected to a voice channel");
+            return Salty.warn(msg, "I'm not in a voice channel.");
         }
+        if (!(msg.member?.voice.channel)) {
+            return Salty.warn(msg, "You're not in a voice channel.");
+        }
+        playlist.join(msg.member.voice.channel);
     },
 });

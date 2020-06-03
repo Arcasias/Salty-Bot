@@ -46,7 +46,8 @@ async function changeNames(
 
 Command.register({
     name: "nickname",
-    keys: ["name", "nick", "pseudo"],
+    aliases: ["name", "nick", "pseudo"],
+    category: "config",
     help: [
         {
             argument: null,

@@ -4,7 +4,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "resume",
-    keys: ["unfreeze"],
+    aliases: ["unfreeze"],
+    category: "music",
     help: [
         {
             argument: null,

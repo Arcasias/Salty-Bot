@@ -1,31 +1,28 @@
-import { TextChannel } from "discord.js";
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 
 Command.register({
     name: "leave",
-    keys: ["exit", "quit"],
+    aliases: ["exit", "quit"],
+    category: "music",
     help: [
         {
             argument: null,
             effect: "Leaves the current voice channel",
         },
     ],
-    access: "admin",
     channel: "guild",
 
     async action({ msg }) {
         const { playlist } = Guild.get(msg.guild!.id)!;
-
-        if (playlist.connection) {
-            playlist.end();
-            Salty.success(
-                msg,
-                `leaving **${(<TextChannel>msg.channel).name}**`
-            );
-        } else {
-            Salty.error(msg, "I'm not in a voice channel");
+        const channel = playlist.leave();
+        if (!playlist.connection || !channel) {
+            return Salty.warn(msg, "I'm not in a voice channel.");
         }
+        Salty.success(
+            msg,
+            `Leaving **${channel.name}**.`
+        );
     },
 });

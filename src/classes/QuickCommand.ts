@@ -12,7 +12,7 @@ class QuickCommand extends Model implements Runnable {
 
     protected static readonly fields: FieldsDescriptor = {
         answers: [],
-        keys: [],
+        aliases: [],
         name: "",
     };
     protected static readonly table = "commands";

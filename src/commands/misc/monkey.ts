@@ -4,7 +4,7 @@ import { isSorted, shuffle } from "../../utils";
 
 Command.register({
     name: "monkey",
-    keys: [
+    aliases: [
         "bogosort",
         "monkeysort",
         "permutationsort",
@@ -12,6 +12,7 @@ Command.register({
         "slowsort",
         "stupidsort",
     ],
+    category: "misc",
     help: [
         {
             argument: null,

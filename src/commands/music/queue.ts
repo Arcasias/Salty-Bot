@@ -9,7 +9,8 @@ const DISPLAY_LIMIT = 25;
 
 Command.register({
     name: "queue",
-    keys: ["playlist", "q"],
+    aliases: ["playlist", "q"],
+    category: "music",
     help: [
         {
             argument: null,

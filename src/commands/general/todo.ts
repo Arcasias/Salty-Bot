@@ -5,7 +5,8 @@ import { list, remove } from "../../terms";
 
 Command.register({
     name: "todo",
-    keys: ["todos"],
+    aliases: ["todos"],
+    category: "general",
     help: [
         {
             argument: null,

@@ -4,7 +4,8 @@ import { SaltyEmbedOptions } from "../../types";
 
 Command.register({
     name: "coffee",
-    keys: ["cof", "covfefe"],
+    aliases: ["cof", "covfefe"],
+    category: "misc",
     help: [
         {
             argument: null,

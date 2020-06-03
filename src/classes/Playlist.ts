@@ -3,12 +3,15 @@ import ytdl from "ytdl-core";
 import { Song } from "../types";
 import { randInt } from "../utils";
 
+const TIMEOUT = 5 * 60 * 1000;
+
 class Playlist {
     public connection: VoiceConnection | null = null;
     public continue: boolean = false;
     public pointer: number = -1;
     public queue: Song[] = [];
     public repeat: string = "off";
+    private timeout: NodeJS.Timeout | null = null;
 
     public get playing(): Song {
         return this.queue[this.pointer];
@@ -34,9 +37,19 @@ class Playlist {
      * Stops the dispatcher
      */
     public end(): void {
-        if (this.connection) {
-            this.connection.dispatcher.end();
+        this.connection?.dispatcher.end();
+    }
+
+    public async join(channel: VoiceChannel): Promise<void> {
+        await channel.join();
+    }
+
+    public leave() {
+        const channel = this.connection?.channel;
+        if (channel) {
+            channel.leave();
         }
+        return channel;
     }
 
     public next(): void {
@@ -64,10 +77,14 @@ class Playlist {
 
     public play(): void {
         if (this.connection) {
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+                this.timeout = null;
+            }
             this.connection.play(
                 ytdl(this.playing.url, { filter: "audioonly" })
             );
-            this.connection.dispatcher.on("end", () => this.onEnd());
+            this.connection.dispatcher.on("close", () => this.onClose());
         }
     }
 
@@ -120,13 +137,16 @@ class Playlist {
         this.empty();
     }
 
-    private onEnd(): void {
+    private onClose(): void {
         this.next();
         if (this.continue) {
             this.play();
         } else if (this.connection) {
-            this.connection.channel.leave();
-            this.connection = null;
+            this.timeout = setTimeout(() => {
+                this.leave();
+                this.connection = null;
+                this.timeout = null;
+            }, TIMEOUT);
         }
     }
 }

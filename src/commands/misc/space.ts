@@ -3,7 +3,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "space",
-    keys: ["universe"],
+    aliases: ["universe"],
+    category: "misc",
     help: [
         {
             argument: null,

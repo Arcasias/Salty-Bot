@@ -5,7 +5,8 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "joke",
-    keys: ["fun", "haha", "jest", "joker", "jokes"],
+    aliases: ["fun", "haha", "jest", "joker", "jokes"],
+    category: "misc",
     help: [
         {
             argument: null,

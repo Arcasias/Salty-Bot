@@ -1,4 +1,4 @@
-import { MeaningInfo, Waifu } from "./types";
+import { Dictionnary, MeaningInfo, Waifu } from "./types";
 
 //-----------------------------------------------------------------------------
 // Meanings
@@ -18,7 +18,7 @@ export const bot: string[] = ["bot", "salty"];
 export const clear: string[] = ["clear", "cls", "empty", "cancel", "stop"];
 export const help: string[] = ["help", "halp", "info", "infos", "wtf", "?"];
 export const list: string[] = ["list", "ls", "l"];
-export const meaning: { [key: string]: MeaningInfo } = {
+export const meaning: Dictionnary<MeaningInfo> = {
     yes: {
         answers: ["ack"],
         list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],
@@ -129,7 +129,7 @@ export const remove: string[] = [
 // Answers
 //-----------------------------------------------------------------------------
 
-export const answers: { [meaning: string]: string[] } = {
+export const answers: Dictionnary<string[]> = {
     yes: ["yes", "yeah", "of course", "affirmative", "yup", "definitely"],
     no: ["no", "nope", "absolutely no"],
     greet: ["hi", "hello", "yo", "howdy", "hey", "hey there", "greetings"],
@@ -284,7 +284,7 @@ export const pureSalt: string[] = [
 // Other
 //-----------------------------------------------------------------------------
 
-export const fault: { [step: string]: string[] } = {
+export const fault: Dictionnary<string[]> = {
     start: [
         "",
         "want to know why you lost? ",

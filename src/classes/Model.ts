@@ -1,4 +1,4 @@
-import { FieldsDescriptor } from "../types";
+import { Dictionnary, FieldsDescriptor } from "../types";
 import { log } from "../utils";
 import { create, read, remove, update } from "./Database";
 
@@ -6,7 +6,7 @@ class Model {
     public id!: number;
     protected Class!: typeof Model;
 
-    protected static instances: { [constructor: string]: any[] } = {};
+    protected static instances: Dictionnary<any[]> = {};
     protected static readonly fields: FieldsDescriptor = {};
     protected static readonly table: string;
 

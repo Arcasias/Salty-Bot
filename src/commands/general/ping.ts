@@ -17,7 +17,8 @@ const PING_MESSAGES = [
 
 Command.register({
     name: "ping",
-    keys: ["latency", "test"],
+    aliases: ["latency", "test"],
+    category: "general",
     help: [
         {
             argument: null,

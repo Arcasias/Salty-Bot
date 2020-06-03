@@ -3,7 +3,8 @@ import Salty from "../../classes/Salty";
 
 Command.register({
     name: "restart",
-    keys: ["reset"],
+    aliases: ["reset"],
+    category: "config",
     help: [
         {
             argument: null,

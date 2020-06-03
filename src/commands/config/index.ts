@@ -1,13 +1,13 @@
 import { CommandCategoryDoc } from "../../types";
-import "./admin";
 import "./blacklist";
+import "./channel";
 import "./command";
 import "./debug";
 import "./disconnect";
 import "./nickname";
 import "./presence";
-import "./purge";
 import "./restart";
+import "./role";
 
 const categoryInfo: CommandCategoryDoc = {
     name: "configuration",

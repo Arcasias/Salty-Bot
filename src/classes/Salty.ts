@@ -1,35 +1,8 @@
-import Discord, {
-    Channel,
-    GuildChannel,
-    GuildMember,
-    Message,
-    MessageEmbed,
-    MessageOptions,
-    PartialDMChannel,
-    PartialGuildMember,
-    TextChannel,
-} from "discord.js";
+import Discord, { Channel, GuildChannel, GuildMember, Message, MessageEmbed, MessageOptions, PartialDMChannel, PartialGuildMember, ReactionCollector, TextChannel } from "discord.js";
 import { prefix } from "../config";
 import * as list from "../terms";
-import {
-    FieldsDescriptor,
-    MessageTarget,
-    Runnable,
-    SaltyEmbedOptions,
-} from "../types";
-import {
-    choice,
-    clean,
-    ellipsis,
-    error as logError,
-    isAdmin,
-    isDev,
-    isOwner,
-    log,
-    request,
-    search,
-    title,
-} from "../utils";
+import { Dictionnary, FieldsDescriptor, MessageTarget, Runnable, SaltyEmbedOptions } from "../types";
+import { choice, clean, ellipsis, error as logError, isAdmin, isDev, isOwner, log, request, search, title } from "../utils";
 import Command from "./Command";
 import { connect, disconnect } from "./Database";
 import formatter from "./Formatter";
@@ -39,6 +12,7 @@ import User from "./User";
 
 const bot: Discord.Client = new Discord.Client();
 const startTime: Date = new Date();
+const runningActions: Dictionnary<ReactionCollector> = {};
 
 //-----------------------------------------------------------------------------
 // Not exported
@@ -178,7 +152,7 @@ async function onMessage(msg: Message): Promise<any> {
     } else {
         const closests = search([...Command.aliases.keys()], actionName, 2);
         if (closests.length) {
-            const cmds: { [key: string]: string } = {};
+            const cmds: Dictionnary<string> = {};
             for (const key of closests) {
                 const cmdName = Command.aliases.get(key)!;
                 if (!(cmdName in cmds)) {
@@ -316,25 +290,31 @@ async function embed(
         msg.react(react).catch();
     }
     if (actions) {
+        if (msg.author.id in runningActions) {
+            runningActions[msg.author.id].stop("newer-collector");
+        }
         const { reactions, onAdd, onRemove, onEnd } = actions;
         const collector = newMessage.createReactionCollector(
             (reaction, user) =>
                 !user.bot && reactions.includes(reaction.emoji.name),
             { time: 3 * 60 * 1000 }
         );
+        runningActions[msg.author.id] = collector;
+        const abort = () => collector.stop("option-selected");
         if (onAdd) {
             collector.on("collect", async (reaction, user) => {
                 await Promise.all(reactionPromises);
-                return onAdd(reaction, user);
+                return onAdd(reaction, user, abort);
             });
         }
         if (onRemove) {
             collector.on("remove", async (reaction, user) => {
                 await Promise.all(reactionPromises);
-                return onRemove(reaction, user);
+                return onRemove(reaction, user, abort);
             });
         }
         collector.on("end", async (collected, reason) => {
+            delete runningActions[msg.author.id];
             await Promise.all(reactionPromises);
             newMessage.reactions.removeAll();
             collector.empty();
@@ -344,7 +324,7 @@ async function embed(
         });
         const reactionPromises: Promise<any>[] = [];
         for (const reaction of reactions) {
-            if (newMessage.deleted) {
+            if (newMessage.deleted || collector.ended) {
                 break;
             }
             const reactionPromise = newMessage.react(reaction);

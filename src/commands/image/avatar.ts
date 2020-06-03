@@ -9,7 +9,8 @@ const SALTY_IMAGES_PATH = "assets/img/salty";
 
 Command.register({
     name: "avatar",
-    keys: ["pic", "picture", "pp"],
+    aliases: ["pic", "picture", "pp"],
+    category: "image",
     help: [
         {
             argument: null,

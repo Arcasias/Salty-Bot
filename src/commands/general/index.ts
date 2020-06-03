@@ -1,11 +1,9 @@
 import { CommandCategoryDoc } from "../../types";
-import "./delay";
-import "./embed";
+import "./admin";
 import "./help";
-import "./interval";
 import "./ping";
+import "./poll";
 import "./state";
-import "./talk";
 import "./todo";
 
 const categoryInfo: CommandCategoryDoc = {

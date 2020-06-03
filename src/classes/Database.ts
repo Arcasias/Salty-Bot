@@ -1,5 +1,5 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
-import { FieldsDescriptor } from "../types";
+import { Dictionnary, FieldsDescriptor } from "../types";
 import { debug, error, log } from "../utils";
 
 const SEPARATOR = "//";
@@ -91,13 +91,10 @@ export async function create(
     queryArray.push(allFormattedValues.join());
     queryArray.push("RETURNING *");
 
-    console.log({ variables: variables.join() });
-
     const query = queryArray.join(" ") + ";";
     debug({ query }, variables);
 
     try {
-        return [];
         const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" created.`);
         return parseResult(result);
@@ -139,7 +136,7 @@ export async function remove(
 
 export async function read(
     table: string,
-    where?: { [key: string]: any },
+    where?: Dictionnary<any>,
     fields?: string[]
 ): Promise<QueryResultRow[]> {
     const queryArray: string[] = ["SELECT"];

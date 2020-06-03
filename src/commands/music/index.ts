@@ -1,4 +1,5 @@
 import { CommandCategoryDoc } from "../../types";
+import "./join";
 import "./leave";
 import "./pause";
 import "./play";

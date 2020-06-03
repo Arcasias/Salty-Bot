@@ -5,7 +5,8 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "fault",
-    keys: ["overwatch", "reason"],
+    aliases: ["overwatch", "reason"],
+    category: "misc",
     help: [
         {
             argument: null,

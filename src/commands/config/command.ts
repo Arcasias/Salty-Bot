@@ -5,7 +5,8 @@ import { meaning } from "../../utils";
 
 Command.register({
     name: "command",
-    keys: ["cmd"],
+    aliases: ["cmd"],
+    category: "config",
     help: [
         {
             argument: null,
