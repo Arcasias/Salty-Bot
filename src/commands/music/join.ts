@@ -18,7 +18,7 @@ Command.register({
         if (playlist.connection) {
             return Salty.warn(msg, "I'm not in a voice channel.");
         }
-        if (!(msg.member?.voice.channel)) {
+        if (!msg.member?.voice.channel) {
             return Salty.warn(msg, "You're not in a voice channel.");
         }
         playlist.join(msg.member.voice.channel);

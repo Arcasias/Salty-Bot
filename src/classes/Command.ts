@@ -1,5 +1,16 @@
 import { Collection, Guild, Message, User } from "discord.js";
-import { AvailableCategories, CommandAccess, CommandAction, CommandCategoryInfo, CommandChannel, CommandDescriptor, CommandHelpDescriptor, CommandHelpSection, MessageTarget, Runnable } from "../types";
+import {
+    AvailableCategories,
+    CommandAccess,
+    CommandAction,
+    CommandCategoryInfo,
+    CommandChannel,
+    CommandDescriptor,
+    CommandHelpDescriptor,
+    CommandHelpSection,
+    MessageTarget,
+    Runnable,
+} from "../types";
 import { isAdmin, isDev, isOwner } from "../utils";
 import Salty from "./Salty";
 

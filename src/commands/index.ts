@@ -1,5 +1,9 @@
 import Command from "../classes/Command";
-import { AvailableCategories, CommandCategoryDoc, CommandCategoryInfo } from "../types";
+import {
+    AvailableCategories,
+    CommandCategoryDoc,
+    CommandCategoryInfo,
+} from "../types";
 import { debug } from "../utils";
 import config from "./config";
 import general from "./general";

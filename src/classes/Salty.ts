@@ -1,8 +1,37 @@
-import Discord, { Channel, GuildChannel, GuildMember, Message, MessageEmbed, MessageOptions, PartialDMChannel, PartialGuildMember, ReactionCollector, TextChannel } from "discord.js";
+import Discord, {
+    Channel,
+    GuildChannel,
+    GuildMember,
+    Message,
+    MessageEmbed,
+    MessageOptions,
+    PartialDMChannel,
+    PartialGuildMember,
+    ReactionCollector,
+    TextChannel,
+} from "discord.js";
 import { prefix } from "../config";
 import * as list from "../terms";
-import { Dictionnary, FieldsDescriptor, MessageTarget, Runnable, SaltyEmbedOptions } from "../types";
-import { choice, clean, ellipsis, error as logError, isAdmin, isDev, isOwner, log, request, search, title } from "../utils";
+import {
+    Dictionnary,
+    FieldsDescriptor,
+    MessageTarget,
+    Runnable,
+    SaltyEmbedOptions,
+} from "../types";
+import {
+    choice,
+    clean,
+    ellipsis,
+    error as logError,
+    isAdmin,
+    isDev,
+    isOwner,
+    log,
+    request,
+    search,
+    title,
+} from "../utils";
 import Command from "./Command";
 import { connect, disconnect } from "./Database";
 import formatter from "./Formatter";

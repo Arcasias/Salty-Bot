@@ -1,4 +1,13 @@
-import { Collection, GuildMember, Message, MessageEmbedOptions, MessageReaction, PresenceStatusData, Snowflake, User } from "discord.js";
+import {
+    Collection,
+    GuildMember,
+    Message,
+    MessageEmbedOptions,
+    MessageReaction,
+    PresenceStatusData,
+    Snowflake,
+    User,
+} from "discord.js";
 import { Item } from "warframe-items";
 
 export interface ActionParameters {
@@ -60,8 +69,16 @@ export interface Runnable {
 export interface SaltyEmbedOptions extends MessageEmbedOptions {
     actions?: {
         reactions: string[];
-        onAdd?: (reaction: MessageReaction, user: User, abort: () => void) => void;
-        onRemove?: (reaction: MessageReaction, user: User, abort: () => void) => void;
+        onAdd?: (
+            reaction: MessageReaction,
+            user: User,
+            abort: () => void
+        ) => void;
+        onRemove?: (
+            reaction: MessageReaction,
+            user: User,
+            abort: () => void
+        ) => void;
         onEnd?: (
             collected: Collection<Snowflake, MessageReaction>,
             reason: string

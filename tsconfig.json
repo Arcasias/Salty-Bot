@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "strict": true,
+        "alwaysStrict": true,
         "moduleResolution": "node",
         "declaration": false,
-        "alwaysStrict": true,
         "pretty": false,
         "module": "commonjs",
         "target": "es2019",
@@ -15,7 +15,7 @@
             "esnext.symbol"
         ],
         "removeComments": true,
-        "inlineSourceMap": true,
+        "sourceMap": false,
         "outDir": "dist",
         "esModuleInterop": true
     },

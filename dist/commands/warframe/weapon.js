@@ -1,85 +1,73 @@
-import { EmbedFieldData } from "discord.js";
-import Items, { DamageTypes } from "warframe-items";
-import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
-import { Dictionnary, Weapon } from "../../types";
-import { clean, getNumberReactions, levenshtein, search } from "../../utils";
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const warframe_items_1 = __importDefault(require("warframe-items"));
+const Command_1 = __importDefault(require("../../classes/Command"));
+const Salty_1 = __importDefault(require("../../classes/Salty"));
+const utils_1 = require("../../utils");
 const SEARCH_LIMIT = 5;
-
-const weapons: Weapon[] = new Items({
+const weapons = new warframe_items_1.default({
     category: ["Primary", "Secondary", "Melee"],
 });
-const weaponMapping: Dictionnary<Weapon> = {};
-const weaponNames: string[] = [];
+const weaponMapping = {};
+const weaponNames = [];
 for (const weapon of weapons) {
-    const name = clean(weapon.name);
+    const name = utils_1.clean(weapon.name);
     weaponMapping[name] = weapon;
     weaponNames.push(name);
 }
-
-function displayCapacity({ ammo, magazineSize, fireRate, range }: Weapon) {
+function displayCapacity({ ammo, magazineSize, fireRate, range }) {
     const rate = Number(fireRate).toFixed(1);
     if (ammo) {
         return `${magazineSize}/${ammo} (${rate} shots/s)`;
-    } else {
+    }
+    else {
         return `${Number(range).toFixed(1)}m (${rate} hits/s)`;
     }
 }
-
-function displayCritical({ criticalChance, criticalMultiplier }: Weapon) {
+function displayCritical({ criticalChance, criticalMultiplier }) {
     const critMult = Number(criticalMultiplier).toFixed(1);
-    const critChance = (Number(criticalChance) * 100).toFixed(1);
+    const critChance = utils_1.round(Number(criticalChance) * 100);
     return `${critChance}% - ${critMult}x`;
 }
-
-function displayDamage({ damage, multishot }: Weapon) {
+function displayDamage({ damage, multishot }) {
     const shots = multishot && multishot !== 1 ? ` / ${multishot}` : "";
     return `${damage}${shots}`;
 }
-
-function displayStatus({ procChance, damageTypes }: Weapon) {
-    const statusChance = (Number(procChance) * 100).toFixed(1);
-    const dmgTypes: DamageTypes = Object.assign({}, damageTypes);
-    const totalDmgTypes = Object.values(dmgTypes).reduce(
-        (acc, t) => acc + t,
-        0
-    );
+function displayStatus({ procChance, damageTypes }) {
+    const statusChance = utils_1.round(Number(procChance) * 100);
+    const dmgTypes = Object.assign({}, damageTypes);
+    const totalDmgTypes = Object.values(dmgTypes).reduce((acc, t) => acc + t, 0);
     for (const type in dmgTypes) {
-        const isSmaller = Object.values(dmgTypes).some(
-            (t) => dmgTypes[<keyof DamageTypes>type]! < t
-        );
+        const isSmaller = Object.values(dmgTypes).some((t) => dmgTypes[type] < t);
         if (isSmaller) {
-            delete dmgTypes[<keyof DamageTypes>type];
+            delete dmgTypes[type];
         }
     }
     const types = Object.keys(dmgTypes);
-    const typeValue =
-        (Object.values(dmgTypes)[0] / totalDmgTypes) * types.length;
+    const typeValue = (Object.values(dmgTypes)[0] / totalDmgTypes) * types.length;
     const typesString = types.length
         ? `(${types.join(" / ")} ${Math.round(typeValue * 100)}%)`
         : "";
     return `${statusChance}% ${typesString}`;
 }
-
-Command.register({
+Command_1.default.register({
     name: "weapon",
     category: "warframe",
     async action({ args, msg, target }) {
         if (args.length) {
-            if (levenshtein(args[0], "search") < 1) {
+            if (utils_1.levenshtein(args[0], "search") < 1) {
                 args.shift();
                 const query = args.join(" ");
-                const results = search(weaponNames, query).slice(
-                    0,
-                    SEARCH_LIMIT
-                );
-                const numberReactions = getNumberReactions(results.length);
-                const mapping: Dictionnary<string> = {};
+                const results = utils_1.search(weaponNames, query).slice(0, SEARCH_LIMIT);
+                const numberReactions = utils_1.getNumberReactions(results.length);
+                const mapping = {};
                 for (let i = 0; i < results.length; i++) {
                     mapping[numberReactions[i]] = results[i];
                 }
-                return Salty.embed(msg, {
+                return Salty_1.default.embed(msg, {
                     title: `Weapon names matching "${query}":`,
                     description: results
                         .map((r, i) => `${i + 1}) ${weaponMapping[r].name}`)
@@ -99,10 +87,10 @@ Command.register({
                     },
                 });
             }
-            const query = clean(args.join(" "));
+            const query = utils_1.clean(args.join(" "));
             if (weaponNames.includes(query)) {
                 const weapon = weaponMapping[query];
-                const fields: EmbedFieldData[] = [
+                const fields = [
                     {
                         name: "Total damage",
                         value: displayDamage(weapon),
@@ -120,7 +108,7 @@ Command.register({
                         value: displayCapacity(weapon),
                     },
                 ];
-                return Salty.embed(msg, {
+                return Salty_1.default.embed(msg, {
                     title: weapon.name,
                     description: weapon.description,
                     inline: true,
@@ -128,25 +116,17 @@ Command.register({
                     url: weapon.wikiaUrl,
                     thumbnail: { url: weapon.wikiaThumbnail },
                 });
-            } else {
-                const results = search(weaponNames, query, 5);
+            }
+            else {
+                const results = utils_1.search(weaponNames, query, 5);
                 if (results.length) {
-                    return Salty.message(
-                        msg,
-                        `Weapon "${
-                            args[0]
-                        }" did not match any item. Did you mean "${results.join(
-                            `" or "`
-                        )}"?`
-                    );
-                } else {
-                    return Salty.warn(
-                        msg,
-                        "That's not even close to a weapon name."
-                    );
+                    return Salty_1.default.message(msg, `Weapon "${args[0]}" did not match any item. Did you mean "${results.join(`" or "`)}"?`);
+                }
+                else {
+                    return Salty_1.default.warn(msg, "That's not even close to a weapon name.");
                 }
             }
         }
-        return Salty.message(msg, "Oui");
+        return Salty_1.default.message(msg, "Oui");
     },
 });

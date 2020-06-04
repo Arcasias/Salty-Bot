@@ -204,15 +204,6 @@ export function randInt(min: number = 0, max: number = 1): number {
 }
 
 /**
- * Rounds a given number to the given precision.
- * @param num
- * @param digit
- */
-export function round(num: number | undefined, digit = 3) {
-    return Math.round(Number(num) * (10 ** digit)) / (10 ** digit);
-}
-
-/**
  * Searches an array of string for a given target. Returns a list of the closest
  * results having an edit distance above given threshold, sorted by accuracy.
  * @param array

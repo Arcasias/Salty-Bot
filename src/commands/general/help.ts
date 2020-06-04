@@ -45,7 +45,11 @@ Command.register({
                 for (const command of commands.values()) {
                     if (
                         "access" in command &&
-                        Salty.checkPermission(command.access, msg.author, msg.guild)
+                        Salty.checkPermission(
+                            command.access,
+                            msg.author,
+                            msg.guild
+                        )
                     ) {
                         const aliases = command.aliases.length
                             ? ` (or ***${command.aliases.join("***, ***")}***)`
@@ -99,11 +103,18 @@ Command.register({
                 onAdd: ({ emoji }, user, abort) => {
                     if (user === msg.author) {
                         abort();
-                        return this.action({ args: [mapping[emoji.name]], msg, target });
+                        return this.action({
+                            args: [mapping[emoji.name]],
+                            msg,
+                            target,
+                        });
                     }
                 },
             };
-            for (const [category, { name, icon }] of Command.categories.entries()) {
+            for (const [
+                category,
+                { name, icon },
+            ] of Command.categories.entries()) {
                 const commands = Command.list.filter(
                     (command) => command.category === category
                 );
