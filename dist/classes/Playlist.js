@@ -90,7 +90,7 @@ class Playlist {
         }
     }
     shuffle() {
-        for (let index = this.queue.length - 1; index > 0; index--) {
+        for (let index = this.queue.length - 1; index >= 0; index--) {
             const randId = utils_1.randInt(0, index + 1);
             const temp = this.queue[index];
             this.queue[index] = this.queue[randId];

@@ -7,11 +7,12 @@ import Discord, {
     MessageOptions,
     PartialDMChannel,
     PartialGuildMember,
+    PermissionString,
     ReactionCollector,
     TextChannel,
 } from "discord.js";
 import { prefix } from "../config";
-import * as list from "../terms";
+import { intro, keywords } from "../terms";
 import {
     Dictionnary,
     FieldsDescriptor,
@@ -172,7 +173,7 @@ async function onMessage(msg: Message): Promise<any> {
     let command: Runnable;
     let commandArgs = msgArgs;
     if (commandName) {
-        if (list.help.includes(msgArgs[0])) {
+        if (keywords.help.includes(msgArgs[0])) {
             commandArgs = [commandName];
             command = Command.list.get("help")!;
         } else {
@@ -208,7 +209,7 @@ async function onReady(): Promise<void> {
         if (guild) {
             if (guild.default_channel) {
                 const channel = getTextChannel(guild.default_channel);
-                channel.send(title(choice(list.intro)));
+                channel.send(title(choice(intro)));
             }
         } else {
             preGuilds.push({ discord_id: discordGuild.id });
@@ -234,7 +235,7 @@ async function onReady(): Promise<void> {
 // Exported
 //-----------------------------------------------------------------------------
 
-function checkPermission(
+function hasAccess(
     access: string,
     user: Discord.User,
     guild: Discord.Guild | null = null
@@ -292,7 +293,7 @@ async function embed(
     const content = options.content || "";
 
     if (!options.color) {
-        options.color = 0xffffff;
+        options.color = 0xfefefe;
     }
     if (options.title) {
         options.title = formatter.format(title(options.title), msg);
@@ -403,6 +404,10 @@ function getTextChannel(channelId: string): TextChannel {
     return channel;
 }
 
+function hasPermission(guild: Discord.Guild, permisson: PermissionString) {
+    return guild.members.cache.get(bot.user!.id)?.permissions.has(permisson);
+}
+
 /**
  * Sends a simply structured message in the channel of the given 'msg' object.
  */
@@ -428,7 +433,7 @@ async function start(): Promise<void> {
     log("Initializing Salty");
     await connect();
     await Promise.all([
-        QuickCommand.load<QuickCommand>(),
+        QuickCommand.load(),
         User.load<User>(),
         Guild.load<Guild>(),
     ]);
@@ -513,11 +518,12 @@ export default {
     bot,
     startTime,
     // Functions
-    checkPermission,
     destroy,
     embed,
     error,
     getTextChannel,
+    hasAccess,
+    hasPermission,
     start,
     message,
     restart,

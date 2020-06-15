@@ -12,6 +12,7 @@ import {
     Runnable,
 } from "../types";
 import { isAdmin, isDev, isOwner } from "../utils";
+import QuickCommand from "./QuickCommand";
 import Salty from "./Salty";
 
 const permissions: {
@@ -38,7 +39,7 @@ class Command implements CommandDescriptor, Runnable {
     public static aliases = new Collection<string, string>();
     public static categories = new Collection<string, CommandCategoryInfo>();
     public static doc = new Collection<string, CommandHelpDescriptor>();
-    public static list = new Collection<string, Command>();
+    public static list = new Collection<string, Command | QuickCommand>();
 
     constructor({
         action,
@@ -69,7 +70,11 @@ class Command implements CommandDescriptor, Runnable {
             return Salty.warn(msg, "this is a direct message channel retard");
         }
         const commandParams = { msg, args, target };
-        await this.action(commandParams);
+        try {
+            await this.action(commandParams);
+        } catch (err) {
+            return Salty.error(msg, `Whoops! ${err.message}`);
+        }
     }
 
     public static register(descriptor: CommandDescriptor) {

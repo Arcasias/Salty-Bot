@@ -36,7 +36,8 @@ Command.register({
                     arg
                 )!;
                 const commands = Command.list.filter(
-                    (command) => command.category === arg
+                    (command) =>
+                        "category" in command && command.category === arg
                 );
                 // arg === category
                 options.title = `${icon} ${title(name)} commands`;
@@ -45,11 +46,7 @@ Command.register({
                 for (const command of commands.values()) {
                     if (
                         "access" in command &&
-                        Salty.checkPermission(
-                            command.access,
-                            msg.author,
-                            msg.guild
-                        )
+                        Salty.hasAccess(command.access, msg.author, msg.guild)
                     ) {
                         const aliases = command.aliases.length
                             ? ` (or ***${command.aliases.join("***, ***")}***)`
@@ -116,7 +113,8 @@ Command.register({
                 { name, icon },
             ] of Command.categories.entries()) {
                 const commands = Command.list.filter(
-                    (command) => command.category === category
+                    (command) =>
+                        "category" in command && command.category === category
                 );
                 mapping[icon] = category;
                 options.actions.reactions.push(icon);

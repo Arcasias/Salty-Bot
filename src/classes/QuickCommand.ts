@@ -1,63 +1,67 @@
 import { Message } from "discord.js";
 import { FieldsDescriptor, Runnable } from "../types";
 import { choice } from "../utils";
+import Command from "./Command";
 import Model from "./Model";
 import Salty from "./Salty";
 
 class QuickCommand extends Model implements Runnable {
-    public answers!: string[];
     public id!: number;
-    public keys!: string[];
     public name!: string;
+    public aliases!: string[];
+    public answers!: string[];
 
     protected static readonly fields: FieldsDescriptor = {
-        answers: [],
-        aliases: [],
         name: "",
+        aliases: [],
+        answers: [],
     };
     protected static readonly table = "commands";
 
     /**
      * @override
      */
-    // public static async create(...allValues: any[]) {
-    //     const commands = await super.create<QuickCommand>(...allValues);
-    //     for (const command of commands) {
-    //         for (const key of command.keys) {
-    //             Command.aliases.set(key, command.name);
-    //         }
-    //         Command.list.set(command.name, command);
-    //     }
-    //     return commands;
-    // }
+    public static async create<T extends Model>(...allValues: any[]) {
+        const commands = await super.create(...allValues);
+        for (const command of commands) {
+            const cmd = <QuickCommand>command;
+            for (const key of cmd.aliases) {
+                Command.aliases.set(key, cmd.name);
+            }
+            Command.list.set(cmd.name, cmd);
+        }
+        return <T[]>commands;
+    }
 
     /**
      * @override
      */
-    // public static async load() {
-    //     const commands = await super.load<QuickCommand>();
-    //     for (const command of commands) {
-    //         for (const key of command.keys) {
-    //             Command.aliases.set(key, command.name);
-    //         }
-    //         Command.list.set(command.name, command);
-    //     }
-    //     return commands;
-    // }
+    public static async load<T extends Model>() {
+        const commands = await super.load();
+        for (const command of commands) {
+            const cmd = <QuickCommand>command;
+            for (const key of cmd.aliases) {
+                Command.aliases.set(key, cmd.name);
+            }
+            Command.list.set(cmd.name, cmd);
+        }
+        return <T[]>commands;
+    }
 
     /**
      * @override
      */
-    // public static async remove(...ids: number[]) {
-    //     const commands = await super.remove<QuickCommand>(...ids);
-    //     for (const command of commands) {
-    //         for (const key of command.keys) {
-    //             Command.aliases.delete(key);
-    //         }
-    //         Command.list.delete(command.name);
-    //     }
-    //     return commands;
-    // }
+    public static async remove<T extends Model>(...ids: number[]) {
+        const commands = await super.remove(...ids);
+        for (const command of commands) {
+            const cmd = <QuickCommand>command;
+            for (const key of cmd.aliases) {
+                Command.aliases.delete(key);
+            }
+            Command.list.delete(cmd.name);
+        }
+        return <T[]>commands;
+    }
 
     async run(msg: Message, args: string[]) {
         return Salty.message(msg, choice(this.answers));

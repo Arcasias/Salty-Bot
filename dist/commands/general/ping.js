@@ -39,7 +39,7 @@ Command_1.default.register({
                 return Salty_1.default.message(msg, roleIds.join(" "));
             }
             else {
-                return Salty_1.default.error(msg, "No roles on this server.");
+                return Salty_1.default.warn(msg, "No roles on this server.");
             }
         }
         else {

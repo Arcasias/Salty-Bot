@@ -2,7 +2,7 @@ import { GuildMember, Message } from "discord.js";
 import Command from "../../classes/Command";
 import PromiseManager from "../../classes/PromiseManager";
 import Salty from "../../classes/Salty";
-import { add as addList, remove as removeList } from "../../terms";
+import { meaning } from "../../utils";
 
 async function changeNames(
     msg: Message,
@@ -41,7 +41,7 @@ async function changeNames(
         }
     }
     pm.add(progressMsg.delete.bind(progressMsg));
-    Salty.success(msg, "nicknames successfully changed");
+    return Salty.success(msg, "nicknames successfully changed");
 }
 
 Command.register({
@@ -69,26 +69,32 @@ Command.register({
     async action({ args, msg }) {
         const particle = args.slice(1).join(" ");
         const particleRegex = new RegExp(particle, "g");
-        if (addList.includes(args[0])) {
-            await changeNames.call(this, msg, (nickname: string) =>
-                nickname.match(particleRegex)
-                    ? nickname
-                    : `${nickname.trim()} ${particle}`
-            );
-        } else if (removeList.includes(args[0])) {
-            await changeNames.call(this, msg, (nickname: string) =>
-                nickname.replace(particleRegex, "").trim()
-            );
-        } else if (args.length) {
-            return Salty.warn(
-                msg,
-                "You need to specify what nickname particle will be targeted."
-            );
-        } else {
-            return Salty.warn(
-                msg,
-                "You need to tell whether to add or delete a global nickname particle."
-            );
+        switch (meaning(args[0])) {
+            case "add":
+            case "set": {
+                return changeNames.call(this, msg, (nickname: string) =>
+                    nickname.match(particleRegex)
+                        ? nickname
+                        : `${nickname.trim()} ${particle}`
+                );
+            }
+            case "remove": {
+                return changeNames.call(this, msg, (nickname: string) =>
+                    nickname.replace(particleRegex, "").trim()
+                );
+            }
+            case "string": {
+                return Salty.warn(
+                    msg,
+                    "You need to specify what nickname particle will be targeted."
+                );
+            }
+            default: {
+                return Salty.warn(
+                    msg,
+                    "You need to tell whether to add or delete a global nickname particle."
+                );
+            }
         }
     },
 });

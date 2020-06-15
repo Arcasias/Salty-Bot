@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = __importStar(require("discord.js"));
 const config_1 = require("../config");
-const list = __importStar(require("../terms"));
+const terms_1 = require("../terms");
 const utils_1 = require("../utils");
 const Command_1 = __importDefault(require("./Command"));
 const Database_1 = require("./Database");
@@ -122,7 +122,7 @@ async function onMessage(msg) {
     let command;
     let commandArgs = msgArgs;
     if (commandName) {
-        if (list.help.includes(msgArgs[0])) {
+        if (terms_1.keywords.help.includes(msgArgs[0])) {
             commandArgs = [commandName];
             command = Command_1.default.list.get("help");
         }
@@ -154,7 +154,7 @@ async function onReady() {
         if (guild) {
             if (guild.default_channel) {
                 const channel = getTextChannel(guild.default_channel);
-                channel.send(utils_1.title(utils_1.choice(list.intro)));
+                channel.send(utils_1.title(utils_1.choice(terms_1.intro)));
             }
         }
         else {
@@ -168,7 +168,7 @@ async function onReady() {
     utils_1.log(`${Command_1.default.list.size} commands loaded. ${Command_1.default.aliases.size} keys in total.`);
     utils_1.log(`Salty loaded in ${loadingTime} second${loadingTime === 1 ? "" : "s"} and ready to salt the chat :D`);
 }
-function checkPermission(access, user, guild = null) {
+function hasAccess(access, user, guild = null) {
     if (access === "public") {
         return true;
     }
@@ -205,7 +205,7 @@ async function embed(msg, options = {}) {
     const inline = options.inline || false;
     const content = options.content || "";
     if (!options.color) {
-        options.color = 0xffffff;
+        options.color = 0xfefefe;
     }
     if (options.title) {
         options.title = Formatter_1.default.format(utils_1.title(options.title), msg);
@@ -289,6 +289,10 @@ function getTextChannel(channelId) {
     }
     return channel;
 }
+function hasPermission(guild, permisson) {
+    var _a;
+    return (_a = guild.members.cache.get(bot.user.id)) === null || _a === void 0 ? void 0 : _a.permissions.has(permisson);
+}
 function message(msg, text, options) {
     return msg.channel.send(text && utils_1.ellipsis(utils_1.title(Formatter_1.default.format(text, msg))), options);
 }
@@ -340,11 +344,12 @@ bot.on("ready", catchHandler(onReady));
 exports.default = {
     bot,
     startTime,
-    checkPermission,
     destroy,
     embed,
     error,
     getTextChannel,
+    hasAccess,
+    hasPermission,
     start,
     message,
     restart,

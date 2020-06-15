@@ -34,12 +34,12 @@ Command_1.default.register({
             const arg = args[0].toLowerCase();
             if (Command_1.default.categories.has(arg)) {
                 const { name, description, icon } = Command_1.default.categories.get(arg);
-                const commands = Command_1.default.list.filter((command) => command.category === arg);
+                const commands = Command_1.default.list.filter((command) => "category" in command && command.category === arg);
                 options.title = `${icon} ${utils_1.title(name)} commands`;
                 options.description = `${description}. To get more information about a specific command, use the command \`$help command_name\``;
                 for (const command of commands.values()) {
                     if ("access" in command &&
-                        Salty_1.default.checkPermission(command.access, msg.author, msg.guild)) {
+                        Salty_1.default.hasAccess(command.access, msg.author, msg.guild)) {
                         const aliases = command.aliases.length
                             ? ` (or ***${command.aliases.join("***, ***")}***)`
                             : "";
@@ -94,7 +94,7 @@ Command_1.default.register({
                 },
             };
             for (const [category, { name, icon },] of Command_1.default.categories.entries()) {
-                const commands = Command_1.default.list.filter((command) => command.category === category);
+                const commands = Command_1.default.list.filter((command) => "category" in command && command.category === category);
                 mapping[icon] = category;
                 options.actions.reactions.push(icon);
                 options.fields.push({

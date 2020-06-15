@@ -1,23 +1,19 @@
-import { Dictionnary, MeaningInfo, Waifu } from "./types";
+import { Dictionnary, MeaningInfo, Meanings, Waifu } from "./types";
 
 //-----------------------------------------------------------------------------
 // Meanings
 //-----------------------------------------------------------------------------
 
-export const add: string[] = [
-    "add",
-    "append",
-    "create",
-    "push",
-    "set",
-    "mod",
-    "modify",
-    "update",
-];
-export const bot: string[] = ["bot", "salty"];
-export const clear: string[] = ["clear", "cls", "empty", "cancel", "stop"];
-export const help: string[] = ["help", "halp", "info", "infos", "wtf", "?"];
-export const list: string[] = ["list", "ls", "l"];
+export const keywords: Meanings = {
+    add: ["add", "append", "create", "push", "link"],
+    bot: ["bot", "salty"],
+    default: ["default", "def"],
+    clear: ["clear", "cls", "empty", "cancel", "stop"],
+    help: ["help", "halp", "info", "infos", "wtf", "?"],
+    list: ["list", "ls", "l"],
+    remove: ["delete", "remove", "del", "rm", "erase", "unset", "unlink"],
+    set: ["set", "modify", "mod", "update"],
+};
 export const meaning: Dictionnary<MeaningInfo> = {
     yes: {
         answers: ["ack"],
@@ -116,14 +112,6 @@ export const meaning: Dictionnary<MeaningInfo> = {
         ],
     },
 };
-export const remove: string[] = [
-    "delete",
-    "remove",
-    "del",
-    "rm",
-    "erase",
-    "unset",
-];
 
 //-----------------------------------------------------------------------------
 // Answers

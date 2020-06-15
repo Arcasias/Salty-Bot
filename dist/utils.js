@@ -12,14 +12,6 @@ const CONSOLE_RESET = "\x1b[0m";
 const LVD_REPLACE = 1.5;
 const LVD_INSERT = 1;
 const LVD_DELETE = 1;
-const MEANING_ACTIONS = {
-    add: terms_1.add,
-    bot: terms_1.bot,
-    clear: terms_1.clear,
-    help: terms_1.help,
-    list: terms_1.list,
-    remove: terms_1.remove,
-};
 const NUMBER_REACTIONS = [
     "1️⃣",
     "2️⃣",
@@ -109,8 +101,8 @@ function meaning(word) {
     if (!word) {
         return null;
     }
-    for (const key in MEANING_ACTIONS) {
-        if (MEANING_ACTIONS[key].includes(word)) {
+    for (const key in terms_1.keywords) {
+        if (terms_1.keywords[key].includes(word)) {
             return key;
         }
     }
@@ -125,14 +117,18 @@ function possessive(text) {
     return "s" === text[text.length - 1] ? `${text}'` : `${text}'s`;
 }
 exports.possessive = possessive;
+function randColor() {
+    const primary = randInt(0, 3);
+    const color = [];
+    for (let i = 0; i < 3; color[i] = i === primary ? 255 : randInt(0, 255), i++)
+        ;
+    return "#" + color.map((c) => c.toString(16).padStart(2, "0")).join("");
+}
+exports.randColor = randColor;
 function randInt(min = 0, max = 1) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 exports.randInt = randInt;
-function round(num, digit = 3) {
-    return Math.round(Number(num) * 10 ** digit) / 10 ** digit;
-}
-exports.round = round;
 function search(array, target, threshold) {
     const closests = [];
     for (const str of array) {
@@ -146,7 +142,7 @@ function search(array, target, threshold) {
 exports.search = search;
 function shuffle(array) {
     const copy = array.slice();
-    for (let i = copy.length - 1; i > 0; i--) {
+    for (let i = copy.length - 1; i >= 0; i--) {
         const randId = randInt(0, i + 1);
         const temp = copy[i];
         copy[i] = copy[randId];

@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const pg_1 = require("pg");
+const config_1 = require("../config");
 const utils_1 = require("../utils");
-const SEPARATOR = "//";
-const SEPARATOR_REGEX = new RegExp(SEPARATOR);
+const SEPARATOR_REGEX = new RegExp(config_1.separator);
 let client;
 function formatValues(values) {
     for (const key in values) {
         if (Array.isArray(values[key])) {
-            values[key] = values[key].join(SEPARATOR);
+            utils_1.debug(values[key]);
+            values[key] = values[key].join(config_1.separator);
         }
     }
     return values;
@@ -18,7 +19,8 @@ function parseResult({ rows }) {
         for (const key in row) {
             if (typeof row[key] === "string" &&
                 SEPARATOR_REGEX.test(row[key])) {
-                row[key] = row[key].split(SEPARATOR);
+                utils_1.debug(row[key]);
+                row[key] = row[key].split(config_1.separator);
             }
         }
     }

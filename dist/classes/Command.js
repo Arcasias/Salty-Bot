@@ -30,7 +30,12 @@ class Command {
             return Salty_1.default.warn(msg, "this is a direct message channel retard");
         }
         const commandParams = { msg, args, target };
-        await this.action(commandParams);
+        try {
+            await this.action(commandParams);
+        }
+        catch (err) {
+            return Salty_1.default.error(msg, `Whoops! ${err.message}`);
+        }
     }
     static register(descriptor) {
         const command = new this(descriptor);

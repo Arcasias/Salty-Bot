@@ -123,4 +123,15 @@ export type CommandChannel = "all" | "guild";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
 export type FieldsDescriptor = Dictionnary<any>;
+export type MeaningKeys = keyof Meanings | "string";
+export type Meanings = {
+    add: string[];
+    bot: string[];
+    default: string[];
+    clear: string[];
+    help: string[];
+    list: string[];
+    remove: string[];
+    set: string[];
+};
 export type StatusInfos = { [status in PresenceStatusData]: StatusInfo };

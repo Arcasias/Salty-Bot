@@ -1,19 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.add = [
-    "add",
-    "append",
-    "create",
-    "push",
-    "set",
-    "mod",
-    "modify",
-    "update",
-];
-exports.bot = ["bot", "salty"];
-exports.clear = ["clear", "cls", "empty", "cancel", "stop"];
-exports.help = ["help", "halp", "info", "infos", "wtf", "?"];
-exports.list = ["list", "ls", "l"];
+exports.keywords = {
+    add: ["add", "append", "create", "push", "link"],
+    bot: ["bot", "salty"],
+    default: ["default", "def"],
+    clear: ["clear", "cls", "empty", "cancel", "stop"],
+    help: ["help", "halp", "info", "infos", "wtf", "?"],
+    list: ["list", "ls", "l"],
+    remove: ["delete", "remove", "del", "rm", "erase", "unset", "unlink"],
+    set: ["set", "modify", "mod", "update"],
+};
 exports.meaning = {
     yes: {
         answers: ["ack"],
@@ -112,14 +108,6 @@ exports.meaning = {
         ],
     },
 };
-exports.remove = [
-    "delete",
-    "remove",
-    "del",
-    "rm",
-    "erase",
-    "unset",
-];
 exports.answers = {
     yes: ["yes", "yeah", "of course", "affirmative", "yup", "definitely"],
     no: ["no", "nope", "absolutely no"],

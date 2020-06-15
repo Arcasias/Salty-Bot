@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
-const terms_1 = require("../../terms");
+const utils_1 = require("../../utils");
 const INTERVALS = {};
 Command_1.default.register({
     name: "interval",
@@ -23,7 +23,7 @@ Command_1.default.register({
     access: "dev",
     async action({ args, msg }) {
         const channel = msg.guild ? msg.guild.id : msg.author.id;
-        if (args[0] && terms_1.clear.includes(args[0])) {
+        if (utils_1.meaning(args[0]) === "clear") {
             if (!INTERVALS[channel]) {
                 return Salty_1.default.warn(msg, "There is no interval on this channel.");
             }
@@ -31,7 +31,7 @@ Command_1.default.register({
             Salty_1.default.success(msg, "Interval cleared");
         }
         else {
-            if (!args[0]) {
+            if (!args.length) {
                 return Salty_1.default.warn(msg, "You need to specify the interval length in milliseconds.");
             }
             if (isNaN(Number(args[0]))) {

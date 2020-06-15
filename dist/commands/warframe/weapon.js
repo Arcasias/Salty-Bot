@@ -29,7 +29,7 @@ function displayCapacity({ ammo, magazineSize, fireRate, range }) {
 }
 function displayCritical({ criticalChance, criticalMultiplier }) {
     const critMult = Number(criticalMultiplier).toFixed(1);
-    const critChance = utils_1.round(Number(criticalChance) * 100);
+    const critChance = (Number(criticalChance) * 100).toFixed(1);
     return `${critChance}% - ${critMult}x`;
 }
 function displayDamage({ damage, multishot }) {
@@ -37,7 +37,7 @@ function displayDamage({ damage, multishot }) {
     return `${damage}${shots}`;
 }
 function displayStatus({ procChance, damageTypes }) {
-    const statusChance = utils_1.round(Number(procChance) * 100);
+    const statusChance = (Number(procChance) * 100).toFixed(1);
     const dmgTypes = Object.assign({}, damageTypes);
     const totalDmgTypes = Object.values(dmgTypes).reduce((acc, t) => acc + t, 0);
     for (const type in dmgTypes) {

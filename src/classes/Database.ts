@@ -1,9 +1,9 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
+import { separator } from "../config";
 import { Dictionnary, FieldsDescriptor } from "../types";
 import { debug, error, log } from "../utils";
 
-const SEPARATOR = "//";
-const SEPARATOR_REGEX = new RegExp(SEPARATOR);
+const SEPARATOR_REGEX = new RegExp(separator);
 let client: Client;
 
 //-----------------------------------------------------------------------------
@@ -13,7 +13,8 @@ let client: Client;
 function formatValues(values: FieldsDescriptor) {
     for (const key in values) {
         if (Array.isArray(values[key])) {
-            values[key] = values[key].join(SEPARATOR);
+            debug(values[key]);
+            values[key] = values[key].join(separator);
         }
     }
     return values;
@@ -26,7 +27,8 @@ function parseResult({ rows }: QueryResult) {
                 typeof row[key] === "string" &&
                 SEPARATOR_REGEX.test(row[key])
             ) {
-                row[key] = row[key].split(SEPARATOR);
+                debug(row[key]);
+                row[key] = row[key].split(separator);
             }
         }
     }

@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
-import { clear } from "../../terms";
 import { Dictionnary } from "../../types";
+import { meaning } from "../../utils";
 
 const INTERVALS: Dictionnary<NodeJS.Timeout> = {};
 
@@ -22,7 +22,7 @@ Command.register({
 
     async action({ args, msg }) {
         const channel = msg.guild ? msg.guild.id : msg.author.id;
-        if (args[0] && clear.includes(args[0])) {
+        if (meaning(args[0]) === "clear") {
             if (!INTERVALS[channel]) {
                 return Salty.warn(msg, "There is no interval on this channel.");
             }
@@ -30,7 +30,7 @@ Command.register({
 
             Salty.success(msg, "Interval cleared");
         } else {
-            if (!args[0]) {
+            if (!args.length) {
                 return Salty.warn(
                     msg,
                     "You need to specify the interval length in milliseconds."

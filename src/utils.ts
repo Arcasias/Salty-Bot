@@ -1,7 +1,7 @@
 import { Guild, User } from "discord.js";
 import { devs, owner } from "./config";
-import { add, bot, clear, help, list, remove } from "./terms";
-import { Dictionnary } from "./types";
+import { keywords } from "./terms";
+import { MeaningKeys, Meanings } from "./types";
 
 const CONSOLE_RED = "\x1b[31m";
 const CONSOLE_GREEN = "\x1b[32m";
@@ -14,14 +14,6 @@ const CONSOLE_RESET = "\x1b[0m"; // default
 const LVD_REPLACE = 1.5;
 const LVD_INSERT = 1;
 const LVD_DELETE = 1;
-const MEANING_ACTIONS: Dictionnary<string[]> = {
-    add,
-    bot,
-    clear,
-    help,
-    list,
-    remove,
-};
 const NUMBER_REACTIONS = [
     "1️⃣",
     "2️⃣",
@@ -170,13 +162,13 @@ export function levenshtein(a: string, b: string): number {
  * Returns the general meaning of a given word.
  * @param word
  */
-export function meaning(word?: string): string | null {
+export function meaning(word?: string): MeaningKeys | null {
     if (!word) {
         return null;
     }
-    for (const key in MEANING_ACTIONS) {
-        if (MEANING_ACTIONS[key].includes(word)) {
-            return key;
+    for (const key in keywords) {
+        if (keywords[<keyof Meanings>key].includes(word)) {
+            return <MeaningKeys>key;
         }
     }
     return "string";
@@ -192,6 +184,20 @@ export function pingable(id: string): string {
  */
 export function possessive(text: string): string {
     return "s" === text[text.length - 1] ? `${text}'` : `${text}'s`;
+}
+
+/**
+ * Generates a random high saturated color.
+ */
+export function randColor() {
+    const primary = randInt(0, 3);
+    const color = [];
+    for (
+        let i = 0;
+        i < 3;
+        color[i] = i === primary ? 255 : randInt(0, 255), i++
+    );
+    return "#" + color.map((c) => c.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -227,7 +233,7 @@ export function search(array: string[], target: string, threshold?: number) {
  */
 export function shuffle<T>(array: T[]): T[] {
     const copy = array.slice();
-    for (let i = copy.length - 1; i > 0; i--) {
+    for (let i = copy.length - 1; i >= 0; i--) {
         const randId = randInt(0, i + 1);
         const temp = copy[i];
         copy[i] = copy[randId];

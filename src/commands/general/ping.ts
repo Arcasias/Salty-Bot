@@ -35,7 +35,7 @@ Command.register({
                     .map((role) => pingable(role.id));
                 return Salty.message(msg, roleIds.join(" "));
             } else {
-                return Salty.error(msg, "No roles on this server.");
+                return Salty.warn(msg, "No roles on this server.");
             }
         } else {
             // If too much salt, skips the latency test

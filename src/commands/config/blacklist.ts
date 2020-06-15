@@ -23,6 +23,7 @@ Command.register({
         const user = User.get(target.user.id)!;
         switch (meaning(args[0])) {
             case "add":
+            case "set": {
                 if (!target.isMention) {
                     return Salty.warn(msg, "You need to mention someone.");
                 }
@@ -39,9 +40,9 @@ Command.register({
                     );
                 }
                 await User.update(user.id, { black_listed: true });
-                await Salty.success(msg, `<mention> added to the blacklist`);
-                break;
-            case "remove":
+                return Salty.success(msg, `<mention> added to the blacklist`);
+            }
+            case "remove": {
                 if (!target.isMention) {
                     return Salty.warn(msg, "You need to mention someone.");
                 }
@@ -58,45 +59,43 @@ Command.register({
                     );
                 }
                 await User.update(user.id, { black_listed: false });
-                await Salty.success(
+                return Salty.success(
                     msg,
                     `<mention> removed from the blacklist`
                 );
-                break;
-            default:
-                if (target.isMention) {
-                    if (target.user.id === Salty.bot.user!.id) {
-                        await Salty.message(
-                            msg,
-                            "Nope, I am not and will never be in the blacklist"
-                        );
-                    } else {
-                        await Salty.message(
-                            msg,
-                            user?.black_listed
-                                ? "<mention> is black-listed"
-                                : "<mention> isn't black-listed... yet"
-                        );
-                    }
-                } else {
-                    const blackListedUsers = User.filter(
-                        (u: User) => u.black_listed
-                    ).map(
-                        (u: User) =>
-                            Salty.bot.users!.cache.get(u.discord_id)?.username
+            }
+            default: {
+                if (target.isMention && target.user.id === Salty.bot.user!.id) {
+                    return Salty.message(
+                        msg,
+                        "Nope, I am not and will never be in the blacklist"
                     );
-                    if (blackListedUsers.length) {
-                        await Salty.embed(msg, {
-                            title: "Blacklist",
-                            description: blackListedUsers.join("\n"),
-                        });
-                    } else {
-                        await Salty.message(
-                            msg,
-                            "The black list is empty. You can help by *expanding it*."
-                        );
-                    }
                 }
+                if (target.isMention) {
+                    return Salty.message(
+                        msg,
+                        user?.black_listed
+                            ? "<mention> is black-listed"
+                            : "<mention> isn't black-listed... yet"
+                    );
+                }
+                const blackListedUsers = User.filter(
+                    (u: User) => u.black_listed
+                ).map(
+                    (u: User) =>
+                        Salty.bot.users!.cache.get(u.discord_id)?.username
+                );
+                if (blackListedUsers.length) {
+                    return Salty.embed(msg, {
+                        title: "Blacklist",
+                        description: blackListedUsers.join("\n"),
+                    });
+                }
+                return Salty.message(
+                    msg,
+                    "The black list is empty. You can help by *expanding it*."
+                );
+            }
         }
     },
 });
