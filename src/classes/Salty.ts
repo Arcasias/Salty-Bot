@@ -9,7 +9,7 @@ import Discord, {
     PartialGuildMember,
     PermissionString,
     ReactionCollector,
-    TextChannel,
+    TextChannel
 } from "discord.js";
 import { prefix } from "../config";
 import { intro, keywords } from "../terms";
@@ -18,7 +18,7 @@ import {
     FieldsDescriptor,
     MessageTarget,
     Runnable,
-    SaltyEmbedOptions,
+    SaltyEmbedOptions
 } from "../types";
 import {
     choice,
@@ -31,7 +31,7 @@ import {
     log,
     request,
     search,
-    title,
+    title
 } from "../utils";
 import Command from "./Command";
 import { connect, disconnect } from "./Database";

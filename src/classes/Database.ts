@@ -3,7 +3,7 @@ import { separator } from "../config";
 import { Dictionnary, FieldsDescriptor } from "../types";
 import { debug, error, log } from "../utils";
 
-const SEPARATOR_REGEX = new RegExp(separator);
+const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
 let client: Client;
 
 //-----------------------------------------------------------------------------
@@ -13,8 +13,7 @@ let client: Client;
 function formatValues(values: FieldsDescriptor) {
     for (const key in values) {
         if (Array.isArray(values[key])) {
-            debug(values[key]);
-            values[key] = values[key].join(separator);
+            values[key] = separator + values[key].join(separator) + separator;
         }
     }
     return values;
@@ -27,8 +26,10 @@ function parseResult({ rows }: QueryResult) {
                 typeof row[key] === "string" &&
                 SEPARATOR_REGEX.test(row[key])
             ) {
-                debug(row[key]);
-                row[key] = row[key].split(separator);
+                row[key] = row[key]
+                    .slice(separator.length, -separator.length)
+                    .split(separator)
+                    .filter((w: string) => Boolean(w.trim()));
             }
         }
     }
@@ -119,7 +120,7 @@ export async function remove(
     }
 
     queryArray.push(
-        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`
+        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`
     );
     variables.push(...ids);
 
@@ -206,7 +207,7 @@ export async function update(
 
     queryArray.push(valuesArray.join());
     queryArray.push(
-        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`
+        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`
     );
     variables.push(...ids);
 
@@ -216,7 +217,7 @@ export async function update(
     try {
         const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" updated.`);
-        return result.rows;
+        return parseResult(result);
     } catch (err) {
         error(err.stack);
         return [];

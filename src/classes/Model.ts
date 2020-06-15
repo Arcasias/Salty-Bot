@@ -108,7 +108,7 @@ class Model {
         const newInstances: T[] = [];
         const removed: T[] = [];
         const removing: Promise<any>[] = [];
-        this.each(async (instance: T) => {
+        this.each((instance: T) => {
             if (ids.includes(instance.id || -1)) {
                 removing.push(remove(this.table, instance.id!));
                 removed.push(instance);
@@ -116,6 +116,8 @@ class Model {
                 newInstances.push(instance);
             }
         });
+        await Promise.all(removing);
+        Model.instances[this.name] = newInstances;
         return removed;
     }
 
@@ -138,12 +140,12 @@ class Model {
         }
         const results: any[] = await update(this.table, ids, values);
         const instances: T[] = results.map(
-            (res: any): T => {
+            (result: any): T => {
                 const instance = this.find(
-                    (instance: T) => instance.id === res.id
+                    (instance: T) => instance.id === result.id
                 );
-                for (const key in values) {
-                    instance![<keyof T>key] = values[key];
+                for (const key in result) {
+                    instance![<keyof T>key] = result[key];
                 }
                 return instance!;
             }

@@ -5,6 +5,7 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "disconnect",
+    aliases: ["destroy"],
     category: "config",
     help: [
         {

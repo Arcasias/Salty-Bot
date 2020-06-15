@@ -40,8 +40,8 @@ class QuickCommand extends Model implements Runnable {
         const commands = await super.load();
         for (const command of commands) {
             const cmd = <QuickCommand>command;
-            for (const key of cmd.aliases) {
-                Command.aliases.set(key, cmd.name);
+            for (const alias of cmd.aliases) {
+                Command.aliases.set(alias, cmd.name);
             }
             Command.list.set(cmd.name, cmd);
         }
@@ -55,8 +55,8 @@ class QuickCommand extends Model implements Runnable {
         const commands = await super.remove(...ids);
         for (const command of commands) {
             const cmd = <QuickCommand>command;
-            for (const key of cmd.aliases) {
-                Command.aliases.delete(key);
+            for (const alias of cmd.aliases) {
+                Command.aliases.delete(alias);
             }
             Command.list.delete(cmd.name);
         }

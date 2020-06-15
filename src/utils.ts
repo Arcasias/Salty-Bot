@@ -258,22 +258,10 @@ export function title(string: string) {
 //-----------------------------------------------------------------------------
 
 /**
- * @param message
+ * @param part
+ * @param color
+ * @param timestamp
  */
-export function debug(...message: any[]) {
-    if (process.env.DEBUG !== "true") {
-        return;
-    }
-    console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
-}
-
-/**
- * @param message
- */
-export function error(...message: any[]) {
-    console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
-}
-
 export function consoleColor(
     part: string,
     color = CONSOLE_RESET,
@@ -288,6 +276,23 @@ export function consoleColor(
     }
     finalMessage.push(color + part + CONSOLE_RESET);
     return finalMessage.join(" ");
+}
+
+/**
+ * @param message
+ */
+export function debug(...message: any[]) {
+    if (process.env.DEBUG !== "true") {
+        return;
+    }
+    console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
+}
+
+/**
+ * @param message
+ */
+export function error(...message: any[]) {
+    console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
 }
 
 /**
