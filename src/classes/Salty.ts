@@ -396,7 +396,6 @@ function error(
 }
 
 function getTextChannel(channelId: string): TextChannel {
-    console.log({ channelId });
     const channel = bot.channels.cache.get(channelId);
     if (!(channel instanceof TextChannel)) {
         throw new Error(`Channel "${channelId}" is not a text channel.`);

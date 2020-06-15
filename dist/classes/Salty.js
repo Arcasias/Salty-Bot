@@ -282,7 +282,6 @@ function error(msg, text = "error", options = {}) {
     }, options));
 }
 function getTextChannel(channelId) {
-    console.log({ channelId });
     const channel = bot.channels.cache.get(channelId);
     if (!(channel instanceof discord_js_1.TextChannel)) {
         throw new Error(`Channel "${channelId}" is not a text channel.`);

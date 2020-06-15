@@ -264,42 +264,37 @@ export function debug(...message: any[]) {
     if (process.env.DEBUG !== "true") {
         return;
     }
-    if (process.env.MODE === "local") {
-        message.unshift(
-            `${
-                CONSOLE_RESET + formatDuration()
-            } ${CONSOLE_MAGENTA}DEBUG${CONSOLE_RESET} :`
-        );
-    }
-    console.log(...message);
+    console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
 }
 
 /**
  * @param message
  */
 export function error(...message: any[]) {
-    if (process.env.MODE === "local") {
-        message.unshift(
-            `${
-                CONSOLE_RESET + formatDuration()
-            } ${CONSOLE_RED}ERROR${CONSOLE_RESET} :`
-        );
+    console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
+}
+
+export function consoleColor(
+    part: string,
+    color = CONSOLE_RESET,
+    timestamp = true
+) {
+    if (process.env.MODE !== "local") {
+        return part;
     }
-    console.error(...message);
+    const finalMessage = [];
+    if (timestamp) {
+        finalMessage.push(formatDuration());
+    }
+    finalMessage.push(color + part + CONSOLE_RESET);
+    return finalMessage.join(" ");
 }
 
 /**
  * @param message
  */
 export function log(...message: any[]) {
-    if (process.env.MODE === "local") {
-        message.unshift(
-            `${
-                CONSOLE_RESET + formatDuration()
-            } ${CONSOLE_CYAN}INFO${CONSOLE_RESET} :`
-        );
-    }
-    console.log(...message);
+    console.log(consoleColor("INFO", CONSOLE_CYAN), ...message);
 }
 
 /**
@@ -309,29 +304,19 @@ export function log(...message: any[]) {
  */
 export function request(guild: string, user: string, msg: string) {
     const content = msg
-        ? `${CONSOLE_GREEN}"${msg}"${CONSOLE_RESET}`
-        : `${CONSOLE_RED}[EMPTY MESSAGE]${CONSOLE_RESET}`;
-    const message = [
-        `${CONSOLE_YELLOW + guild + CONSOLE_RESET} > ${
-            CONSOLE_YELLOW + user + CONSOLE_RESET
-        } : ${content}`,
-    ];
-    if (process.env.MODE === "local") {
-        message.unshift(`${CONSOLE_RESET + formatDuration()}`);
-    }
-    console.log(...message);
+        ? consoleColor(`"${msg}"`, CONSOLE_GREEN, false)
+        : consoleColor("[EMPTY MESSAGE]", CONSOLE_RED, false);
+    const message = `${consoleColor(
+        guild,
+        CONSOLE_YELLOW,
+        false
+    )} > ${consoleColor(user, CONSOLE_YELLOW, false)} : ${content}`;
+    console.log(consoleColor(message));
 }
 
 /**
  * @param message
  */
 export function warn(...message: any[]) {
-    if (process.env.MODE === "local") {
-        message.unshift(
-            `${
-                CONSOLE_RESET + formatDuration()
-            } ${CONSOLE_YELLOW}WARNING${CONSOLE_RESET} :`
-        );
-    }
-    console.warn(...message);
+    console.warn(consoleColor("WARNING", CONSOLE_YELLOW), ...message);
 }
