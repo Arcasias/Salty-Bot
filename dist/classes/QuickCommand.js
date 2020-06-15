@@ -23,8 +23,8 @@ class QuickCommand extends Model_1.default {
         const commands = await super.load();
         for (const command of commands) {
             const cmd = command;
-            for (const key of cmd.aliases) {
-                Command_1.default.aliases.set(key, cmd.name);
+            for (const alias of cmd.aliases) {
+                Command_1.default.aliases.set(alias, cmd.name);
             }
             Command_1.default.list.set(cmd.name, cmd);
         }
@@ -34,8 +34,8 @@ class QuickCommand extends Model_1.default {
         const commands = await super.remove(...ids);
         for (const command of commands) {
             const cmd = command;
-            for (const key of cmd.aliases) {
-                Command_1.default.aliases.delete(key);
+            for (const alias of cmd.aliases) {
+                Command_1.default.aliases.delete(alias);
             }
             Command_1.default.list.delete(cmd.name);
         }

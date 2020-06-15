@@ -9,6 +9,7 @@ const terms_1 = require("../../terms");
 const utils_1 = require("../../utils");
 Command_1.default.register({
     name: "disconnect",
+    aliases: ["destroy"],
     category: "config",
     help: [
         {

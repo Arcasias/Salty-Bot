@@ -52,8 +52,9 @@ Command.register({
                     }
                 } else {
                     targetIndex = user.todos.findIndex(
-                        (todo: string) => levenshtein(clean(args[1]), clean(todo)) <= 1
-                    )
+                        (todo: string) =>
+                            levenshtein(clean(args[1]), clean(todo)) <= 1
+                    );
                     if (targetIndex < 0) {
                         return Salty.warn(
                             msg,

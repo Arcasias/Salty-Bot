@@ -158,17 +158,6 @@ function title(string) {
     return string[0].toUpperCase() + string.slice(1);
 }
 exports.title = title;
-function debug(...message) {
-    if (process.env.DEBUG !== "true") {
-        return;
-    }
-    console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
-}
-exports.debug = debug;
-function error(...message) {
-    console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
-}
-exports.error = error;
 function consoleColor(part, color = CONSOLE_RESET, timestamp = true) {
     if (process.env.MODE !== "local") {
         return part;
@@ -181,6 +170,17 @@ function consoleColor(part, color = CONSOLE_RESET, timestamp = true) {
     return finalMessage.join(" ");
 }
 exports.consoleColor = consoleColor;
+function debug(...message) {
+    if (process.env.DEBUG !== "true") {
+        return;
+    }
+    console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
+}
+exports.debug = debug;
+function error(...message) {
+    console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
+}
+exports.error = error;
 function log(...message) {
     console.log(consoleColor("INFO", CONSOLE_CYAN), ...message);
 }

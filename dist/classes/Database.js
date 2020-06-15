@@ -3,13 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const pg_1 = require("pg");
 const config_1 = require("../config");
 const utils_1 = require("../utils");
-const SEPARATOR_REGEX = new RegExp(config_1.separator);
+const SEPARATOR_REGEX = new RegExp(`^${config_1.separator}.*${config_1.separator}$`);
 let client;
 function formatValues(values) {
     for (const key in values) {
         if (Array.isArray(values[key])) {
-            utils_1.debug(values[key]);
-            values[key] = values[key].join(config_1.separator);
+            values[key] = config_1.separator + values[key].join(config_1.separator) + config_1.separator;
         }
     }
     return values;
@@ -19,8 +18,10 @@ function parseResult({ rows }) {
         for (const key in row) {
             if (typeof row[key] === "string" &&
                 SEPARATOR_REGEX.test(row[key])) {
-                utils_1.debug(row[key]);
-                row[key] = row[key].split(config_1.separator);
+                row[key] = row[key]
+                    .slice(config_1.separator.length, -config_1.separator.length)
+                    .split(config_1.separator)
+                    .filter((w) => Boolean(w.trim()));
             }
         }
     }
@@ -92,7 +93,7 @@ async function remove(table, ids) {
     if (!Array.isArray(ids)) {
         ids = [ids];
     }
-    queryArray.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
+    queryArray.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`);
     variables.push(...ids);
     const query = queryArray.join(" ") + ";";
     utils_1.debug({ query }, variables);
@@ -163,14 +164,14 @@ async function update(table, ids, values) {
         variables.push(formattedValues[fieldName]);
     }
     queryArray.push(valuesArray.join());
-    queryArray.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *;`);
+    queryArray.push(`WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`);
     variables.push(...ids);
     const query = queryArray.join(" ") + ";";
     utils_1.debug({ query }, variables);
     try {
         const result = await client.query(query, variables);
         utils_1.log(`${result.rows.length} record(s) of type "${table}" updated.`);
-        return result.rows;
+        return parseResult(result);
     }
     catch (err) {
         utils_1.error(err.stack);

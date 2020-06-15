@@ -34,25 +34,48 @@ Command_1.default.register({
                 if (!user.todos.length) {
                     return Salty_1.default.warn(msg, "Your todo list is empty.");
                 }
-                const targetIndex = Number(args[1]) - 1;
-                if (!args[1] || !user.todos[targetIndex]) {
-                    return Salty_1.default.warn(msg, `Your todo list has ${user.todos.length} items: ${targetIndex} is out of range.`);
+                if (!args[1]) {
+                    return Salty_1.default.warn(msg, `You need to tell me what item to remove.`);
                 }
-                user.todos.splice(targetIndex, 1);
-                return Salty_1.default.success(msg, `item number **${args[1]}** removed from your todo list`);
+                let targetIndex;
+                if (!isNaN(Number(args[1]))) {
+                    targetIndex = Number(args[1]) - 1;
+                    if (!user.todos[targetIndex]) {
+                        return Salty_1.default.warn(msg, `Your todo list has ${user.todos.length} items: ${targetIndex} is out of range.`);
+                    }
+                }
+                else {
+                    targetIndex = user.todos.findIndex((todo) => utils_1.levenshtein(utils_1.clean(args[1]), utils_1.clean(todo)) <= 1);
+                    if (targetIndex < 0) {
+                        return Salty_1.default.warn(msg, `No todo item matching "${args[1]}".`);
+                    }
+                }
+                const todos = [];
+                let removed;
+                for (let i = 0; i < user.todos.length; i++) {
+                    if (i === targetIndex) {
+                        removed = user.todos[i];
+                    }
+                    else {
+                        todos.push(user.todos[i]);
+                    }
+                }
+                await User_1.default.update(user.id, { todos });
+                return Salty_1.default.success(msg, `"**${removed}**" removed from your todo list`);
             }
             case "clear": {
                 await User_1.default.update(user.id, { todos: [] });
                 return Salty_1.default.success(msg, "Your todo list has been cleared.");
             }
-            case "list":
             default: {
                 if (!user.todos.length) {
                     return Salty_1.default.warn(msg, "Your todo list is empty.");
                 }
                 return Salty_1.default.embed(msg, {
                     title: "<authors> todo list",
-                    description: `> ${user.todos.join("\n> ")}`,
+                    description: user.todos
+                        .map((todo) => `• ${todo}`)
+                        .join("\n"),
                 });
             }
         }

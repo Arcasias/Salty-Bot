@@ -64,7 +64,7 @@ class Model {
         const newInstances = [];
         const removed = [];
         const removing = [];
-        this.each(async (instance) => {
+        this.each((instance) => {
             if (ids.includes(instance.id || -1)) {
                 removing.push(Database_1.remove(this.table, instance.id));
                 removed.push(instance);
@@ -73,6 +73,8 @@ class Model {
                 newInstances.push(instance);
             }
         });
+        await Promise.all(removing);
+        Model.instances[this.name] = newInstances;
         return removed;
     }
     static async update(ids, values) {
@@ -83,10 +85,10 @@ class Model {
             ids = [ids];
         }
         const results = await Database_1.update(this.table, ids, values);
-        const instances = results.map((res) => {
-            const instance = this.find((instance) => instance.id === res.id);
-            for (const key in values) {
-                instance[key] = values[key];
+        const instances = results.map((result) => {
+            const instance = this.find((instance) => instance.id === result.id);
+            for (const key in result) {
+                instance[key] = result[key];
             }
             return instance;
         });
