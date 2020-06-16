@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const util_1 = require("util");
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const emojiPath = "./assets/img/saltmoji";
 const readDir = util_1.promisify(fs_1.default.readdir.bind(fs_1.default));
@@ -39,12 +39,12 @@ Command_1.default.register({
             }
             if (emoji) {
                 msg.delete();
-                return Salty_1.default.message(msg, "", {
+                return salty_1.default.message(msg, "", {
                     files: [`${emojiPath}/${emoji}.png`],
                 });
             }
         }
-        Salty_1.default.embed(msg, {
+        salty_1.default.embed(msg, {
             title: "list of saltmojis",
             description: emojiNames.join("\n"),
         });

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const VOTE_LENGTH = 20;
 const VOTE_CHAR = "🟦";
@@ -39,14 +39,14 @@ Command_1.default.register({
     channel: "guild",
     async action({ args, msg }) {
         if (!args.length) {
-            return Salty_1.default.warn(msg, `You need to specify options to create a poll.`);
+            return salty_1.default.warn(msg, `You need to specify options to create a poll.`);
         }
         const optionTexts = args.join(" ").split(OPTION_SEPARATOR);
         if (optionTexts.length < 2) {
-            return Salty_1.default.warn(msg, `You need to specify more than one option to create a poll.`);
+            return salty_1.default.warn(msg, `You need to specify more than one option to create a poll.`);
         }
         if (optionTexts.length > OPTION_AMOUNT) {
-            return Salty_1.default.warn(msg, `You need to specify less than ${OPTION_AMOUNT} options to create a poll.`);
+            return salty_1.default.warn(msg, `You need to specify less than ${OPTION_AMOUNT} options to create a poll.`);
         }
         msg.delete().catch();
         async function onAdd({ emoji }, user) {
@@ -84,7 +84,7 @@ Command_1.default.register({
                 value: "No votes",
             })),
         };
-        const initMessage = Salty_1.default.embed(msg, embedOptions);
+        const initMessage = salty_1.default.embed(msg, embedOptions);
         const pollMessage = await initMessage;
     },
 });

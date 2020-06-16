@@ -1,7 +1,7 @@
 import { GuildMember, Message } from "discord.js";
 import Command from "../../classes/Command";
 import PromiseManager from "../../classes/PromiseManager";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { meaning } from "../../utils";
 
 async function changeNames(
@@ -9,7 +9,7 @@ async function changeNames(
     transformation: (nickname: string) => string
 ) {
     const members: GuildMember[] = msg.guild!.members.cache.array();
-    const progressMsg: Message = await Salty.message(
+    const progressMsg: Message = await salty.message(
         msg,
         `changing nicknames: 0/${members.length}`
     );
@@ -41,7 +41,7 @@ async function changeNames(
         }
     }
     pm.add(progressMsg.delete.bind(progressMsg));
-    return Salty.success(msg, "nicknames successfully changed");
+    return salty.success(msg, "nicknames successfully changed");
 }
 
 Command.register({
@@ -84,13 +84,13 @@ Command.register({
                 );
             }
             case "string": {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "You need to specify what nickname particle will be targeted."
                 );
             }
             default: {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "You need to tell whether to add or delete a global nickname particle."
                 );

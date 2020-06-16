@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
+const salty_1 = __importDefault(require("../salty"));
 const utils_1 = require("../utils");
-const Salty_1 = __importDefault(require("./Salty"));
 const permissions = {
     admin: utils_1.isAdmin,
     dev: utils_1.isDev,
@@ -24,17 +24,17 @@ class Command {
     }
     async run(msg, args, target) {
         if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
-            return Salty_1.default.warn(msg, this.access);
+            return salty_1.default.warn(msg, `You need to have the ${this.access} permission to do that.`);
         }
         if (this.channel === "guild" && !msg.guild) {
-            return Salty_1.default.warn(msg, "this is a direct message channel retard");
+            return salty_1.default.warn(msg, "This is a direct message channel retard");
         }
         const commandParams = { msg, args, target };
         try {
             await this.action(commandParams);
         }
         catch (err) {
-            return Salty_1.default.error(msg, `Whoops! ${err.message}`);
+            return salty_1.default.error(msg, `Whoops! ${err.message}`);
         }
     }
     static register(descriptor) {

@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const INTERVALS = {};
 Command_1.default.register({
@@ -25,20 +25,20 @@ Command_1.default.register({
         const channel = msg.guild ? msg.guild.id : msg.author.id;
         if (utils_1.meaning(args[0]) === "clear") {
             if (!INTERVALS[channel]) {
-                return Salty_1.default.warn(msg, "There is no interval on this channel.");
+                return salty_1.default.warn(msg, "There is no interval on this channel.");
             }
             clearInterval(INTERVALS[channel]);
-            Salty_1.default.success(msg, "Interval cleared");
+            salty_1.default.success(msg, "Interval cleared");
         }
         else {
             if (!args.length) {
-                return Salty_1.default.warn(msg, "You need to specify the interval length in milliseconds.");
+                return salty_1.default.warn(msg, "You need to specify the interval length in milliseconds.");
             }
             if (isNaN(Number(args[0]))) {
-                return Salty_1.default.warn(msg, "You need to specify the interval length in milliseconds.");
+                return salty_1.default.warn(msg, "You need to specify the interval length in milliseconds.");
             }
             if (!args[1]) {
-                return Salty_1.default.warn(msg, "You need to tell me what to say after each interval.");
+                return salty_1.default.warn(msg, "You need to tell me what to say after each interval.");
             }
             const delay = parseInt(args.shift()) * 1000;
             msg.delete().catch();
@@ -46,7 +46,7 @@ Command_1.default.register({
                 clearInterval(INTERVALS[channel]);
             }
             INTERVALS[channel] = setInterval(() => {
-                Salty_1.default.message(msg, args.join(" "));
+                salty_1.default.message(msg, args.join(" "));
             }, delay);
         }
     },

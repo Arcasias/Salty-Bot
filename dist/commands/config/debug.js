@@ -7,6 +7,7 @@ const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
 const Salty_1 = __importDefault(require("../../classes/Salty"));
 const User_1 = __importDefault(require("../../classes/User"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const MAXDEPTH = 3;
 const TAB = "    ";
@@ -52,12 +53,12 @@ Command_1.default.register({
     access: "dev",
     async action({ args, msg }) {
         if (!args[0]) {
-            return Salty_1.default.warn(msg, "No code to execute.");
+            return salty_1.default.warn(msg, "No code to execute.");
         }
         const evalResult = evalInContext.call(Salty_1.default, args.join(" "));
         const result = `${args.join(" ")} = /*${typeof evalResult}*/ ${stringify(evalResult, 0)}`;
         const message = utils_1.ellipsis(result, 1985);
-        Salty_1.default.message(msg, `\`\`\`js\n${message}\n\`\`\``);
+        salty_1.default.message(msg, `\`\`\`js\n${message}\n\`\`\``);
         utils_1.debug(message);
     },
 });

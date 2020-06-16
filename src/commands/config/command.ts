@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
 import QuickCommand from "../../classes/QuickCommand";
-import Salty from "../../classes/Salty";
 import { separator } from "../../config";
+import salty from "../../salty";
 import { clean, meaning } from "../../utils";
 
 Command.register({
@@ -27,7 +27,7 @@ Command.register({
             case "remove": {
                 const commandName: string = args[1];
                 if (!commandName) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "You need to specify which command to remove."
                     );
@@ -36,10 +36,10 @@ Command.register({
                     cmd.aliases.includes(commandName)
                 );
                 if (!command) {
-                    return Salty.warn(msg, "That command doesn't exist.");
+                    return salty.warn(msg, "That command doesn't exist.");
                 }
                 await QuickCommand.remove(command.id);
-                return Salty.success(
+                return salty.success(
                     msg,
                     `Command "**${command.name}**" deleted`
                 );
@@ -47,9 +47,9 @@ Command.register({
             case "list":
             case null: {
                 if (!QuickCommand.size) {
-                    return Salty.info(msg, `No quick commands set.`);
+                    return salty.info(msg, `No quick commands set.`);
                 }
-                return Salty.embed(msg, {
+                return salty.embed(msg, {
                     title: "List of commands",
                     description: QuickCommand.map(
                         (cmd: QuickCommand, i) => `${i! + 1}) ${cmd.name}`
@@ -65,7 +65,7 @@ Command.register({
                     .split(separator)
                     .map((arg) => arg.trim());
                 if (allArgs.length < 2) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "You need to tell me which answers will this command provide."
                     );
@@ -77,7 +77,7 @@ Command.register({
                     .filter(Boolean);
                 const name: string = aliases[0];
                 if (!name) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "You need to tell me by which aliases this command will be called."
                     );
@@ -89,14 +89,14 @@ Command.register({
 
                 for (const alias of aliases) {
                     if (Command.aliases.has(alias)) {
-                        return Salty.warn(
+                        return salty.warn(
                             msg,
                             "A command with that name already exists."
                         );
                     }
                 }
                 await QuickCommand.create({ name, aliases, answers });
-                return Salty.success(msg, `Command "**${name}**" created`);
+                return salty.success(msg, `Command "**${name}**" created`);
             }
         }
     },

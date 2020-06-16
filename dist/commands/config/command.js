@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const QuickCommand_1 = __importDefault(require("../../classes/QuickCommand"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
 const config_1 = require("../../config");
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 Command_1.default.register({
     name: "command",
@@ -28,21 +28,21 @@ Command_1.default.register({
             case "remove": {
                 const commandName = args[1];
                 if (!commandName) {
-                    return Salty_1.default.warn(msg, "You need to specify which command to remove.");
+                    return salty_1.default.warn(msg, "You need to specify which command to remove.");
                 }
                 const command = QuickCommand_1.default.find((cmd) => cmd.aliases.includes(commandName));
                 if (!command) {
-                    return Salty_1.default.warn(msg, "That command doesn't exist.");
+                    return salty_1.default.warn(msg, "That command doesn't exist.");
                 }
                 await QuickCommand_1.default.remove(command.id);
-                return Salty_1.default.success(msg, `Command "**${command.name}**" deleted`);
+                return salty_1.default.success(msg, `Command "**${command.name}**" deleted`);
             }
             case "list":
             case null: {
                 if (!QuickCommand_1.default.size) {
-                    return Salty_1.default.warn(msg, `No quick commands set.`);
+                    return salty_1.default.info(msg, `No quick commands set.`);
                 }
-                return Salty_1.default.embed(msg, {
+                return salty_1.default.embed(msg, {
                     title: "List of commands",
                     description: QuickCommand_1.default.map((cmd, i) => `${i + 1}) ${cmd.name}`).join("\n"),
                 });
@@ -56,7 +56,7 @@ Command_1.default.register({
                     .split(config_1.separator)
                     .map((arg) => arg.trim());
                 if (allArgs.length < 2) {
-                    return Salty_1.default.warn(msg, "You need to tell me which answers will this command provide.");
+                    return salty_1.default.warn(msg, "You need to tell me which answers will this command provide.");
                 }
                 const aliases = allArgs
                     .shift()
@@ -65,7 +65,7 @@ Command_1.default.register({
                     .filter(Boolean);
                 const name = aliases[0];
                 if (!name) {
-                    return Salty_1.default.warn(msg, "You need to tell me by which aliases this command will be called.");
+                    return salty_1.default.warn(msg, "You need to tell me by which aliases this command will be called.");
                 }
                 const answers = allArgs
                     .shift()
@@ -73,11 +73,11 @@ Command_1.default.register({
                     .filter((word) => word.trim() !== "");
                 for (const alias of aliases) {
                     if (Command_1.default.aliases.has(alias)) {
-                        return Salty_1.default.warn(msg, "A command with that name already exists.");
+                        return salty_1.default.warn(msg, "A command with that name already exists.");
                     }
                 }
                 await QuickCommand_1.default.create({ name, aliases, answers });
-                return Salty_1.default.success(msg, `Command "**${name}**" created`);
+                return salty_1.default.success(msg, `Command "**${name}**" created`);
             }
         }
     },

@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 Command_1.default.register({
     name: "monkey",
@@ -29,12 +29,12 @@ Command_1.default.register({
     ],
     async action({ args, msg }) {
         if (!args[0]) {
-            return Salty_1.default.warn(msg, "Missing the length of the array.");
+            return salty_1.default.warn(msg, "Missing the length of the array.");
         }
         if (Number(args[0]) < 1) {
-            return Salty_1.default.warn(msg, "Array length must be a number between 1 and 10.");
+            return salty_1.default.warn(msg, "Array length must be a number between 1 and 10.");
         }
-        const runningMsg = await Salty_1.default.message(msg, "monkey sorting ...");
+        const runningMsg = await salty_1.default.message(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(Number(args[0]), 10);
         let list = [];
@@ -52,6 +52,6 @@ Command_1.default.register({
             resolve(Math.floor((Date.now() - startTimeStamp) / 100) / 10);
         });
         runningMsg.delete();
-        await Salty_1.default.success(msg, `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`, { react: "🐒" });
+        await salty_1.default.info(msg, `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`, { react: "🐒" });
     },
 });

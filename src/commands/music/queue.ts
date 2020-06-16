@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 import { formatDuration, meaning } from "../../utils";
 
@@ -34,10 +34,10 @@ Command.register({
         switch (meaning(args[0])) {
             case "remove": {
                 if (!playlist.queue[0]) {
-                    return Salty.warn(msg, "The queue is already empty.");
+                    return salty.warn(msg, "The queue is already empty.");
                 }
                 if (!args[1]) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "You need to specify which song to remove."
                     );
@@ -53,14 +53,14 @@ Command.register({
                 for (let i = 0; i < songIds.length; i++) {
                     let songId = Number(songIds[i]);
                     if (isNaN(songId)) {
-                        return Salty.warn(
+                        return salty.warn(
                             msg,
                             "Specified song must be the index of a song in the queue."
                         );
                     }
                     songId--; // converting logical index to array index
                     if (playlist.queue.length <= songId || songId < 0) {
-                        return Salty.warn(
+                        return salty.warn(
                             msg,
                             "Specified song number is out of the list indices."
                         );
@@ -76,15 +76,15 @@ Command.register({
                           removed[0].title
                       }** removed from the queue`;
 
-                return Salty.success(msg, message);
+                return salty.success(msg, message);
             }
             case "clear": {
                 playlist.empty();
-                return Salty.success(msg, "queue cleared");
+                return salty.success(msg, "queue cleared");
             }
             default: {
                 if (!playlist.queue.length) {
-                    return Salty.info(msg, "The queue is empty.");
+                    return salty.info(msg, "The queue is empty.");
                 }
                 // Returns an embed message displaying all songs
                 let totalDuration = 0;
@@ -115,7 +115,7 @@ Command.register({
                             : playlistTitle;
                     options.title = "Currently playing: " + title;
                 }
-                return Salty.embed(msg, options);
+                return salty.embed(msg, options);
             }
         }
     },

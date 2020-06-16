@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 Command_1.default.register({
     name: "choose",
-    aliases: ["choice", "chose", "shoes"],
+    aliases: ["choice", "8ball"],
     category: "misc",
     help: [
         {
@@ -22,8 +22,8 @@ Command_1.default.register({
     ],
     async action({ args, msg }) {
         if (args.length < 2) {
-            return Salty_1.default.warn(msg, "You need to give at least 2 choices.");
+            return salty_1.default.warn(msg, "You need to give at least 2 choices.");
         }
-        await Salty_1.default.message(msg, `I choose ${utils_1.choice(args.join(" ").split("/"))}`);
+        await salty_1.default.message(msg, `I choose ${utils_1.choice(args.join(" ").split("/"))}`);
     },
 });

@@ -17,11 +17,11 @@ export const keywords: Meanings = {
 export const meaning: Dictionnary<MeaningInfo> = {
     yes: {
         answers: ["ack"],
-        list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],
+        list: ["yes", "yeah", "yee", "yep", "yup", "affirmative"],
     },
     no: {
         answers: ["ack"],
-        list: ["no", "noo", "nooo", "nope", "noope", "nooope", "negative"],
+        list: ["no", "nooo", "nope", "nooope", "negative"],
     },
     hello: {
         answers: ["greet"],
@@ -35,25 +35,15 @@ export const meaning: Dictionnary<MeaningInfo> = {
             "greetings",
             "ohayo",
             "hey",
-            "heyo",
-            "ohayo",
         ],
     },
     goodbye: {
         answers: ["bye"],
-        list: [
-            "cya",
-            "see ya",
-            "see you",
-            "bye",
-            "goodbye",
-            "farewell",
-            "so long",
-        ],
+        list: ["cya", "see you", "bye", "goodbye", "farewell", "so long"],
     },
     thanks: {
         answers: ["ackthank"],
-        list: ["thanks", "thank", "thx", "grateful"],
+        list: ["thanks", "thx", "grateful"],
     },
     welcome: {
         answers: ["thank"],
@@ -61,19 +51,11 @@ export const meaning: Dictionnary<MeaningInfo> = {
     },
     sorry: {
         answers: ["acksorry"],
-        list: ["sorry", "excuse", "excuses", "apologie", "apologies"],
+        list: ["sorry", "excuse me", "excuses", "apologies"],
     },
     ok: {
         answers: ["yes"],
-        list: [
-            "ok",
-            "okay",
-            "clear",
-            "understand",
-            "understood",
-            "get it",
-            "got it",
-        ],
+        list: ["ok", "clear", "understood", "got it"],
     },
     howAreYou: {
         answers: ["fine", "thank"],
@@ -85,7 +67,6 @@ export const meaning: Dictionnary<MeaningInfo> = {
             "are you fine",
             "are you ok",
             "how you doing",
-            "how you doin",
             "what's up",
             "waddup",
             "whassup",

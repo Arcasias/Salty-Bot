@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 let purging = false;
 async function purgeEndless(channel) {
@@ -56,15 +56,15 @@ Command_1.default.register({
                 else {
                     await msg.channel.bulkDelete(messagesToDelete);
                 }
-                Salty_1.default.success(msg, "most recent bot messages have been deleted");
+                salty_1.default.success(msg, "most recent bot messages have been deleted");
                 break;
             case "clear":
                 if (purging) {
                     purging = false;
-                    Salty_1.default.success(msg, "purge stopped");
+                    salty_1.default.success(msg, "purge stopped");
                 }
                 else {
-                    Salty_1.default.error(msg, "i wasn't purging anything");
+                    salty_1.default.warn(msg, "I wasn't purging anything");
                 }
                 break;
             case "string":
@@ -74,10 +74,10 @@ Command_1.default.register({
                 }
             default:
                 if (isNaN(Number(args[0]))) {
-                    return Salty_1.default.warn(msg, "Given length must be a valid number.");
+                    return salty_1.default.warn(msg, "Given length must be a valid number.");
                 }
                 if (parseInt(args[0]) === 0) {
-                    return Salty_1.default.warn(msg, "You must delete at least 1 message.");
+                    return salty_1.default.warn(msg, "You must delete at least 1 message.");
                 }
                 const toDelete = Math.min(parseInt(args[0]), 100) || 100;
                 try {
@@ -88,7 +88,7 @@ Command_1.default.register({
                     else {
                         await msg.channel.bulkDelete(toDelete, true);
                     }
-                    await Salty_1.default.success(msg, `${toDelete} messages have been successfully deleted`);
+                    await salty_1.default.success(msg, `${toDelete} messages have been successfully deleted`);
                 }
                 catch (err) {
                     utils_1.error(err);

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const terms_1 = require("../../terms");
 const utils_1 = require("../../utils");
 Command_1.default.register({
@@ -23,12 +23,12 @@ Command_1.default.register({
         const { playlist } = Guild_1.default.get(msg.guild.id);
         if (playlist.connection) {
             playlist.stop();
-            Salty_1.default.success(msg, utils_1.choice(terms_1.answers.bye), {
+            salty_1.default.success(msg, utils_1.choice(terms_1.answers.bye), {
                 react: "⏹",
             });
         }
         else {
-            Salty_1.default.error(msg, "I'm not in a voice channel");
+            salty_1.default.warn(msg, "I'm not in a voice channel");
         }
     },
 });

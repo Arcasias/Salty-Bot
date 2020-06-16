@@ -54,7 +54,7 @@ QUnit.module(
             // Debug false
             process.env.DEBUG = "false";
             console.log = () => {
-                return Salty.warn("Log is not supposed to be called.");
+                return warn("Log is not supposed to be called.");
             };
             debug("aaa");
         });

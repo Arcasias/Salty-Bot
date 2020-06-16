@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { answers } from "../../terms";
 import { choice } from "../../utils";
 
@@ -21,11 +21,11 @@ Command.register({
 
         if (playlist.connection) {
             playlist.stop();
-            Salty.success(msg, choice(answers.bye), {
+            salty.success(msg, choice(answers.bye), {
                 react: "⏹",
             });
         } else {
-            Salty.warn(msg, "I'm not in a voice channel");
+            salty.warn(msg, "I'm not in a voice channel");
         }
     },
 });

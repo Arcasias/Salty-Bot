@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "embed",
@@ -22,14 +22,14 @@ Command.register({
         try {
             parsed = JSON.parse(args.join(" "));
         } catch (error) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 "Given data must be formatted as a JSON string."
             );
         }
         if (!Object.keys(parsed).length) {
-            return Salty.warn(msg, "You must give me some data to parse.");
+            return salty.warn(msg, "You must give me some data to parse.");
         }
-        await Salty.message(msg, null, { embed: new MessageEmbed(parsed) });
+        await salty.message(msg, null, { embed: new MessageEmbed(parsed) });
     },
 });

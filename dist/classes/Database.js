@@ -4,7 +4,7 @@ const pg_1 = require("pg");
 const config_1 = require("../config");
 const utils_1 = require("../utils");
 const SEPARATOR_REGEX = new RegExp(`^${config_1.separator}.*${config_1.separator}$`);
-let client;
+let client = null;
 function formatValues(values) {
     for (const key in values) {
         if (Array.isArray(values[key])) {
@@ -31,16 +31,17 @@ function sanitizeTable(table) {
     return table.toLowerCase().replace(/[^a-z_]/g, "");
 }
 async function connect() {
-    if (!client) {
-        client = new pg_1.Client({
-            database: process.env.DATABASE_DATABASE,
-            host: process.env.DATABASE_HOST,
-            password: process.env.DATABASE_PASSWORD,
-            port: Number(process.env.DATABASE_PORT),
-            user: process.env.DATABASE_USER,
-            ssl: { rejectUnauthorized: false },
-        });
+    if (client) {
+        throw new Error(`Could not client: client is already connected`);
     }
+    client = new pg_1.Client({
+        database: process.env.DATABASE_DATABASE,
+        host: process.env.DATABASE_HOST,
+        password: process.env.DATABASE_PASSWORD,
+        port: Number(process.env.DATABASE_PORT),
+        user: process.env.DATABASE_USER,
+        ssl: { rejectUnauthorized: false },
+    });
     try {
         await client.connect();
     }
@@ -50,8 +51,12 @@ async function connect() {
 }
 exports.connect = connect;
 async function disconnect() {
+    if (!client) {
+        throw new Error(`Could not disconnect client: client is not connected`);
+    }
     try {
         await client.end();
+        client = null;
     }
     catch (err) {
         utils_1.error(err.stack);
@@ -59,6 +64,9 @@ async function disconnect() {
 }
 exports.disconnect = disconnect;
 async function create(table, ...allValues) {
+    if (!client) {
+        throw new Error(`Could not perform action "create": client is not connected`);
+    }
     const queryArray = ["INSERT INTO", sanitizeTable(table)];
     const variables = [];
     let varCount = 0;
@@ -87,6 +95,9 @@ async function create(table, ...allValues) {
 }
 exports.create = create;
 async function remove(table, ids) {
+    if (!client) {
+        throw new Error(`Could not perform action "remove": client is not connected`);
+    }
     const queryArray = ["DELETE FROM", sanitizeTable(table)];
     const variables = [];
     let varCount = 0;
@@ -109,6 +120,9 @@ async function remove(table, ids) {
 }
 exports.remove = remove;
 async function read(table, where, fields) {
+    if (!client) {
+        throw new Error(`Could not perform action "read": client is not connected`);
+    }
     const queryArray = ["SELECT"];
     const variables = [];
     let varCount = 0;
@@ -151,6 +165,9 @@ async function read(table, where, fields) {
 }
 exports.read = read;
 async function update(table, ids, values) {
+    if (!client) {
+        throw new Error(`Could not perform action "update": client is not connected`);
+    }
     const queryArray = ["UPDATE", sanitizeTable(table), "SET"];
     const variables = [];
     let varCount = 0;

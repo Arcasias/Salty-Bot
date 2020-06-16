@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { isAdmin } from "../../utils";
 
 Command.register({
@@ -21,11 +21,11 @@ Command.register({
         const isRequestedUserAdmin: boolean = isAdmin(target.user, msg.guild!);
 
         // Fuck if/else structures, long live ternary operators
-        Salty.info(
+        salty.info(
             msg,
             target.isMention
                 ? // mention
-                  target.user.id === Salty.bot.user!.id
+                  target.user.id === salty.bot.user!.id
                     ? // mention is Salty
                       isRequestedUserAdmin
                         ? // mention is Salty and is admin

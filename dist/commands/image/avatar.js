@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const SALTY_IMAGES_PATH = "assets/img/salty";
 Command_1.default.register({
@@ -29,7 +29,7 @@ Command_1.default.register({
             title: `this is ${utils_1.possessive(target.name)} profile pic`,
             color: (_a = target.member) === null || _a === void 0 ? void 0 : _a.displayColor,
         };
-        if (target.user.id === Salty_1.default.bot.user.id) {
+        if (target.user.id === salty_1.default.bot.user.id) {
             const files = fs_1.default.readdirSync(SALTY_IMAGES_PATH);
             const pics = files.filter((f) => f.split(".").pop() === "png");
             options.title = `This is a picture of me. `;
@@ -53,6 +53,6 @@ Command_1.default.register({
                 options.image = { url };
             }
         }
-        await Salty_1.default.embed(msg, options);
+        await salty_1.default.embed(msg, options);
     },
 });

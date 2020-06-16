@@ -1,6 +1,6 @@
 import { DMChannel, NewsChannel, TextChannel } from "discord.js";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { error, meaning } from "../../utils";
 
 let purging: boolean = false;
@@ -61,7 +61,7 @@ Command.register({
                 } else {
                     await msg.channel.bulkDelete(messagesToDelete);
                 }
-                Salty.success(
+                salty.success(
                     msg,
                     "most recent bot messages have been deleted"
                 );
@@ -69,9 +69,9 @@ Command.register({
             case "clear":
                 if (purging) {
                     purging = false;
-                    Salty.success(msg, "purge stopped");
+                    salty.success(msg, "purge stopped");
                 } else {
-                    Salty.warn(msg, "I wasn't purging anything");
+                    salty.warn(msg, "I wasn't purging anything");
                 }
                 break;
             case "string":
@@ -82,13 +82,13 @@ Command.register({
             /* falls through */
             default:
                 if (isNaN(Number(args[0]))) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "Given length must be a valid number."
                     );
                 }
                 if (parseInt(args[0]) === 0) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "You must delete at least 1 message."
                     );
@@ -103,7 +103,7 @@ Command.register({
                     } else {
                         await msg.channel.bulkDelete(toDelete, true);
                     }
-                    await Salty.success(
+                    await salty.success(
                         msg,
                         `${toDelete} messages have been successfully deleted`
                     );

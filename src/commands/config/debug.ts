@@ -2,6 +2,7 @@ import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
+import salty from "../../salty";
 import { debug, ellipsis } from "../../utils";
 
 const MAXDEPTH = 3;
@@ -57,14 +58,14 @@ Command.register({
 
     async action({ args, msg }) {
         if (!args[0]) {
-            return Salty.warn(msg, "No code to execute.");
+            return salty.warn(msg, "No code to execute.");
         }
         const evalResult = evalInContext.call(Salty, args.join(" "));
         const result = `${args.join(
             " "
         )} = /*${typeof evalResult}*/ ${stringify(evalResult, 0)}`;
         const message = ellipsis(result, 1985);
-        Salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
+        salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
         debug(message);
     },
 });

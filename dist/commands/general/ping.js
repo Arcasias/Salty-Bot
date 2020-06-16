@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const PING_MESSAGES = [
     "nearly perfect!",
@@ -28,29 +28,14 @@ Command_1.default.register({
             effect: "Tests client-server latency",
         },
     ],
-    async action({ args, msg }) {
-        var _a;
-        if (args.length && args[0] === "role") {
-            const roles = (_a = msg.guild) === null || _a === void 0 ? void 0 : _a.roles.cache;
-            if (roles) {
-                const roleIds = roles
-                    .filter((role) => Boolean(role.color))
-                    .map((role) => utils_1.pingable(role.id));
-                return Salty_1.default.message(msg, roleIds.join(" "));
-            }
-            else {
-                return Salty_1.default.warn(msg, "No roles on this server.");
-            }
+    async action({ msg }) {
+        if (utils_1.generate(3)) {
+            return salty_1.default.info(msg, "pong, and I don't give a fuck about your latency");
         }
-        else {
-            if (utils_1.generate(3)) {
-                return Salty_1.default.success(msg, "pong, and I don't give a fuck about your latency");
-            }
-            const sentMsg = await msg.channel.send("Pinging...");
-            const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
-            const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
-            await sentMsg.delete();
-            await Salty_1.default.success(msg, `pong! Latency is ${latency}. ${utils_1.title(message)}`);
-        }
+        const sentMsg = await msg.channel.send("Pinging...");
+        const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
+        const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
+        await sentMsg.delete();
+        await salty_1.default.info(msg, `pong! Latency is ${latency}. ${utils_1.title(message)}`);
     },
 });

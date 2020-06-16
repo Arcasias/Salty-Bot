@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { fault } from "../../terms";
 import { choice } from "../../utils";
 
@@ -20,6 +20,6 @@ Command.register({
             .replace(/<reason>/g, choice(fault.reason))
             .replace(/<punishment>/g, choice(fault.punishment));
 
-        await Salty.message(msg, text);
+        await salty.message(msg, text);
     },
 });

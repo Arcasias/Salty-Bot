@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
 import { homepage, prefix } from "../../config";
+import salty from "../../salty";
 import { Dictionnary, SaltyEmbedOptions } from "../../types";
 import { title } from "../../utils";
 
@@ -45,7 +45,7 @@ Command.register({
                 for (const command of commands.values()) {
                     if (
                         "access" in command &&
-                        Salty.hasAccess(command.access, msg.author, msg.guild)
+                        salty.hasAccess(command.access, msg.author, msg.guild)
                     ) {
                         const aliases = command.aliases.length
                             ? ` (or ***${command.aliases.join("***, ***")}***)`
@@ -94,7 +94,7 @@ Command.register({
                     }
                 });
             } else {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "The second argument must be a command or a category."
                 );
@@ -136,6 +136,6 @@ Command.register({
                 });
             }
         }
-        await Salty.embed(msg, options);
+        await salty.embed(msg, options);
     },
 });

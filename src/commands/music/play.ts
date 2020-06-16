@@ -5,7 +5,7 @@ import ytdl, { videoInfo } from "ytdl-core";
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
 import Playlist from "../../classes/Playlist";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { surpriseSong } from "../../terms";
 import { Dictionnary, SaltyEmbedOptions } from "../../types";
 import { choice, generate, getNumberReactions } from "../../utils";
@@ -22,7 +22,7 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
     }
     const member = msg.member!;
     const { author, length_seconds, title } = <videoInfo>await getInfo(songURL);
-    Salty.success(
+    salty.success(
         msg,
         `**${member.displayName}** added **${title}** to the queue`
     );
@@ -40,7 +40,7 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
 
 Command.register({
     name: "play",
-    aliases: ["sing", "song", "video", "youtube", "yt"],
+    aliases: ["sing", "song", "video", "youtube"],
     category: "music",
     help: [
         {
@@ -69,16 +69,16 @@ Command.register({
     async action({ args, msg }) {
         const voiceChannel = msg.member!.voice.channel;
         if (!voiceChannel) {
-            return Salty.warn(msg, "You're not in a voice channel.");
+            return salty.warn(msg, "You're not in a voice channel.");
         }
         const { playlist } = Guild.get(msg.guild!.id)!;
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
-                return Salty.warn(msg, "Can't play the queue if it's empty.");
+                return salty.warn(msg, "Can't play the queue if it's empty.");
             }
             if (playlist.connection) {
-                return Salty.warn(msg, "I'm already playing.");
+                return salty.warn(msg, "I'm already playing.");
             }
             playlist.start(voiceChannel);
         }
@@ -98,7 +98,7 @@ Command.register({
             type: "video",
         });
         if (!results.data?.items?.length) {
-            return Salty.info(msg, "No results found.");
+            return salty.info(msg, "No results found.");
         }
         if (directPlay) {
             const firstValidSong = results.data.items.find((v) => v.id);
@@ -137,6 +137,6 @@ Command.register({
             });
             messageUrls[numberReactions[index]] = videoURL;
         });
-        Salty.embed(msg, options);
+        salty.embed(msg, options);
     },
 });

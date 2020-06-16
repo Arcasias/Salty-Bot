@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const PromiseManager_1 = __importDefault(require("../../classes/PromiseManager"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 async function changeNames(msg, transformation) {
     const members = msg.guild.members.cache.array();
-    const progressMsg = await Salty_1.default.message(msg, `changing nicknames: 0/${members.length}`);
+    const progressMsg = await salty_1.default.message(msg, `changing nicknames: 0/${members.length}`);
     const pm = new PromiseManager_1.default();
     for (let i = 0; i < members.length; i++) {
         const newNick = transformation(members[i].displayName);
@@ -34,7 +34,7 @@ async function changeNames(msg, transformation) {
         }
     }
     pm.add(progressMsg.delete.bind(progressMsg));
-    return Salty_1.default.success(msg, "nicknames successfully changed");
+    return salty_1.default.success(msg, "nicknames successfully changed");
 }
 Command_1.default.register({
     name: "nickname",
@@ -70,10 +70,10 @@ Command_1.default.register({
                 return changeNames.call(this, msg, (nickname) => nickname.replace(particleRegex, "").trim());
             }
             case "string": {
-                return Salty_1.default.warn(msg, "You need to specify what nickname particle will be targeted.");
+                return salty_1.default.warn(msg, "You need to specify what nickname particle will be targeted.");
             }
             default: {
-                return Salty_1.default.warn(msg, "You need to tell whether to add or delete a global nickname particle.");
+                return salty_1.default.warn(msg, "You need to tell whether to add or delete a global nickname particle.");
             }
         }
     },

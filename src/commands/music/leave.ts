@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "leave",
@@ -18,8 +18,8 @@ Command.register({
         const { playlist } = Guild.get(msg.guild!.id)!;
         const channel = playlist.leave();
         if (!playlist.connection || !channel) {
-            return Salty.warn(msg, "I'm not in a voice channel.");
+            return salty.warn(msg, "I'm not in a voice channel.");
         }
-        Salty.info(msg, `Leaving **${channel.name}**.`);
+        salty.info(msg, `Leaving **${channel.name}**.`);
     },
 });

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const DISPLAY_LIMIT = 25;
 Command_1.default.register({
@@ -32,10 +32,10 @@ Command_1.default.register({
         switch (utils_1.meaning(args[0])) {
             case "remove": {
                 if (!playlist.queue[0]) {
-                    return Salty_1.default.warn(msg, "The queue is already empty.");
+                    return salty_1.default.warn(msg, "The queue is already empty.");
                 }
                 if (!args[1]) {
-                    return Salty_1.default.warn(msg, "You need to specify which song to remove.");
+                    return salty_1.default.warn(msg, "You need to specify which song to remove.");
                 }
                 else {
                     args.shift();
@@ -47,43 +47,43 @@ Command_1.default.register({
                 for (let i = 0; i < songIds.length; i++) {
                     let songId = Number(songIds[i]);
                     if (isNaN(songId)) {
-                        return Salty_1.default.warn(msg, "Specified song must be the index of a song in the queue.");
+                        return salty_1.default.warn(msg, "Specified song must be the index of a song in the queue.");
                     }
                     songId--;
                     if (playlist.queue.length <= songId || songId < 0) {
-                        return Salty_1.default.warn(msg, "Specified song number is out of the list indices.");
+                        return salty_1.default.warn(msg, "Specified song number is out of the list indices.");
                     }
                 }
                 const removed = playlist.remove(...songs.map(Number));
                 const message = Array.isArray(songs)
                     ? `Songs n°${songs.map((s) => s + 1)} removed from the queue`
                     : `Song n°${songs[0] + 1} - **${removed[0].title}** removed from the queue`;
-                return Salty_1.default.success(msg, message);
+                return salty_1.default.success(msg, message);
             }
             case "clear": {
                 playlist.empty();
-                return Salty_1.default.success(msg, "queue cleared");
+                return salty_1.default.success(msg, "queue cleared");
             }
             default: {
                 if (!playlist.queue.length) {
-                    return Salty_1.default.message(msg, "The queue is empty.");
+                    return salty_1.default.info(msg, "The queue is empty.");
                 }
                 let totalDuration = 0;
                 const options = {
-                    title: "current queue",
+                    title: "Current queue",
                     fields: [],
                     footer: { text: `repeat: ${playlist.repeat}` },
                 };
                 options.fields = playlist.queue
                     .slice(0, DISPLAY_LIMIT)
-                    .map(({ duration, title, url }, i) => {
-                    const name = `${i + 1}) ${title}`;
-                    const description = `${utils_1.formatDuration(duration)} - [Open in browser](${url})`;
+                    .map(({ channel, duration, title, url }, i) => {
+                    let name = `${channel} - ${utils_1.formatDuration(duration)}`;
+                    const value = `${i + 1}) [${title}](${url})`;
+                    if (playlist.pointer === i) {
+                        name = `➤ ${name} (playing)`;
+                    }
                     totalDuration += duration;
-                    return {
-                        name: playlist.pointer === i ? "> " + name : name,
-                        value: description,
-                    };
+                    return { name, value };
                 });
                 options.description = `total duration: ${utils_1.formatDuration(totalDuration)}`;
                 if (playlist.connection) {
@@ -91,9 +91,9 @@ Command_1.default.register({
                     const title = 20 < playlistTitle.length
                         ? playlistTitle.slice(0, 20) + "..."
                         : playlistTitle;
-                    options.description += ". Currently playing: " + title;
+                    options.title = "Currently playing: " + title;
                 }
-                return Salty_1.default.embed(msg, options);
+                return salty_1.default.embed(msg, options);
             }
         }
     },

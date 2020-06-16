@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "embed",
     aliases: ["json", "parse"],
@@ -26,11 +26,11 @@ Command_1.default.register({
             parsed = JSON.parse(args.join(" "));
         }
         catch (error) {
-            return Salty_1.default.warn(msg, "Given data must be formatted as a JSON string.");
+            return salty_1.default.warn(msg, "Given data must be formatted as a JSON string.");
         }
         if (!Object.keys(parsed).length) {
-            return Salty_1.default.warn(msg, "You must give me some data to parse.");
+            return salty_1.default.warn(msg, "You must give me some data to parse.");
         }
-        await Salty_1.default.message(msg, null, { embed: new discord_js_1.MessageEmbed(parsed) });
+        await salty_1.default.message(msg, null, { embed: new discord_js_1.MessageEmbed(parsed) });
     },
 });

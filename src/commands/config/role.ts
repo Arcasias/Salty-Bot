@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { keywords } from "../../terms";
 import { isDev, meaning, randColor } from "../../utils";
 
@@ -45,16 +45,16 @@ Command.register({
                     case "set": {
                         args.shift();
                         if (!args.length) {
-                            return Salty.warn(
+                            return salty.warn(
                                 msg,
                                 "You need to specify the name of the new role."
                             );
                         }
                         const roleName = args.slice(0).join(" ");
-                        const role = await getRole(msg, roleName);
+                        const role = getRole(msg, roleName);
                         if (!role) {
                             const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
-                            return Salty.warn(
+                            return salty.warn(
                                 msg,
                                 `This role doesn't exist. You can create it with "${commandString}".`
                             );
@@ -62,7 +62,7 @@ Command.register({
                         await Guild.update(dbGuild.id, {
                             default_role: role.id,
                         });
-                        return Salty.success(
+                        return salty.success(
                             msg,
                             `Role **${role.name}** has been successfuly set as default role.`,
                             { color: role.color }
@@ -70,22 +70,22 @@ Command.register({
                     }
                     case "remove": {
                         if (!dbGuild.default_channel) {
-                            return Salty.info(msg, "No default role set.");
+                            return salty.info(msg, "No default role set.");
                         }
                         await Guild.update(dbGuild.id, { default_role: null });
-                        return Salty.success(
+                        return salty.success(
                             msg,
                             "default role has been successfuly removed"
                         );
                     }
                     default: {
                         if (!dbGuild.default_role) {
-                            return Salty.info(msg, "No default role set");
+                            return salty.info(msg, "No default role set");
                         } else {
                             const role = guild.roles.cache.get(
                                 dbGuild.default_role
                             );
-                            return Salty.embed(msg, {
+                            return salty.embed(msg, {
                                 title: `Default role is ${role?.name}`,
                                 description:
                                     "Newcomers will automatically get this role.",
@@ -99,15 +99,15 @@ Command.register({
                 switch (meaning(args[0])) {
                     // Not default
                     case "add": {
-                        if (!Salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-                            return Salty.warn(
+                        if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
+                            return salty.warn(
                                 msg,
                                 "I'm not allowed to manage roles on this server."
                             );
                         }
                         args.shift();
                         if (!args.length) {
-                            return Salty.warn(
+                            return salty.warn(
                                 msg,
                                 "You need to specify the name of the new role."
                             );
@@ -115,7 +115,7 @@ Command.register({
                         const roleName = args.slice(0).join(" ");
                         const role = getRole(msg, roleName);
                         if (role) {
-                            return Salty.warn(msg, "This role already exists.");
+                            return salty.warn(msg, "This role already exists.");
                         }
                         const newRole = await msg.guild!.roles.create({
                             data: {
@@ -125,7 +125,7 @@ Command.register({
                             },
                             reason: `Created by ${msg.author.username} via Salty`,
                         });
-                        return Salty.success(
+                        return salty.success(
                             msg,
                             `Role **${newRole.name}** created.`,
                             { color: newRole.color }
@@ -134,7 +134,7 @@ Command.register({
                     case "set": {
                         args.shift();
                         if (!args.length) {
-                            return Salty.warn(
+                            return salty.warn(
                                 msg,
                                 "You need to specify the name of the role."
                             );
@@ -144,7 +144,7 @@ Command.register({
                         if (!role) {
                             if (!isDev(msg.author)) {
                                 const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
-                                return Salty.warn(
+                                return salty.warn(
                                     msg,
                                     `This role doesn't exist. You can create it with "${commandString}".`
                                 );
@@ -160,15 +160,15 @@ Command.register({
                             }
                         }
                         msg.member!.roles.add(role);
-                        return Salty.success(
+                        return salty.success(
                             msg,
                             `You have been assigned the role **${role.name}**.`,
                             { color: role.color }
                         );
                     }
                     case "remove": {
-                        if (!Salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-                            return Salty.warn(
+                        if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
+                            return salty.warn(
                                 msg,
                                 "I'm not allowed to manage roles on this server."
                             );
@@ -176,13 +176,13 @@ Command.register({
                         args.shift();
                         const role = getRole(msg, args.join(" "));
                         if (!role) {
-                            return Salty.warn(
+                            return salty.warn(
                                 msg,
                                 "You need to specify the name of the role to delete."
                             );
                         }
                         role.delete("Deleted by Salty");
-                        return Salty.success(
+                        return salty.success(
                             msg,
                             `Role **${role.name}** deleted.`,
                             { color: role.color }
@@ -192,11 +192,9 @@ Command.register({
                         const roles = msg
                             .member!.roles.cache.map((r) => r.name)
                             .filter((n) => n !== "@everyone");
-                        return Salty.info(
-                            msg,
-                            "You have the following roles",
-                            { description: roles.join("\n") }
-                        );
+                        return salty.info(msg, "You have the following roles", {
+                            description: roles.join("\n"),
+                        });
                     }
                 }
             }

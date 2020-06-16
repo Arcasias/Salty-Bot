@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
 const config_1 = require("../../config");
+const salty_1 = __importDefault(require("../../salty"));
 const specialActions = [
     {
         keywords: ["nude", "nudes"],
@@ -48,6 +48,6 @@ Command_1.default.register({
             msg.delete();
             message = args.join(" ");
         }
-        await Salty_1.default.message(msg, message);
+        await salty_1.default.message(msg, message);
     },
 });

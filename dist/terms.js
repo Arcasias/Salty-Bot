@@ -13,11 +13,11 @@ exports.keywords = {
 exports.meaning = {
     yes: {
         answers: ["ack"],
-        list: ["yes", "yeah", "yea", "yee", "yep", "yup", "affirmative"],
+        list: ["yes", "yeah", "yee", "yep", "yup", "affirmative"],
     },
     no: {
         answers: ["ack"],
-        list: ["no", "noo", "nooo", "nope", "noope", "nooope", "negative"],
+        list: ["no", "nooo", "nope", "nooope", "negative"],
     },
     hello: {
         answers: ["greet"],
@@ -31,25 +31,15 @@ exports.meaning = {
             "greetings",
             "ohayo",
             "hey",
-            "heyo",
-            "ohayo",
         ],
     },
     goodbye: {
         answers: ["bye"],
-        list: [
-            "cya",
-            "see ya",
-            "see you",
-            "bye",
-            "goodbye",
-            "farewell",
-            "so long",
-        ],
+        list: ["cya", "see you", "bye", "goodbye", "farewell", "so long"],
     },
     thanks: {
         answers: ["ackthank"],
-        list: ["thanks", "thank", "thx", "grateful"],
+        list: ["thanks", "thx", "grateful"],
     },
     welcome: {
         answers: ["thank"],
@@ -57,19 +47,11 @@ exports.meaning = {
     },
     sorry: {
         answers: ["acksorry"],
-        list: ["sorry", "excuse", "excuses", "apologie", "apologies"],
+        list: ["sorry", "excuse me", "excuses", "apologies"],
     },
     ok: {
         answers: ["yes"],
-        list: [
-            "ok",
-            "okay",
-            "clear",
-            "understand",
-            "understood",
-            "get it",
-            "got it",
-        ],
+        list: ["ok", "clear", "understood", "got it"],
     },
     howAreYou: {
         answers: ["fine", "thank"],
@@ -81,7 +63,6 @@ exports.meaning = {
             "are you fine",
             "are you ok",
             "how you doing",
-            "how you doin",
             "what's up",
             "waddup",
             "whassup",
@@ -169,14 +150,14 @@ exports.answers = {
         "hey, you know, I'm a bot... that's AWESOME right?",
         "hmmm",
         "huh?",
-        "i hate you",
-        "i love you",
+        "I hate you",
+        "I love you",
         "I'm vegan",
         "I used to be a knee like you, then I took an adventurer to the arrow",
         "I used to be an adventurer like you, then I took an arrow to the knee",
         "I used to be an arrow like you, then I took an knee to the adventurer",
         "it looks like you're... talking to me?",
-        "just for your information, I'm not actually made of salt. I'm 100% JavaScript ;)",
+        "just for your information, I'm not actually made of salt. I'm 100% TypeScript ;)",
         "maybe the Earth is flat after all",
         "oh, are you trying to talk to me?",
         "oh, hello human",
@@ -214,19 +195,44 @@ exports.intro = [
     "all aboard the salt train!",
 ];
 exports.jokes = [
-    "your life",
-    "the current Bitcoin value",
-    "well your life is a joke anyway",
-    "a blind man walks into a bar, a chair, the waitress...",
-    "i don't like jokes about german sausages. They really are the wurst",
-    "two routers decided to marry. The wedding wasn't much, but the reception was incredible",
-    "what's the hardest part in a vegetable?\n\n\nThe wheelchair",
-    "how do you make a clown cry?\n\n\nBy killing his whole family",
-    "how do you make a plumber cry?\n\n\nBy killing his whole family",
-    "why do crabs never give to charity?\n\n\nBecause they're shellfish",
-    "why did the chicken cross the road?\n\n\nBecause you touch yourself at night",
-    "why aren't Microsoft developers wearing glasses?\n\n\nBecause they can C sharp",
-    "what did the triceratops say to the dimetrodon?\n\n\nNothing. They lived at different epochs",
+    { text: "your life" },
+    { text: "the current Bitcoin value" },
+    { text: "well your life is a joke anyway" },
+    { text: "a blind man walks into a bar, a chair, the waitress..." },
+    {
+        text: "I don't like jokes about german sausages. They really are the wurst",
+    },
+    {
+        text: "two routers decided to marry. The wedding wasn't much, but the reception was incredible",
+    },
+    {
+        text: "what's the hardest part in a vegetable?",
+        answer: "The wheelchair",
+    },
+    {
+        text: "how do you make a clown cry?",
+        answer: "By killing his whole family",
+    },
+    {
+        text: "how do you make a plumber cry?",
+        answer: "By killing his whole family",
+    },
+    {
+        text: "why do crabs never give to charity?",
+        answer: "Because they're shellfish",
+    },
+    {
+        text: "why did the chicken cross the road?",
+        answer: "Because you touch yourself at night",
+    },
+    {
+        text: "why aren't Microsoft developers wearing glasses?",
+        answer: "Because they can C sharp",
+    },
+    {
+        text: "what did the triceratops say to the dimetrodon?",
+        answer: "Nothing. They lived at different epochs",
+    },
 ];
 exports.pureSalt = [
     "you're a complete retard",
@@ -243,20 +249,20 @@ exports.pureSalt = [
     "you're just bad",
     "what's the point of you?",
     "try killing yourself next time",
-    "i hope you step on a lego",
+    "I hope you step on a lego",
     "end your pathetic life",
     "have you already considered suicide?",
     "please don't reproduce",
     "please use condoms",
-    "i hope you're using condoms",
+    "I hope you're using condoms",
     "don't breed. Please",
     "and when exactly are you planning to die?",
     "please die",
     "considered suicide already? You should try it",
     "please do me a favor and jump off a rooftop",
     "looks like your age matches your IQ",
-    "i don't have the time nor the crayons to explain how dumb you are",
-    'i wrote you a poem, it goes like this: "Roses are red, go fuck yourself"',
+    "I don't have the time nor the crayons to explain how dumb you are",
+    'I wrote you a poem, it goes like this: "Roses are red, go fuck yourself"',
 ];
 exports.fault = {
     start: [

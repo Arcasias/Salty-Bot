@@ -1,9 +1,9 @@
 import { Message } from "discord.js";
+import salty from "../salty";
 import { FieldsDescriptor, Runnable } from "../types";
 import { choice } from "../utils";
 import Command from "./Command";
 import Model from "./Model";
-import Salty from "./Salty";
 
 class QuickCommand extends Model implements Runnable {
     public id!: number;
@@ -64,7 +64,7 @@ class QuickCommand extends Model implements Runnable {
     }
 
     async run(msg: Message, args: string[]) {
-        return Salty.message(msg, choice(this.answers));
+        return salty.message(msg, choice(this.answers));
     }
 }
 

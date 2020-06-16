@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "tts",
@@ -19,7 +19,7 @@ Command.register({
     async action({ args, msg }) {
         // Just sends the arguments as a TTS message
         if (!args[0]) {
-            return Salty.warn(msg, "You need to tell me what to say.");
+            return salty.warn(msg, "You need to tell me what to say.");
         }
         msg.delete();
         await msg.channel.send(args.join(" "), { tts: true });

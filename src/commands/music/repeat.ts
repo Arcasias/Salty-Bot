@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "repeat",
@@ -31,19 +31,19 @@ Command.register({
 
         const single = () => {
             playlist.repeat = "single";
-            Salty.success(msg, "I will now repeat the current song", {
+            salty.success(msg, "I will now repeat the current song", {
                 react: "🔂",
             });
         };
         const all = () => {
             playlist.repeat = "all";
-            Salty.success(msg, "I will now repeat the whole queue", {
+            salty.success(msg, "I will now repeat the whole queue", {
                 react: "🔁",
             });
         };
         const off = () => {
             playlist.repeat = "off";
-            Salty.success(msg, "repeat disabled", { react: "❎" });
+            salty.success(msg, "repeat disabled", { react: "❎" });
         };
 
         if (["single", "1", "one", "this"].includes(args[0])) {

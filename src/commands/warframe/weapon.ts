@@ -1,7 +1,7 @@
 import { EmbedFieldData } from "discord.js";
 import Items, { DamageTypes } from "warframe-items";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { Dictionnary, Weapon } from "../../types";
 import { clean, getNumberReactions, levenshtein, search } from "../../utils";
 
@@ -79,7 +79,7 @@ Command.register({
                 for (let i = 0; i < results.length; i++) {
                     mapping[numberReactions[i]] = results[i];
                 }
-                return Salty.embed(msg, {
+                return salty.embed(msg, {
                     title: `Weapon names matching "${query}":`,
                     description: results
                         .map((r, i) => `${i + 1}) ${weaponMapping[r].name}`)
@@ -120,7 +120,7 @@ Command.register({
                         value: displayCapacity(weapon),
                     },
                 ];
-                return Salty.embed(msg, {
+                return salty.embed(msg, {
                     title: weapon.name,
                     description: weapon.description,
                     inline: true,
@@ -131,7 +131,7 @@ Command.register({
             } else {
                 const results = search(weaponNames, query, 5);
                 if (results.length) {
-                    return Salty.message(
+                    return salty.message(
                         msg,
                         `Weapon "${
                             args[0]
@@ -140,13 +140,13 @@ Command.register({
                         )}"?`
                     );
                 } else {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         "That's not even close to a weapon name."
                     );
                 }
             }
         }
-        return Salty.message(msg, "Oui");
+        return salty.message(msg, "Oui");
     },
 });

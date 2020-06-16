@@ -8,7 +8,7 @@ const util_1 = require("util");
 const ytdl_core_1 = __importDefault(require("ytdl-core"));
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const terms_1 = require("../../terms");
 const utils_1 = require("../../utils");
 const RESULT_LIMIT = 5;
@@ -21,10 +21,11 @@ async function addSong(msg, playlist, songURL) {
         songURL = utils_1.choice(terms_1.surpriseSong);
     }
     const member = msg.member;
-    const { length_seconds, title } = await getInfo(songURL);
-    Salty_1.default.success(msg, `**${member.displayName}** added **${title}** to the queue`);
+    const { author, length_seconds, title } = await getInfo(songURL);
+    salty_1.default.success(msg, `**${member.displayName}** added **${title}** to the queue`);
     msg.delete();
     playlist.add({
+        channel: author.name,
         duration: Number(length_seconds) * 1000,
         title: title,
         url: songURL,
@@ -35,7 +36,7 @@ async function addSong(msg, playlist, songURL) {
 }
 Command_1.default.register({
     name: "play",
-    aliases: ["sing", "song", "video", "youtube", "yt"],
+    aliases: ["sing", "song", "video", "youtube"],
     category: "music",
     help: [
         {
@@ -60,16 +61,16 @@ Command_1.default.register({
         var _a, _b;
         const voiceChannel = msg.member.voice.channel;
         if (!voiceChannel) {
-            return Salty_1.default.warn(msg, "You're not in a voice channel.");
+            return salty_1.default.warn(msg, "You're not in a voice channel.");
         }
         const { playlist } = Guild_1.default.get(msg.guild.id);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {
-                return Salty_1.default.warn(msg, "Can't play the queue if it's empty.");
+                return salty_1.default.warn(msg, "Can't play the queue if it's empty.");
             }
             if (playlist.connection) {
-                return Salty_1.default.warn(msg, "I'm already playing.");
+                return salty_1.default.warn(msg, "I'm already playing.");
             }
             playlist.start(voiceChannel);
         }
@@ -88,7 +89,7 @@ Command_1.default.register({
             type: "video",
         });
         if (!((_b = (_a = results.data) === null || _a === void 0 ? void 0 : _a.items) === null || _b === void 0 ? void 0 : _b.length)) {
-            return Salty_1.default.warn(msg, "No results found.");
+            return salty_1.default.info(msg, "No results found.");
         }
         if (directPlay) {
             const firstValidSong = results.data.items.find((v) => v.id);
@@ -109,7 +110,7 @@ Command_1.default.register({
                 },
             },
             fields: [],
-            title: "search results",
+            title: `Results for "${args.join(" ")}"`,
         };
         results.data.items.forEach(({ id, snippet }, index) => {
             if (!id) {
@@ -118,11 +119,11 @@ Command_1.default.register({
             const videoURL = youtubeURL + id.videoId;
             const { title, channelTitle } = snippet;
             options.fields.push({
-                name: `${index + 1}) ${title}`,
-                value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
+                name: channelTitle,
+                value: `${index + 1}) [${title}](${videoURL})`,
             });
             messageUrls[numberReactions[index]] = videoURL;
         });
-        Salty_1.default.embed(msg, options);
+        salty_1.default.embed(msg, options);
     },
 });

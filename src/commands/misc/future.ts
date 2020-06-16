@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { predictions } from "../../terms";
 import { ellipsis, randInt, shuffle } from "../../utils";
 
@@ -21,6 +21,6 @@ Command.register({
         }
         const shuffled = shuffle(pred);
         const ellipsed = ellipsis(shuffled.join(" ||||"), 1995);
-        Salty.message(msg, `||${ellipsed}||`);
+        salty.message(msg, `||${ellipsed}||`);
     },
 });

@@ -19,8 +19,8 @@ class Playlist {
         return this.queue[this.pointer];
     }
     add(...songs) {
-        songs.forEach(({ duration, title, url }) => {
-            this.queue.push({ duration, title, url });
+        songs.forEach(({ channel, duration, title, url }) => {
+            this.queue.push({ channel, duration, title, url });
         });
     }
     empty() {

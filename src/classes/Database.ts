@@ -80,7 +80,9 @@ export async function create(
     ...allValues: FieldsDescriptor[]
 ): Promise<QueryResultRow[]> {
     if (!client) {
-        throw new Error(`Could not perform action "create": client is not connected`);
+        throw new Error(
+            `Could not perform action "create": client is not connected`
+        );
     }
     const queryArray: string[] = ["INSERT INTO", sanitizeTable(table)];
     const variables: string[] = [];
@@ -120,7 +122,9 @@ export async function remove(
     ids: number | number[]
 ): Promise<QueryResultRow[]> {
     if (!client) {
-        throw new Error(`Could not perform action "remove": client is not connected`);
+        throw new Error(
+            `Could not perform action "remove": client is not connected`
+        );
     }
     const queryArray: string[] = ["DELETE FROM", sanitizeTable(table)];
     const variables: number[] = [];
@@ -154,7 +158,9 @@ export async function read(
     fields?: string[]
 ): Promise<QueryResultRow[]> {
     if (!client) {
-        throw new Error(`Could not perform action "read": client is not connected`);
+        throw new Error(
+            `Could not perform action "read": client is not connected`
+        );
     }
     const queryArray: string[] = ["SELECT"];
     const variables: string[] = [];
@@ -205,7 +211,9 @@ export async function update(
     values: FieldsDescriptor
 ): Promise<QueryResultRow[]> {
     if (!client) {
-        throw new Error(`Could not perform action "update": client is not connected`);
+        throw new Error(
+            `Could not perform action "update": client is not connected`
+        );
     }
     const queryArray = ["UPDATE", sanitizeTable(table), "SET"];
     const variables = [];

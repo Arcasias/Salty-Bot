@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "restart",
     aliases: ["reset"],
@@ -17,7 +17,7 @@ Command_1.default.register({
     ],
     access: "dev",
     async action({ msg }) {
-        await Salty_1.default.success(msg, "Restarting ...");
-        await Salty_1.default.restart();
+        await salty_1.default.info(msg, "Restarting ...");
+        await salty_1.default.restart();
     },
 });

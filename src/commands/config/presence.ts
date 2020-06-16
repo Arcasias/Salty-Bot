@@ -1,6 +1,6 @@
 import { PresenceStatusData } from "discord.js";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { StatusInfos } from "../../types";
 import { meaning } from "../../utils";
 
@@ -21,8 +21,8 @@ Command.register({
         switch (meaning(args[0])) {
             case "remove":
             case "clear": {
-                await Salty.bot.user!.setPresence({ activity: undefined });
-                return Salty.success(msg, "current status removed");
+                await salty.bot.user!.setPresence({ activity: undefined });
+                return salty.success(msg, "current status removed");
             }
             case "add":
             case "set": {
@@ -32,8 +32,8 @@ Command.register({
                 const status = args[0];
                 if (status in STATUSINFO) {
                     // status
-                    await Salty.bot.user!.setStatus(<PresenceStatusData>status);
-                    return Salty.success(
+                    await salty.bot.user!.setStatus(<PresenceStatusData>status);
+                    return salty.success(
                         msg,
                         `changed my status to **${
                             STATUSINFO[<keyof StatusInfos>status].title
@@ -42,10 +42,10 @@ Command.register({
                     );
                 } else {
                     // game
-                    await Salty.bot.user!.setPresence({
+                    await salty.bot.user!.setPresence({
                         activity: { name: status },
                     });
-                    return Salty.success(
+                    return salty.success(
                         msg,
                         `changed my status to **${status}**`
                     );
@@ -53,10 +53,10 @@ Command.register({
             }
             default: {
                 const { color, title } = STATUSINFO[
-                    <keyof StatusInfos>Salty.bot.user!.presence.status
+                    <keyof StatusInfos>salty.bot.user!.presence.status
                 ];
-                const description = Salty.bot.user!.presence.status;
-                Salty.embed(msg, { color, title, description });
+                const description = salty.bot.user!.presence.status;
+                salty.embed(msg, { color, title, description });
             }
         }
     },

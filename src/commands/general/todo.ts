@@ -1,7 +1,6 @@
-import { debug } from "console";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
 import User from "../../classes/User";
+import salty from "../../salty";
 import { clean, levenshtein, meaning } from "../../utils";
 
 Command.register({
@@ -28,17 +27,17 @@ Command.register({
                 const newTodo = args.join(" ");
                 const todos = [...user.todos, newTodo];
                 await User.update(user.id, { todos });
-                return Salty.success(
+                return salty.success(
                     msg,
                     `I added "**${newTodo}**" to your todo list.`
                 );
             }
             case "remove": {
                 if (!user.todos.length) {
-                    return Salty.info(msg, "Your todo list is empty.");
+                    return salty.info(msg, "Your todo list is empty.");
                 }
                 if (!args[1]) {
-                    return Salty.warn(
+                    return salty.warn(
                         msg,
                         `You need to tell me what item to remove.`
                     );
@@ -47,7 +46,7 @@ Command.register({
                 if (!isNaN(Number(args[1]))) {
                     targetIndex = Number(args[1]) - 1;
                     if (!user.todos[targetIndex]) {
-                        return Salty.warn(
+                        return salty.warn(
                             msg,
                             `Your todo list has ${user.todos.length} items: ${args[1]} is out of range.`
                         );
@@ -58,7 +57,7 @@ Command.register({
                             levenshtein(clean(args[1]), clean(todo)) <= 1
                     );
                     if (targetIndex < 0) {
-                        return Salty.warn(
+                        return salty.warn(
                             msg,
                             `No todo item matching "${args[1]}".`
                         );
@@ -74,21 +73,20 @@ Command.register({
                     }
                 }
                 await User.update(user.id, { todos });
-                return Salty.success(
+                return salty.success(
                     msg,
                     `"**${removed!}**" removed from your todo list`
                 );
             }
             case "clear": {
                 await User.update(user.id, { todos: [] });
-                return Salty.success(msg, "Your todo list has been cleared.");
+                return salty.success(msg, "Your todo list has been cleared.");
             }
             default: {
                 if (!user.todos.length) {
-                    return Salty.info(msg, "Your todo list is empty.");
+                    return salty.info(msg, "Your todo list is empty.");
                 }
-                debug({ todos: user.todos });
-                return Salty.embed(msg, {
+                return salty.embed(msg, {
                     title: "<authors> todo list",
                     description: user.todos
                         .map((todo: string) => `• ${todo}`)

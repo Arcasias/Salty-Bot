@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { jokes } from "../../terms";
 import { Dictionnary, Joke } from "../../types";
 import { randInt } from "../../utils";
@@ -27,6 +27,6 @@ Command.register({
             delete cache[msg.author.username];
         }
         const answer = joke.answer ? `\n\n||${joke.answer}||` : "";
-        await Salty.message(msg, joke.text + answer);
+        await salty.message(msg, joke.text + answer);
     },
 });

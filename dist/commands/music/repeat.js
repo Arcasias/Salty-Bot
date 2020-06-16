@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "repeat",
     aliases: ["loop", "rep", "replay"],
@@ -33,19 +33,19 @@ Command_1.default.register({
         const { playlist } = Guild_1.default.get(msg.guild.id);
         const single = () => {
             playlist.repeat = "single";
-            Salty_1.default.success(msg, "I will now repeat the current song", {
+            salty_1.default.success(msg, "I will now repeat the current song", {
                 react: "🔂",
             });
         };
         const all = () => {
             playlist.repeat = "all";
-            Salty_1.default.success(msg, "I will now repeat the whole queue", {
+            salty_1.default.success(msg, "I will now repeat the whole queue", {
                 react: "🔁",
             });
         };
         const off = () => {
             playlist.repeat = "off";
-            Salty_1.default.success(msg, "repeat disabled", { react: "❎" });
+            salty_1.default.success(msg, "repeat disabled", { react: "❎" });
         };
         if (["single", "1", "one", "this"].includes(args[0])) {
             single();

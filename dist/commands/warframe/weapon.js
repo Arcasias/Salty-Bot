@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const warframe_items_1 = __importDefault(require("warframe-items"));
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const utils_1 = require("../../utils");
 const SEARCH_LIMIT = 5;
 const weapons = new warframe_items_1.default({
@@ -67,7 +67,7 @@ Command_1.default.register({
                 for (let i = 0; i < results.length; i++) {
                     mapping[numberReactions[i]] = results[i];
                 }
-                return Salty_1.default.embed(msg, {
+                return salty_1.default.embed(msg, {
                     title: `Weapon names matching "${query}":`,
                     description: results
                         .map((r, i) => `${i + 1}) ${weaponMapping[r].name}`)
@@ -108,7 +108,7 @@ Command_1.default.register({
                         value: displayCapacity(weapon),
                     },
                 ];
-                return Salty_1.default.embed(msg, {
+                return salty_1.default.embed(msg, {
                     title: weapon.name,
                     description: weapon.description,
                     inline: true,
@@ -120,13 +120,13 @@ Command_1.default.register({
             else {
                 const results = utils_1.search(weaponNames, query, 5);
                 if (results.length) {
-                    return Salty_1.default.message(msg, `Weapon "${args[0]}" did not match any item. Did you mean "${results.join(`" or "`)}"?`);
+                    return salty_1.default.message(msg, `Weapon "${args[0]}" did not match any item. Did you mean "${results.join(`" or "`)}"?`);
                 }
                 else {
-                    return Salty_1.default.warn(msg, "That's not even close to a weapon name.");
+                    return salty_1.default.warn(msg, "That's not even close to a weapon name.");
                 }
             }
         }
-        return Salty_1.default.message(msg, "Oui");
+        return salty_1.default.message(msg, "Oui");
     },
 });

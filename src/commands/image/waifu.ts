@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { waifus } from "../../terms";
 import { choice } from "../../utils";
 
@@ -16,7 +16,7 @@ Command.register({
 
     async action({ msg }) {
         const { name, anime, image } = choice(waifus);
-        await Salty.embed(msg, {
+        await salty.embed(msg, {
             title: name,
             description: `anime: ${anime}`,
             image: { url: choice(image) },

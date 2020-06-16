@@ -1,6 +1,6 @@
 import { Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { PollOption, SaltyEmbedOptions } from "../../types";
 import { getNumberReactions, possessive } from "../../utils";
 
@@ -46,20 +46,20 @@ Command.register({
     channel: "guild",
     async action({ args, msg }) {
         if (!args.length) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 `You need to specify options to create a poll.`
             );
         }
         const optionTexts = args.join(" ").split(OPTION_SEPARATOR);
         if (optionTexts.length < 2) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 `You need to specify more than one option to create a poll.`
             );
         }
         if (optionTexts.length > OPTION_AMOUNT) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 `You need to specify less than ${OPTION_AMOUNT} options to create a poll.`
             );
@@ -104,7 +104,7 @@ Command.register({
                 value: "No votes",
             })),
         };
-        const initMessage = Salty.embed(msg, embedOptions);
+        const initMessage = salty.embed(msg, embedOptions);
         const pollMessage = await initMessage;
     },
 });

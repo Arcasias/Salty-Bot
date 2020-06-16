@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { choice } from "../../utils";
 
 Command.register({
@@ -20,9 +20,9 @@ Command.register({
 
     async action({ args, msg }) {
         if (args.length < 2) {
-            return Salty.warn(msg, "You need to give at least 2 choices.");
+            return salty.warn(msg, "You need to give at least 2 choices.");
         }
-        await Salty.message(
+        await salty.message(
             msg,
             `I choose ${choice(args.join(" ").split("/"))}`
         );

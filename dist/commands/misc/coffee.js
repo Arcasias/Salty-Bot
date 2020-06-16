@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "coffee",
     aliases: ["cof", "covfefe"],
@@ -30,13 +30,13 @@ Command_1.default.register({
             color: 0x523415,
         };
         if (target.isMention) {
-            if (target.user.id === Salty_1.default.bot.user.id) {
+            if (target.user.id === salty_1.default.bot.user.id) {
                 options.description = "how cute, you gave me a coffee ^-^";
             }
             else {
                 options.description = `Made with ♥ by **${msg.member.displayName}** for **${target.name}**`;
             }
         }
-        await Salty_1.default.embed(msg, options);
+        await salty_1.default.embed(msg, options);
     },
 });

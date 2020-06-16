@@ -1,7 +1,7 @@
 import { TextChannel } from "discord.js";
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { meaning } from "../../utils";
 
 Command.register({
@@ -33,7 +33,7 @@ Command.register({
                 await Guild.update(guild.id, {
                     default_channel: msg.channel.id,
                 });
-                return Salty.success(
+                return salty.success(
                     msg,
                     `channel **${
                         (<TextChannel>msg.channel).name
@@ -44,27 +44,27 @@ Command.register({
             }
             case "remove": {
                 if (!guild.default_channel) {
-                    return Salty.info(msg, "no default bot channel set");
+                    return salty.info(msg, "no default bot channel set");
                 }
                 await Guild.update(guild.id, { default_channel: null });
-                return Salty.success(
+                return salty.success(
                     msg,
                     "default bot channel has been successfuly removed"
                 );
             }
             default: {
                 if (!guild.default_channel) {
-                    return Salty.info(msg, "no default bot channel set");
+                    return salty.info(msg, "no default bot channel set");
                 }
-                const { name } = Salty.getTextChannel(guild.default_channel);
+                const { name } = salty.getTextChannel(guild.default_channel);
                 if (msg.channel.id === guild.default_channel) {
-                    return Salty.info(
+                    return salty.info(
                         msg,
                         "this is the current default channel",
                         { description: "I'll speak right here when I need to" }
                     );
                 } else {
-                    return Salty.info(
+                    return salty.info(
                         msg,
                         `default bot channel is **${name}**`,
                         {

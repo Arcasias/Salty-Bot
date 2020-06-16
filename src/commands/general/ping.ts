@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { generate, title } from "../../utils";
 
 const PING_MESSAGES = [
@@ -29,7 +29,7 @@ Command.register({
     async action({ msg }) {
         // If too much salt, skips the latency test
         if (generate(3)) {
-            return Salty.info(
+            return salty.info(
                 msg,
                 "pong, and I don't give a fuck about your latency"
             );
@@ -37,13 +37,9 @@ Command.register({
         // Sends another message and displays the difference between the first and the second
         const sentMsg = await msg.channel.send("Pinging...");
         const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
-        const message =
-            PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
+        const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
 
         await sentMsg.delete();
-        await Salty.info(
-            msg,
-            `pong! Latency is ${latency}. ${title(message)}`
-        );
+        await salty.info(msg, `pong! Latency is ${latency}. ${title(message)}`);
     },
 });

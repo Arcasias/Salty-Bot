@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 import { choice, isAdmin, isOwner, possessive } from "../../utils";
 
@@ -27,7 +27,7 @@ Command.register({
             title: `this is ${possessive(target.name)} profile pic`,
             color: target.member?.displayColor,
         };
-        if (target.user.id === Salty.bot.user!.id) {
+        if (target.user.id === salty.bot.user!.id) {
             // if Salty
             const files = fs.readdirSync(SALTY_IMAGES_PATH);
             const pics = files.filter((f) => f.split(".").pop() === "png");
@@ -48,6 +48,6 @@ Command.register({
                 options.image = { url };
             }
         }
-        await Salty.embed(msg, options);
+        await salty.embed(msg, options);
     },
 });

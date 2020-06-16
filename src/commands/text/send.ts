@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
 import { prefix } from "../../config";
+import salty from "../../salty";
 
 const specialActions = [
     {
@@ -46,6 +46,6 @@ Command.register({
             msg.delete();
             message = args.join(" ");
         }
-        await Salty.message(msg, message);
+        await salty.message(msg, message);
     },
 });

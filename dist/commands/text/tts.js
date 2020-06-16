@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "tts",
     aliases: ["speak"],
@@ -21,7 +21,7 @@ Command_1.default.register({
     ],
     async action({ args, msg }) {
         if (!args[0]) {
-            return Salty_1.default.warn(msg, "You need to tell me what to say.");
+            return salty_1.default.warn(msg, "You need to tell me what to say.");
         }
         msg.delete();
         await msg.channel.send(args.join(" "), { tts: true });

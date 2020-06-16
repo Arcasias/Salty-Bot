@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "pause",
@@ -20,14 +20,14 @@ Command.register({
         if (playlist.connection) {
             try {
                 playlist.pause();
-                Salty.success(msg, `paused **${playlist.playing.title}**`, {
+                salty.success(msg, `paused **${playlist.playing.title}**`, {
                     react: "⏸",
                 });
             } catch (err) {
-                Salty.warn(msg, "the song is already paused");
+                salty.warn(msg, "the song is already paused");
             }
         } else {
-            Salty.warn(msg, "there's nothing playing");
+            salty.warn(msg, "there's nothing playing");
         }
     },
 });

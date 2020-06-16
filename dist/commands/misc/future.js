@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 const terms_1 = require("../../terms");
 const utils_1 = require("../../utils");
 Command_1.default.register({
@@ -24,6 +24,6 @@ Command_1.default.register({
         }
         const shuffled = utils_1.shuffle(pred);
         const ellipsed = utils_1.ellipsis(shuffled.join(" ||||"), 1995);
-        Salty_1.default.message(msg, `||${ellipsed}||`);
+        salty_1.default.message(msg, `||${ellipsed}||`);
     },
 });

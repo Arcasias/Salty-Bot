@@ -1,7 +1,9 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { answers as listAnswers, meaning } from "../../terms";
-import { choice, clean } from "../../utils";
+import { choice, clean, levenshtein } from "../../utils";
+
+const SPECIAL_CHARS = /[;,\.\?\!'"]/g;
 
 Command.register({
     name: "talk",
@@ -19,30 +21,30 @@ Command.register({
     ],
 
     async action({ args, msg }) {
-        const cleanedMsg = " " + args.map((arg) => clean(arg)).join(" ") + " ";
-        const meanFound: string[] = [];
+        const cleanedMsg = args
+            .map((arg) => clean(arg).replace(SPECIAL_CHARS, ""))
+            .filter((w: string) => Boolean(w))
+            .join(" ");
+        const meaningFound: Set<string> = new Set();
         const answers: string[] = [];
-
         for (const mean in meaning) {
             for (const term of meaning[mean].list) {
-                if (
-                    !meanFound.includes(mean) &&
-                    cleanedMsg.match(new RegExp(" " + term + " ", "g"))
-                ) {
-                    meanFound.push(mean);
+                const threshold = Math.floor(Math.log(term.length));
+                if (levenshtein(cleanedMsg, term) <= threshold) {
+                    meaningFound.add(mean);
                 }
             }
         }
-        if (meanFound.length) {
-            for (const meaningFound of meanFound) {
-                for (const answerType of meaning[meaningFound].answers) {
+        if (meaningFound.size) {
+            for (const found of meaningFound.values()) {
+                for (const answerType of meaning[found].answers) {
                     answers.push(choice(listAnswers[answerType]));
                 }
             }
-            await Salty.message(msg, answers.join(", "));
+            await salty.message(msg, answers.join(", "));
         } else {
             const random: string[] = listAnswers.rand;
-            await Salty.message(msg, choice(random));
+            await salty.message(msg, choice(random));
         }
     },
 });

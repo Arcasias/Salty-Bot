@@ -6,7 +6,7 @@ import {
     MessageReaction,
     PresenceStatusData,
     Snowflake,
-    User
+    User,
 } from "discord.js";
 import { Item } from "warframe-items";
 

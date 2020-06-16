@@ -1,7 +1,7 @@
 import fs from "fs";
 import { promisify } from "util";
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { choice } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
@@ -38,12 +38,12 @@ Command.register({
             }
             if (emoji) {
                 msg.delete();
-                return Salty.message(msg, "", {
+                return salty.message(msg, "", {
                     files: [`${emojiPath}/${emoji}.png`],
                 });
             }
         }
-        Salty.embed(msg, {
+        salty.embed(msg, {
             title: "list of saltmojis",
             description: emojiNames.join("\n"),
         });

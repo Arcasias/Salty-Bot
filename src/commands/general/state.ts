@@ -1,8 +1,8 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
 import User from "../../classes/User";
 import { devs, homepage, owner } from "../../config";
+import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 
 Command.register({
@@ -23,7 +23,7 @@ Command.register({
             title: `Salty Bot`,
             url: homepage,
             description: `Last started on ${
-                Salty.startTime.toString().split(" GMT")[0]
+                salty.startTime.toString().split(" GMT")[0]
             }`,
             fields: [
                 {
@@ -52,6 +52,6 @@ Command.register({
         if (process.env.DEBUG === "true") {
             options.footer = { text: `Debug mode active` };
         }
-        await Salty.embed(msg, options);
+        await salty.embed(msg, options);
     },
 });

@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { Dictionnary } from "../../types";
 import { meaning } from "../../utils";
 
@@ -24,26 +24,26 @@ Command.register({
         const channel = msg.guild ? msg.guild.id : msg.author.id;
         if (meaning(args[0]) === "clear") {
             if (!INTERVALS[channel]) {
-                return Salty.warn(msg, "There is no interval on this channel.");
+                return salty.warn(msg, "There is no interval on this channel.");
             }
             clearInterval(INTERVALS[channel]);
 
-            Salty.success(msg, "Interval cleared");
+            salty.success(msg, "Interval cleared");
         } else {
             if (!args.length) {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "You need to specify the interval length in milliseconds."
                 );
             }
             if (isNaN(Number(args[0]))) {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "You need to specify the interval length in milliseconds."
                 );
             }
             if (!args[1]) {
-                return Salty.warn(
+                return salty.warn(
                     msg,
                     "You need to tell me what to say after each interval."
                 );
@@ -56,7 +56,7 @@ Command.register({
                 clearInterval(INTERVALS[channel]);
             }
             INTERVALS[channel] = setInterval(() => {
-                Salty.message(msg, args.join(" "));
+                salty.message(msg, args.join(" "));
             }, delay);
         }
     },

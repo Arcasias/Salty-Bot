@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 const SPACE = [
     `.　　　　　　　　　　 ✦ 　　　　   　 　　　˚　　　　　　　　　　　　　　*　　　　　　   　　　　　　　　　　　　　　　.　　　　　　　　　　　　　　. 　　 　　　　　　　 ✦ 　　　　　　　　　　 　 ‍ ‍ ‍ ‍ 　　　　 　　　　　　　　　　　　,　　   　`,
@@ -22,6 +22,6 @@ Command.register({
     ],
 
     async action({ msg }) {
-        await Salty.message(msg, SPACE);
+        await salty.message(msg, SPACE);
     },
 });

@@ -5,9 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
 const User_1 = __importDefault(require("../../classes/User"));
 const config_1 = require("../../config");
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "state",
     aliases: ["git", "local", "server"],
@@ -24,7 +24,7 @@ Command_1.default.register({
         const options = {
             title: `Salty Bot`,
             url: config_1.homepage,
-            description: `Last started on ${Salty_1.default.startTime.toString().split(" GMT")[0]}`,
+            description: `Last started on ${salty_1.default.startTime.toString().split(" GMT")[0]}`,
             fields: [
                 {
                     name: `Hosted on`,
@@ -51,6 +51,6 @@ Command_1.default.register({
         if (process.env.DEBUG === "true") {
             options.footer = { text: `Debug mode active` };
         }
-        await Salty_1.default.embed(msg, options);
+        await salty_1.default.embed(msg, options);
     },
 });

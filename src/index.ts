@@ -1,6 +1,6 @@
-import Salty from "./classes/Salty";
 import "./commands";
 import { debugMode } from "./config";
+import salty from "./salty";
 import { debug, log } from "./utils";
 
 // Set ENV according to the presence of a SERVER env variable
@@ -13,4 +13,4 @@ process.env.DEBUG = String(debugMode);
 debug(`Debug is active`);
 
 // Initialize bot
-Salty.start();
+salty.start();

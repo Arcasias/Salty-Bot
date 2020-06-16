@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "delay",
@@ -18,7 +18,7 @@ Command.register({
 
     async action({ args, msg }) {
         if (!args.length) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 "You must tell me what to say after the delay."
             );
@@ -30,7 +30,7 @@ Command.register({
 
         msg.delete().catch();
         setTimeout(() => {
-            Salty.message(msg, args.join(" "));
+            salty.message(msg, args.join(" "));
         }, delay);
     },
 });

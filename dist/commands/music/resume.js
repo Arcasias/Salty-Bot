@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
 const Guild_1 = __importDefault(require("../../classes/Guild"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "resume",
     aliases: ["unfreeze"],
@@ -22,16 +22,16 @@ Command_1.default.register({
         if (playlist.connection) {
             try {
                 playlist.resume();
-                Salty_1.default.success(msg, `resumed **${playlist.playing.title}**`, {
+                salty_1.default.success(msg, `resumed **${playlist.playing.title}**`, {
                     react: "▶",
                 });
             }
             catch (err) {
-                Salty_1.default.error(msg, "the song isn't paused");
+                salty_1.default.warn(msg, "the song isn't paused");
             }
         }
         else {
-            Salty_1.default.error(msg, "there's nothing playing");
+            salty_1.default.warn(msg, "there's nothing playing");
         }
     },
 });

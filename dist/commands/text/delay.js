@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Command_1 = __importDefault(require("../../classes/Command"));
-const Salty_1 = __importDefault(require("../../classes/Salty"));
+const salty_1 = __importDefault(require("../../salty"));
 Command_1.default.register({
     name: "delay",
     aliases: ["sleep", "timeout"],
@@ -21,14 +21,14 @@ Command_1.default.register({
     ],
     async action({ args, msg }) {
         if (!args.length) {
-            return Salty_1.default.warn(msg, "You must tell me what to say after the delay.");
+            return salty_1.default.warn(msg, "You must tell me what to say after the delay.");
         }
         const delay = args[1] && !isNaN(Number(args[0]))
             ? parseInt(args.shift()) * 1000
             : 5000;
         msg.delete().catch();
         setTimeout(() => {
-            Salty_1.default.message(msg, args.join(" "));
+            salty_1.default.message(msg, args.join(" "));
         }, delay);
     },
 });

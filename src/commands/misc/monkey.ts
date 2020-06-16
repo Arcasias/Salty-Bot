@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { isSorted, shuffle } from "../../utils";
 
 Command.register({
@@ -27,16 +27,16 @@ Command.register({
 
     async action({ args, msg }) {
         if (!args[0]) {
-            return Salty.warn(msg, "Missing the length of the array.");
+            return salty.warn(msg, "Missing the length of the array.");
         }
         if (Number(args[0]) < 1) {
-            return Salty.warn(
+            return salty.warn(
                 msg,
                 "Array length must be a number between 1 and 10."
             );
         }
 
-        const runningMsg = await Salty.message(msg, "monkey sorting ...");
+        const runningMsg = await salty.message(msg, "monkey sorting ...");
         let tests = 0;
         let length = Math.min(Number(args[0]), 10);
         let list: number[] = [];
@@ -58,7 +58,7 @@ Command.register({
         });
 
         runningMsg.delete();
-        await Salty.info(
+        await salty.info(
             msg,
             `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`,
             { react: "🐒" }

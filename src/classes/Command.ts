@@ -1,4 +1,5 @@
 import { Collection, Guild, Message, User } from "discord.js";
+import salty from "../salty";
 import {
     AvailableCategories,
     CommandAccess,
@@ -9,11 +10,10 @@ import {
     CommandHelpDescriptor,
     CommandHelpSection,
     MessageTarget,
-    Runnable
+    Runnable,
 } from "../types";
 import { isAdmin, isDev, isOwner } from "../utils";
 import QuickCommand from "./QuickCommand";
-import Salty from "./Salty";
 
 const permissions: {
     [key in CommandAccess]: (user: User, guild: Guild) => boolean;
@@ -64,16 +64,19 @@ class Command implements CommandDescriptor, Runnable {
      */
     public async run(msg: Message, args: string[], target: MessageTarget) {
         if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
-            return Salty.warn(msg, `You need to have the ${this.access} permission to do that.`);
+            return salty.warn(
+                msg,
+                `You need to have the ${this.access} permission to do that.`
+            );
         }
         if (this.channel === "guild" && !msg.guild) {
-            return Salty.warn(msg, "This is a direct message channel retard");
+            return salty.warn(msg, "This is a direct message channel retard");
         }
         const commandParams = { msg, args, target };
         try {
             await this.action(commandParams);
         } catch (err) {
-            return Salty.error(msg, `Whoops! ${err.message}`);
+            return salty.error(msg, `Whoops! ${err.message}`);
         }
     }
 

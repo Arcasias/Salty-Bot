@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 import { answers } from "../../terms";
 import { choice } from "../../utils";
 
@@ -17,7 +17,7 @@ Command.register({
     access: "dev",
 
     async action({ msg }) {
-        await Salty.info(msg, `${choice(answers.bye)} ♥`);
-        await Salty.destroy();
+        await salty.info(msg, `${choice(answers.bye)} ♥`);
+        await salty.destroy();
     },
 });

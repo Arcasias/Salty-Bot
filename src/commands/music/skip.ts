@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
 import Guild from "../../classes/Guild";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "skip",
@@ -19,13 +19,13 @@ Command.register({
 
         if (playlist.connection) {
             playlist.skip();
-            Salty.success(
+            salty.success(
                 msg,
                 `skipped **${playlist.playing.title}**, but it was trash anyway`,
                 { react: "⏩" }
             );
         } else {
-            Salty.warn(msg, "I'm not connected to a voice channel");
+            salty.warn(msg, "I'm not connected to a voice channel");
         }
     },
 });

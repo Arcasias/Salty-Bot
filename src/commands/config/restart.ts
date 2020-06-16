@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Salty from "../../classes/Salty";
+import salty from "../../salty";
 
 Command.register({
     name: "restart",
@@ -14,7 +14,7 @@ Command.register({
     access: "dev",
 
     async action({ msg }) {
-        await Salty.info(msg, "Restarting ...");
-        await Salty.restart();
+        await salty.info(msg, "Restarting ...");
+        await salty.restart();
     },
 });
