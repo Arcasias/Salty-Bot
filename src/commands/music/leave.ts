@@ -20,6 +20,6 @@ Command.register({
         if (!playlist.connection || !channel) {
             return Salty.warn(msg, "I'm not in a voice channel.");
         }
-        Salty.success(msg, `Leaving **${channel.name}**.`);
+        Salty.info(msg, `Leaving **${channel.name}**.`);
     },
 });

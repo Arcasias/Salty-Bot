@@ -9,7 +9,7 @@ import {
     CommandHelpDescriptor,
     CommandHelpSection,
     MessageTarget,
-    Runnable,
+    Runnable
 } from "../types";
 import { isAdmin, isDev, isOwner } from "../utils";
 import QuickCommand from "./QuickCommand";
@@ -64,10 +64,10 @@ class Command implements CommandDescriptor, Runnable {
      */
     public async run(msg: Message, args: string[], target: MessageTarget) {
         if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
-            return Salty.warn(msg, this.access);
+            return Salty.warn(msg, `You need to have the ${this.access} permission to do that.`);
         }
         if (this.channel === "guild" && !msg.guild) {
-            return Salty.warn(msg, "this is a direct message channel retard");
+            return Salty.warn(msg, "This is a direct message channel retard");
         }
         const commandParams = { msg, args, target };
         try {

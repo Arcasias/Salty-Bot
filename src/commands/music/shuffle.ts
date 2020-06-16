@@ -21,7 +21,7 @@ Command.register({
             playlist.shuffle();
             Salty.success(msg, "queue shuffled!", { react: "🔀" });
         } else {
-            Salty.error(
+            Salty.warn(
                 msg,
                 "don't you think you'd need more than 1 song to make it useful?"
             );

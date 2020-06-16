@@ -21,7 +21,7 @@ Command.register({
         const isRequestedUserAdmin: boolean = isAdmin(target.user, msg.guild!);
 
         // Fuck if/else structures, long live ternary operators
-        Salty.message(
+        Salty.info(
             msg,
             target.isMention
                 ? // mention

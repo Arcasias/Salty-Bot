@@ -21,8 +21,8 @@ class Playlist {
      * Adds new items to the queue.
      */
     public add(...songs: Song[]): void {
-        songs.forEach(({ duration, title, url }) => {
-            this.queue.push({ duration, title, url });
+        songs.forEach(({ channel, duration, title, url }) => {
+            this.queue.push({ channel, duration, title, url });
         });
     }
 

@@ -44,7 +44,7 @@ Command.register({
             }
             case "remove": {
                 if (!guild.default_channel) {
-                    return Salty.message(msg, "no default bot channel set");
+                    return Salty.info(msg, "no default bot channel set");
                 }
                 await Guild.update(guild.id, { default_channel: null });
                 return Salty.success(
@@ -54,19 +54,24 @@ Command.register({
             }
             default: {
                 if (!guild.default_channel) {
-                    return Salty.message(msg, "no default bot channel set");
+                    return Salty.info(msg, "no default bot channel set");
                 }
                 const { name } = Salty.getTextChannel(guild.default_channel);
                 if (msg.channel.id === guild.default_channel) {
-                    return Salty.embed(msg, {
-                        title: "this is the current default channel",
-                        description: "I'll speak right here when I need to",
-                    });
+                    return Salty.info(
+                        msg,
+                        "this is the current default channel",
+                        { description: "I'll speak right here when I need to" }
+                    );
                 } else {
-                    return Salty.embed(msg, {
-                        title: `default bot channel is **${name}**`,
-                        description: "this is where I'll speak when I need to",
-                    });
+                    return Salty.info(
+                        msg,
+                        `default bot channel is **${name}**`,
+                        {
+                            description:
+                                "this is where I'll speak when I need to",
+                        }
+                    );
                 }
             }
         }

@@ -4,7 +4,7 @@ import { choice } from "../../utils";
 
 Command.register({
     name: "choose",
-    aliases: ["choice", "chose", "shoes"],
+    aliases: ["choice", "8ball"],
     category: "misc",
     help: [
         {

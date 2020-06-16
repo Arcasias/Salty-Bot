@@ -28,13 +28,13 @@ Command.register({
                     return Salty.warn(msg, "You need to mention someone.");
                 }
                 if (target.user.id === Salty.bot.user!.id) {
-                    return Salty.message(
+                    return Salty.warn(
                         msg,
                         "Woa woa woa! You can't just put me in my own blacklist you punk!"
                     );
                 }
                 if (isDev(target.user)) {
-                    return Salty.message(
+                    return Salty.warn(
                         msg,
                         "Can't add a Salty dev to the blacklist: they're too nice for that!"
                     );
@@ -47,13 +47,13 @@ Command.register({
                     return Salty.warn(msg, "You need to mention someone.");
                 }
                 if (target.user.id === Salty.bot.user!.id) {
-                    return Salty.message(
+                    return Salty.info(
                         msg,
                         "Well... as you might expect, I'm not in the blacklist."
                     );
                 }
                 if (!user.black_listed) {
-                    return Salty.warn(
+                    return Salty.info(
                         msg,
                         `**${target.name}** is not in the blacklist.`
                     );
@@ -66,13 +66,13 @@ Command.register({
             }
             default: {
                 if (target.isMention && target.user.id === Salty.bot.user!.id) {
-                    return Salty.message(
+                    return Salty.info(
                         msg,
                         "Nope, I am not and will never be in the blacklist"
                     );
                 }
                 if (target.isMention) {
-                    return Salty.message(
+                    return Salty.info(
                         msg,
                         user?.black_listed
                             ? "<mention> is black-listed"
@@ -91,7 +91,7 @@ Command.register({
                         description: blackListedUsers.join("\n"),
                     });
                 }
-                return Salty.message(
+                return Salty.info(
                     msg,
                     "The black list is empty. You can help by *expanding it*."
                 );

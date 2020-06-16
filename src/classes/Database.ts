@@ -4,7 +4,7 @@ import { Dictionnary, FieldsDescriptor } from "../types";
 import { debug, error, log } from "../utils";
 
 const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
-let client: Client;
+let client: Client | null = null;
 
 //-----------------------------------------------------------------------------
 // Helpers
@@ -45,16 +45,17 @@ function sanitizeTable(table: string): string {
 //-----------------------------------------------------------------------------
 
 export async function connect(): Promise<void> {
-    if (!client) {
-        client = new Client({
-            database: process.env.DATABASE_DATABASE,
-            host: process.env.DATABASE_HOST,
-            password: process.env.DATABASE_PASSWORD,
-            port: Number(process.env.DATABASE_PORT),
-            user: process.env.DATABASE_USER,
-            ssl: { rejectUnauthorized: false },
-        });
+    if (client) {
+        throw new Error(`Could not client: client is already connected`);
     }
+    client = new Client({
+        database: process.env.DATABASE_DATABASE,
+        host: process.env.DATABASE_HOST,
+        password: process.env.DATABASE_PASSWORD,
+        port: Number(process.env.DATABASE_PORT),
+        user: process.env.DATABASE_USER,
+        ssl: { rejectUnauthorized: false },
+    });
     try {
         await client.connect();
     } catch (err) {
@@ -63,8 +64,12 @@ export async function connect(): Promise<void> {
 }
 
 export async function disconnect(): Promise<void> {
+    if (!client) {
+        throw new Error(`Could not disconnect client: client is not connected`);
+    }
     try {
         await client.end();
+        client = null;
     } catch (err) {
         error(err.stack);
     }
@@ -74,6 +79,9 @@ export async function create(
     table: string,
     ...allValues: FieldsDescriptor[]
 ): Promise<QueryResultRow[]> {
+    if (!client) {
+        throw new Error(`Could not perform action "create": client is not connected`);
+    }
     const queryArray: string[] = ["INSERT INTO", sanitizeTable(table)];
     const variables: string[] = [];
     let varCount: number = 0;
@@ -111,6 +119,9 @@ export async function remove(
     table: string,
     ids: number | number[]
 ): Promise<QueryResultRow[]> {
+    if (!client) {
+        throw new Error(`Could not perform action "remove": client is not connected`);
+    }
     const queryArray: string[] = ["DELETE FROM", sanitizeTable(table)];
     const variables: number[] = [];
     let varCount = 0;
@@ -142,6 +153,9 @@ export async function read(
     where?: Dictionnary<any>,
     fields?: string[]
 ): Promise<QueryResultRow[]> {
+    if (!client) {
+        throw new Error(`Could not perform action "read": client is not connected`);
+    }
     const queryArray: string[] = ["SELECT"];
     const variables: string[] = [];
     let varCount: number = 0;
@@ -190,6 +204,9 @@ export async function update(
     ids: number | number[],
     values: FieldsDescriptor
 ): Promise<QueryResultRow[]> {
+    if (!client) {
+        throw new Error(`Could not perform action "update": client is not connected`);
+    }
     const queryArray = ["UPDATE", sanitizeTable(table), "SET"];
     const variables = [];
     let varCount = 0;

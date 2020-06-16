@@ -1,7 +1,10 @@
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import { jokes } from "../../terms";
-import { choice } from "../../utils";
+import { Dictionnary, Joke } from "../../types";
+import { randInt } from "../../utils";
+
+const cache: Dictionnary<Joke[]> = {};
 
 Command.register({
     name: "joke",
@@ -15,6 +18,15 @@ Command.register({
     ],
 
     async action({ msg }) {
-        await Salty.message(msg, choice(jokes));
+        if (!(msg.author.username in cache)) {
+            cache[msg.author.username] = jokes.slice();
+        }
+        const jokeIndex = randInt(0, cache[msg.author.username].length);
+        const [joke] = cache[msg.author.username].splice(jokeIndex, 1);
+        if (!cache[msg.author.username].length) {
+            delete cache[msg.author.username];
+        }
+        const answer = joke.answer ? `\n\n||${joke.answer}||` : "";
+        await Salty.message(msg, joke.text + answer);
     },
 });

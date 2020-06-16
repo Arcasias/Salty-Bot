@@ -17,7 +17,7 @@ Command.register({
     access: "dev",
 
     async action({ msg }) {
-        await Salty.success(msg, `${choice(answers.bye)} ♥`);
+        await Salty.info(msg, `${choice(answers.bye)} ♥`);
         await Salty.destroy();
     },
 });

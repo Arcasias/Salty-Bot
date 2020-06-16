@@ -47,7 +47,7 @@ Command.register({
             case "list":
             case null: {
                 if (!QuickCommand.size) {
-                    return Salty.warn(msg, `No quick commands set.`);
+                    return Salty.info(msg, `No quick commands set.`);
                 }
                 return Salty.embed(msg, {
                     title: "List of commands",

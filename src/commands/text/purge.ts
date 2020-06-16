@@ -71,7 +71,7 @@ Command.register({
                     purging = false;
                     Salty.success(msg, "purge stopped");
                 } else {
-                    Salty.error(msg, "i wasn't purging anything");
+                    Salty.warn(msg, "I wasn't purging anything");
                 }
                 break;
             case "string":

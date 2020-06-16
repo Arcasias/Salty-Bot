@@ -70,7 +70,7 @@ Command.register({
                     }
                     case "remove": {
                         if (!dbGuild.default_channel) {
-                            return Salty.warn(msg, "No default role set.");
+                            return Salty.info(msg, "No default role set.");
                         }
                         await Guild.update(dbGuild.id, { default_role: null });
                         return Salty.success(
@@ -80,7 +80,7 @@ Command.register({
                     }
                     default: {
                         if (!dbGuild.default_role) {
-                            return Salty.message(msg, "No default role set");
+                            return Salty.info(msg, "No default role set");
                         } else {
                             const role = guild.roles.cache.get(
                                 dbGuild.default_role
@@ -192,9 +192,10 @@ Command.register({
                         const roles = msg
                             .member!.roles.cache.map((r) => r.name)
                             .filter((n) => n !== "@everyone");
-                        return Salty.message(
+                        return Salty.info(
                             msg,
-                            `You have the following roles: ${roles.join(", ")}`
+                            "You have the following roles",
+                            { description: roles.join("\n") }
                         );
                     }
                 }

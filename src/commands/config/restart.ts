@@ -14,7 +14,7 @@ Command.register({
     access: "dev",
 
     async action({ msg }) {
-        await Salty.success(msg, "Restarting ...");
+        await Salty.info(msg, "Restarting ...");
         await Salty.restart();
     },
 });

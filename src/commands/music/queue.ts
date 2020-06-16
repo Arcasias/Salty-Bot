@@ -84,27 +84,25 @@ Command.register({
             }
             default: {
                 if (!playlist.queue.length) {
-                    return Salty.message(msg, "The queue is empty.");
+                    return Salty.info(msg, "The queue is empty.");
                 }
                 // Returns an embed message displaying all songs
                 let totalDuration = 0;
                 const options: SaltyEmbedOptions = {
-                    title: "current queue",
+                    title: "Current queue",
                     fields: [],
                     footer: { text: `repeat: ${playlist.repeat}` },
                 };
                 options.fields = playlist.queue
                     .slice(0, DISPLAY_LIMIT)
-                    .map(({ duration, title, url }, i) => {
-                        const name = `${i + 1}) ${title}`;
-                        const description = `${formatDuration(
-                            duration
-                        )} - [Open in browser](${url})`;
+                    .map(({ channel, duration, title, url }, i) => {
+                        let name = `${channel} - ${formatDuration(duration)}`;
+                        const value = `${i + 1}) [${title}](${url})`;
+                        if (playlist.pointer === i) {
+                            name = `➤ ${name} (playing)`;
+                        }
                         totalDuration += duration;
-                        return {
-                            name: playlist.pointer === i ? "> " + name : name,
-                            value: description,
-                        };
+                        return { name, value };
                     });
                 options.description = `total duration: ${formatDuration(
                     totalDuration
@@ -115,7 +113,7 @@ Command.register({
                         20 < playlistTitle.length
                             ? playlistTitle.slice(0, 20) + "..."
                             : playlistTitle;
-                    options.description += ". Currently playing: " + title;
+                    options.title = "Currently playing: " + title;
                 }
                 return Salty.embed(msg, options);
             }

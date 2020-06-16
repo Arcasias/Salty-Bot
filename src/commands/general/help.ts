@@ -25,7 +25,6 @@ Command.register({
 
     async action({ args, msg, target }) {
         const options: SaltyEmbedOptions = {
-            color: 0xffffff,
             fields: [],
         };
         if (args.length) {
@@ -52,8 +51,8 @@ Command.register({
                             ? ` (or ***${command.aliases.join("***, ***")}***)`
                             : "";
                         options.fields!.push({
-                            name: `**${title(command.name)}**${aliases}`,
-                            value: `> \`${prefix}help ${command.name}\``,
+                            name: `> \`${prefix}help ${command.name}\``,
+                            value: `**${title(command.name)}**${aliases}`,
                         });
                     }
                 }
@@ -62,16 +61,27 @@ Command.register({
                 // arg === command
                 const doc = Command.doc.get(Command.aliases.get(arg)!)!;
                 const category = Command.categories.get(doc.category)!;
+                const relativePath = __dirname
+                    .slice(process.cwd().length)
+                    .split(/[\\\/]/)
+                    .filter((w: string) => Boolean(w)) // remove empty strings
+                    .slice(0, -1); // remove current category
                 options.title = `**${doc.name.toUpperCase()}**`;
-                options.url = `${homepage}/tree/master/commands/${
-                    doc.category
-                }/${doc.name.toLowerCase()}.js`;
-                options.description = `> ${title(category.name)}`;
+                options.url = [
+                    homepage,
+                    "blob/master",
+                    ...relativePath,
+                    doc.category,
+                    doc.name.toLowerCase() + ".ts",
+                ].join("/");
+                options.footer = {
+                    text: `${category.icon} ${title(category.name)}`,
+                };
                 if (doc.aliases.length) {
                     const aliases: string = Array.isArray(doc.aliases)
                         ? doc.aliases.join("**, **")
                         : doc.aliases;
-                    options.description += `\nAlternative usage: **${aliases}**`;
+                    options.description = `Alternative usage: **${aliases}**`;
                 }
                 doc.sections.forEach((usage) => {
                     if (usage.effect) {
@@ -119,10 +129,10 @@ Command.register({
                 mapping[icon] = category;
                 options.actions.reactions.push(icon);
                 options.fields!.push({
-                    name: `${icon} **${title(name)}**  (${
+                    name: `> \`${prefix}help ${category}\``,
+                    value: `${icon} **${title(name)}**  (${
                         commands.size
                     } commands)`,
-                    value: `> \`${prefix}help ${category}\``,
                 });
             }
         }

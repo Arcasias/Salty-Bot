@@ -19,10 +19,14 @@ Command.register({
 
     async action({ args, msg }) {
         switch (meaning(args[0])) {
+            case "remove":
+            case "clear": {
+                await Salty.bot.user!.setPresence({ activity: undefined });
+                return Salty.success(msg, "current status removed");
+            }
             case "add":
             case "set": {
-                await Salty.bot.user!.setPresence({ activity: undefined });
-                return Salty.success(msg, "current presence removed");
+                args.shift();
             }
             case "string": {
                 const status = args[0];
@@ -43,7 +47,7 @@ Command.register({
                     });
                     return Salty.success(
                         msg,
-                        `changed my presence to **${status}**`
+                        `changed my status to **${status}**`
                     );
                 }
             }

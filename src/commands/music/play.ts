@@ -21,13 +21,14 @@ async function addSong(msg: Message, playlist: Playlist, songURL: string) {
         songURL = choice(surpriseSong);
     }
     const member = msg.member!;
-    const { length_seconds, title } = <videoInfo>await getInfo(songURL);
+    const { author, length_seconds, title } = <videoInfo>await getInfo(songURL);
     Salty.success(
         msg,
         `**${member.displayName}** added **${title}** to the queue`
     );
     msg.delete();
     playlist.add({
+        channel: author.name,
         duration: Number(length_seconds) * 1000,
         title: title,
         url: songURL,
@@ -97,7 +98,7 @@ Command.register({
             type: "video",
         });
         if (!results.data?.items?.length) {
-            return Salty.warn(msg, "No results found.");
+            return Salty.info(msg, "No results found.");
         }
         if (directPlay) {
             const firstValidSong = results.data.items.find((v) => v.id);
@@ -122,7 +123,7 @@ Command.register({
                 },
             },
             fields: [],
-            title: "search results",
+            title: `Results for "${args.join(" ")}"`,
         };
         results.data.items.forEach(({ id, snippet }, index) => {
             if (!id) {
@@ -131,8 +132,8 @@ Command.register({
             const videoURL = youtubeURL + id.videoId;
             const { title, channelTitle } = snippet!;
             options.fields!.push({
-                name: `${index + 1}) ${title}`,
-                value: `> From ${channelTitle}\n> [Open in browser](${videoURL})`,
+                name: channelTitle,
+                value: `${index + 1}) [${title}](${videoURL})`,
             });
             messageUrls[numberReactions[index]] = videoURL;
         });

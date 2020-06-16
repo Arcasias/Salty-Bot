@@ -24,10 +24,10 @@ Command.register({
                     react: "▶",
                 });
             } catch (err) {
-                Salty.error(msg, "the song isn't paused");
+                Salty.warn(msg, "the song isn't paused");
             }
         } else {
-            Salty.error(msg, "there's nothing playing");
+            Salty.warn(msg, "there's nothing playing");
         }
     },
 });

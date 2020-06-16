@@ -25,7 +25,7 @@ Command.register({
                 { react: "⏩" }
             );
         } else {
-            Salty.error(msg, "I'm not connected to a voice channel");
+            Salty.warn(msg, "I'm not connected to a voice channel");
         }
     },
 });

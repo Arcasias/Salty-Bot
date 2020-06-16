@@ -9,7 +9,7 @@ import Discord, {
     PartialGuildMember,
     PermissionString,
     ReactionCollector,
-    TextChannel,
+    TextChannel
 } from "discord.js";
 import { prefix } from "../config";
 import { intro, keywords } from "../terms";
@@ -18,7 +18,7 @@ import {
     FieldsDescriptor,
     MessageTarget,
     Runnable,
-    SaltyEmbedOptions,
+    SaltyEmbedOptions
 } from "../types";
 import {
     choice,
@@ -31,7 +31,7 @@ import {
     log,
     request,
     search,
-    title,
+    title
 } from "../utils";
 import Command from "./Command";
 import { connect, disconnect } from "./Database";
@@ -40,7 +40,7 @@ import Guild from "./Guild";
 import QuickCommand from "./QuickCommand";
 import User from "./User";
 
-const bot: Discord.Client = new Discord.Client();
+let bot = new Discord.Client();
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 const startTime: Date = new Date();
 
@@ -235,25 +235,6 @@ async function onReady(): Promise<void> {
 // Exported
 //-----------------------------------------------------------------------------
 
-function hasAccess(
-    access: string,
-    user: Discord.User,
-    guild: Discord.Guild | null = null
-): boolean {
-    if (access === "public") {
-        return true;
-    }
-    switch (access) {
-        case "admin":
-            return guild ? isAdmin(user, guild) : false;
-        case "dev":
-            return isDev(user);
-        case "owner":
-            return isOwner(user);
-    }
-    return false;
-}
-
 /**
  * Restarts the bot instance by reloading the command files and recreate a bot
  * instance.
@@ -264,7 +245,9 @@ async function restart(): Promise<void> {
         collector.stop("restarted");
     }
     bot.destroy();
-    await bot.login(process.env.DISCORD_API);
+    bot = new Discord.Client();
+    await disconnect();
+    await start();
 }
 
 /**
@@ -377,11 +360,7 @@ async function embed(
  * @param text
  * @param options
  */
-function error(
-    msg: Message,
-    text: string = "error",
-    options: any = {}
-): Promise<Message> {
+function error(msg: Message, text: string = "error", options: any = {}) {
     return embed(
         msg,
         Object.assign(
@@ -395,6 +374,9 @@ function error(
     );
 }
 
+/**
+ * @param channelId
+ */
 function getTextChannel(channelId: string): TextChannel {
     const channel = bot.channels.cache.get(channelId);
     if (!(channel instanceof TextChannel)) {
@@ -403,8 +385,59 @@ function getTextChannel(channelId: string): TextChannel {
     return channel;
 }
 
+/**
+ * @param access
+ * @param user
+ * @param guild
+ */
+function hasAccess(
+    access: string,
+    user: Discord.User,
+    guild: Discord.Guild | null = null
+): boolean {
+    if (access === "public") {
+        return true;
+    }
+    switch (access) {
+        case "admin":
+            return guild ? isAdmin(user, guild) : false;
+        case "dev":
+            return isDev(user);
+        case "owner":
+            return isOwner(user);
+    }
+    return false;
+}
+
+/**
+ * @param guild
+ * @param permisson
+ */
 function hasPermission(guild: Discord.Guild, permisson: PermissionString) {
     return guild.members.cache.get(bot.user!.id)?.permissions.has(permisson);
+}
+
+/**
+ * @param msg
+ * @param text
+ * @param options
+ */
+function info(
+    msg: Message,
+    text: string = "info",
+    options: SaltyEmbedOptions = {}
+) {
+    return embed(
+        msg,
+        Object.assign(
+            {
+                title: text,
+                react: "ℹ️",
+                color: 0x4287f5,
+            },
+            options
+        )
+    );
 }
 
 /**
@@ -449,7 +482,7 @@ function success(
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-): Promise<Message> {
+) {
     return embed(
         msg,
         Object.assign(
@@ -473,7 +506,7 @@ function warn(
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-): Promise<Message> {
+) {
     return embed(
         msg,
         Object.assign(
@@ -523,6 +556,7 @@ export default {
     getTextChannel,
     hasAccess,
     hasPermission,
+    info,
     start,
     message,
     restart,

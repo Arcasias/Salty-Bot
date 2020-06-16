@@ -6,7 +6,7 @@ import {
     MessageReaction,
     PresenceStatusData,
     Snowflake,
-    User,
+    User
 } from "discord.js";
 import { Item } from "warframe-items";
 
@@ -47,6 +47,10 @@ export interface CommandHelpSection {
 export interface ExpressionDescriptor {
     expr: RegExp;
     replacer: ExpressionReplacer;
+}
+export interface Joke {
+    text: string;
+    answer?: string;
 }
 export interface MeaningInfo {
     answers: string[];
@@ -89,6 +93,7 @@ export interface SaltyEmbedOptions extends MessageEmbedOptions {
     react?: string;
 }
 export interface Song {
+    channel: string;
     duration: number;
     title: string;
     url: string;

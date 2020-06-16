@@ -58,7 +58,7 @@ Command.register({
         });
 
         runningMsg.delete();
-        await Salty.success(
+        await Salty.info(
             msg,
             `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`,
             { react: "🐒" }

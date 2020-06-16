@@ -1,3 +1,4 @@
+import { debug } from "console";
 import Command from "../../classes/Command";
 import Salty from "../../classes/Salty";
 import User from "../../classes/User";
@@ -22,6 +23,7 @@ Command.register({
         const user = User.get(msg.author.id)!;
 
         switch (meaning(args[0])) {
+            case "add":
             case "string": {
                 const newTodo = args.join(" ");
                 const todos = [...user.todos, newTodo];
@@ -33,7 +35,7 @@ Command.register({
             }
             case "remove": {
                 if (!user.todos.length) {
-                    return Salty.warn(msg, "Your todo list is empty.");
+                    return Salty.info(msg, "Your todo list is empty.");
                 }
                 if (!args[1]) {
                     return Salty.warn(
@@ -47,7 +49,7 @@ Command.register({
                     if (!user.todos[targetIndex]) {
                         return Salty.warn(
                             msg,
-                            `Your todo list has ${user.todos.length} items: ${targetIndex} is out of range.`
+                            `Your todo list has ${user.todos.length} items: ${args[1]} is out of range.`
                         );
                     }
                 } else {
@@ -83,8 +85,9 @@ Command.register({
             }
             default: {
                 if (!user.todos.length) {
-                    return Salty.warn(msg, "Your todo list is empty.");
+                    return Salty.info(msg, "Your todo list is empty.");
                 }
+                debug({ todos: user.todos });
                 return Salty.embed(msg, {
                     title: "<authors> todo list",
                     description: user.todos
