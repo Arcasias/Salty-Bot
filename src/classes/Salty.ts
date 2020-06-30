@@ -12,7 +12,7 @@ import {
     PermissionString,
     ReactionCollector,
     TextChannel,
-    User
+    User,
 } from "discord.js";
 import { prefix } from "../config";
 import { intro, keywords } from "../terms";
@@ -21,7 +21,7 @@ import {
     FieldsDescriptor,
     MessageActor,
     Runnable,
-    SaltyEmbedOptions
+    SaltyEmbedOptions,
 } from "../types";
 import {
     choice,
@@ -34,7 +34,7 @@ import {
     log,
     request,
     search,
-    title
+    title,
 } from "../utils";
 import Command from "./Command";
 import Crew from "./Crew";

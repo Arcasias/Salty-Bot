@@ -1,5 +1,6 @@
-# Modules
+# Folders
 node_modules/
+dist/
 
 # Env. variables
 local*
