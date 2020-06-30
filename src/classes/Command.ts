@@ -9,7 +9,8 @@ import {
     CommandDescriptor,
     CommandHelpDescriptor,
     CommandHelpSection,
-    MessageTarget,
+    CommandType,
+    MessageActor,
     Runnable,
 } from "../types";
 import { isAdmin, isDev, isOwner } from "../utils";
@@ -35,6 +36,7 @@ class Command implements CommandDescriptor, Runnable {
     // Restrictions
     public access: CommandAccess;
     public channel: CommandChannel;
+    public type: CommandType = "core";
 
     public static aliases = new Collection<string, string>();
     public static categories = new Collection<string, CommandCategoryInfo>();
@@ -62,7 +64,12 @@ class Command implements CommandDescriptor, Runnable {
     /**
      * Runs the command action
      */
-    public async run(msg: Message, args: string[], target: MessageTarget) {
+    public async run(
+        msg: Message,
+        args: string[],
+        source: MessageActor,
+        target: MessageActor | null
+    ) {
         if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
             return salty.warn(
                 msg,
@@ -72,7 +79,7 @@ class Command implements CommandDescriptor, Runnable {
         if (this.channel === "guild" && !msg.guild) {
             return salty.warn(msg, "This is a direct message channel retard");
         }
-        const commandParams = { msg, args, target };
+        const commandParams = { msg, args, source, target };
         try {
             await this.action(commandParams);
         } catch (err) {

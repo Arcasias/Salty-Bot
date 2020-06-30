@@ -17,13 +17,16 @@ Command.register({
             effect: "Tells you wether the ***mention*** is an admin",
         },
     ],
-    async action({ msg, target }) {
-        const isRequestedUserAdmin: boolean = isAdmin(target.user, msg.guild!);
+    async action({ msg, source, target }) {
+        const isRequestedUserAdmin: boolean = isAdmin(
+            target ? target.user : source.user,
+            msg.guild!
+        );
 
         // Fuck if/else structures, long live ternary operators
         salty.info(
             msg,
-            target.isMention
+            target
                 ? // mention
                   target.user.id === salty.bot.user!.id
                     ? // mention is Salty

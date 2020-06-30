@@ -1,8 +1,7 @@
 import { FieldsDescriptor } from "../types";
 import Model from "./Model";
 
-class User extends Model {
-    public id!: number;
+class Sailor extends Model {
     public discord_id!: string;
     public black_listed!: boolean;
     public todos!: string[];
@@ -12,11 +11,12 @@ class User extends Model {
         black_listed: false,
         todos: [],
     };
-    protected static readonly table = "users";
+    protected static readonly table = "sailors";
 
-    public static get(id: string): User | null {
-        return this.find((user: User) => user.discord_id === id);
+    public static async get(discordId: string): Promise<Sailor | null> {
+        const results: Sailor[] = await this.search({ discord_id: discordId });
+        return results[0] || null;
     }
 }
 
-export default User;
+export default Sailor;

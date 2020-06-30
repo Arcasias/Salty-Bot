@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
+import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../terms";
 import { isDev, meaning, randColor } from "../../utils";
@@ -35,7 +35,7 @@ Command.register({
 
     async action({ args, msg }) {
         const guild = msg.guild!;
-        const dbGuild = Guild.get(guild.id)!;
+        const crew = await Crew.get(guild.id)!;
 
         switch (meaning(args[0])) {
             case "default": {
@@ -59,7 +59,7 @@ Command.register({
                                 `This role doesn't exist. You can create it with "${commandString}".`
                             );
                         }
-                        await Guild.update(dbGuild.id, {
+                        await Crew.update(crew.id, {
                             default_role: role.id,
                         });
                         return salty.success(
@@ -69,21 +69,21 @@ Command.register({
                         );
                     }
                     case "remove": {
-                        if (!dbGuild.default_channel) {
+                        if (!crew.default_channel) {
                             return salty.info(msg, "No default role set.");
                         }
-                        await Guild.update(dbGuild.id, { default_role: null });
+                        await Crew.update(crew.id, { default_role: null });
                         return salty.success(
                             msg,
                             "default role has been successfuly removed"
                         );
                     }
                     default: {
-                        if (!dbGuild.default_role) {
+                        if (!crew.default_role) {
                             return salty.info(msg, "No default role set");
                         } else {
                             const role = guild.roles.cache.get(
-                                dbGuild.default_role
+                                crew.default_role
                             );
                             return salty.embed(msg, {
                                 title: `Default role is ${role?.name}`,

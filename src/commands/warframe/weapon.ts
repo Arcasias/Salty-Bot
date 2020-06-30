@@ -65,7 +65,7 @@ function displayStatus({ procChance, damageTypes }: Weapon) {
 Command.register({
     name: "weapon",
     category: "warframe",
-    async action({ args, msg, target }) {
+    async action({ args, msg, source, target }) {
         if (args.length) {
             if (levenshtein(args[0], "search") < 1) {
                 args.shift();
@@ -92,6 +92,7 @@ Command.register({
                                 return this.action({
                                     args: [mapping[emoji.name]],
                                     msg,
+                                    source,
                                     target,
                                 });
                             }

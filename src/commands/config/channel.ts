@@ -1,6 +1,6 @@
 import { TextChannel } from "discord.js";
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
+import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { meaning } from "../../utils";
 
@@ -26,11 +26,11 @@ Command.register({
     channel: "guild",
 
     async action({ args, msg }) {
-        const guild = Guild.get(msg.guild!.id)!;
+        const crew = await Crew.get(msg.guild!.id);
         switch (meaning(args[0])) {
             case "add":
             case "set": {
-                await Guild.update(guild.id, {
+                await Crew.update(crew.id, {
                     default_channel: msg.channel.id,
                 });
                 return salty.success(
@@ -43,21 +43,21 @@ Command.register({
                 );
             }
             case "remove": {
-                if (!guild.default_channel) {
+                if (!crew.default_channel) {
                     return salty.info(msg, "no default bot channel set");
                 }
-                await Guild.update(guild.id, { default_channel: null });
+                await Crew.update(crew.id, { default_channel: null });
                 return salty.success(
                     msg,
                     "default bot channel has been successfuly removed"
                 );
             }
             default: {
-                if (!guild.default_channel) {
+                if (!crew.default_channel) {
                     return salty.info(msg, "no default bot channel set");
                 }
-                const { name } = salty.getTextChannel(guild.default_channel);
-                if (msg.channel.id === guild.default_channel) {
+                const { name } = salty.getTextChannel(crew.default_channel);
+                if (msg.channel.id === crew.default_channel) {
                     return salty.info(
                         msg,
                         "this is the current default channel",

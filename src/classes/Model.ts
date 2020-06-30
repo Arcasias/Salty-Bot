@@ -1,19 +1,20 @@
+import { QueryResultRow } from "pg";
 import { Dictionnary, FieldsDescriptor } from "../types";
-import { log } from "../utils";
-import { create, read, remove, update } from "./Database";
+import { count, create, read, remove, update } from "./Database";
+
+const CACHE_LIMIT = 1000;
+const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
 class Model {
     public id!: number;
     protected Class!: typeof Model;
 
-    protected static instances: Dictionnary<any[]> = {};
     protected static readonly fields: FieldsDescriptor = {};
     protected static readonly table: string;
 
     constructor(values: FieldsDescriptor = {}) {
         this.Class = (<any>this).constructor;
         const { name, fields } = this.Class;
-        Model.instances[name].push(this);
 
         if (!("id" in values)) {
             throw new Error(`Missing field "id" on stored model ${name}.`);
@@ -35,42 +36,36 @@ class Model {
         }
     }
 
-    /**
-     * Removes the current instance from the parent model instances list.
-     */
-    public destroy(): void {
-        const newInstances = [];
-        const instances = Model.instances[this.constructor.name];
-        for (let i = 0; i < instances.length; i++) {
-            if (instances[i] !== this) {
-                newInstances.push(instances[i]);
-            }
-        }
-        Model.instances[this.constructor.name] = newInstances;
-    }
-
     //-------------------------------------------------------------------------
     // Static
     //-------------------------------------------------------------------------
 
-    public static get size(): number {
-        return Model.instances[this.name].length;
+    public static async search<T extends Model>(
+        idsOrWhere: number | number[] | Dictionnary<any> = {}
+    ): Promise<T[]> {
+        this.__ensureTable();
+        let where: Dictionnary<any> | undefined;
+        if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
+            where = { id: idsOrWhere };
+        } else if (typeof idsOrWhere === "object" && idsOrWhere !== null) {
+            where = idsOrWhere;
+        }
+        const results = await this.__cache(read, this.table, where);
+        return results.map((values: FieldsDescriptor) => <T>new this(values));
     }
 
-    /**
-     * Returns the list of instances fetched from the attached database table.
-     */
-    public static async load<T extends Model>(): Promise<T[]> {
-        if (!this.table) {
-            throw new Error(
-                `Model "${this.name}" is not stored in the database.`
-            );
+    public static async count(
+        idsOrWhere?: number | number[] | Dictionnary<any>
+    ): Promise<number> {
+        this.__ensureTable();
+        let where: Dictionnary<any> | undefined;
+        if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
+            where = { id: idsOrWhere };
+        } else if (typeof idsOrWhere === "object" && idsOrWhere !== null) {
+            where = idsOrWhere;
         }
-        Model.instances[this.name] = [];
-        const records: FieldsDescriptor[] = await read(this.table);
-        const instances = records.map((values) => <T>new this(values));
-        log(`${instances.length} ${this.name}(s) loaded`);
-        return instances;
+        const results = await this.__cache(count, this.table, where);
+        return results[0]?.count || 0;
     }
 
     /**
@@ -78,113 +73,126 @@ class Model {
      * value) and returns the list of instantiated objects.
      */
     public static async create<T extends Model>(
-        ...allValues: any[]
+        ...allValues: FieldsDescriptor[]
     ): Promise<T[]> {
-        if (!this.table) {
-            throw new Error(
-                `Model "${this.name}" is not stored in the database. Use 'new ${this.name}(...)' instead.`
-            );
-        }
-        const validValues = allValues.map((values) =>
+        this.__ensureTable();
+        this.__ensureContent(allValues, "create", "values");
+        this.__invalidateCache();
+        const defaultValues = allValues.map((values) =>
             Object.assign({}, this.fields, values)
         );
-        const records: FieldsDescriptor[] = await create(
+        const results: FieldsDescriptor[] = await create(
             this.table,
-            ...validValues
+            ...defaultValues
         );
-        const instances = records.map((values) => <T>new this(values));
-        return instances;
+        const models = results.map((values) => <T>new this(values));
+        return models;
     }
 
     /**
-     * Destroys the instances linked to the given ids.
+     * Destroys the records linked to the given ids.
      */
-    static async remove<T extends Model>(...ids: number[]): Promise<T[]> {
-        if (!this.table) {
-            throw new Error(
-                `Model "${this.name}" is not stored in the database.`
-            );
+    static async remove<T extends Model>(
+        idsOrWhere: number | number[] | Dictionnary<any>
+    ): Promise<T[]> {
+        this.__ensureTable();
+        this.__ensureContent(idsOrWhere, "remove", "id | ids | where");
+        this.__invalidateCache();
+        let where: Dictionnary<any>;
+        if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
+            where = { id: idsOrWhere };
+        } else {
+            where = idsOrWhere;
         }
-        const newInstances: T[] = [];
-        const removed: T[] = [];
-        const removing: Promise<any>[] = [];
-        this.each((instance: T) => {
-            if (ids.includes(instance.id || -1)) {
-                removing.push(remove(this.table, instance.id!));
-                removed.push(instance);
-            } else {
-                newInstances.push(instance);
-            }
-        });
-        await Promise.all(removing);
-        Model.instances[this.name] = newInstances;
-        return removed;
+        const results = await remove(this.table, where);
+        return results.map((r) => <T>new this(r));
     }
 
     /**
      * Writes the given values on all records matching the given ids.
      */
     static async update<T extends Model>(
-        ids: number | number[],
-        values: any
+        idsOrWhere: number | number[] | Dictionnary<any>,
+        values: FieldsDescriptor
     ): Promise<T[]> {
+        this.__ensureTable();
+        this.__ensureContent(idsOrWhere, "update", "id | ids | options");
+        this.__ensureContent(values, "update", "values");
+        this.__invalidateCache();
+        let where: Dictionnary<any>;
+        if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
+            where = { id: idsOrWhere };
+        } else {
+            where = idsOrWhere;
+        }
+        const results = await update(this.table, where, values);
+        return results.map((r) => <T>new this(r));
+    }
+
+    //-------------------------------------------------------------------------
+    // Private
+    //-------------------------------------------------------------------------
+
+    /**
+     * Cache calls to a given method having the same arguments.
+     * @param dbFunction
+     * @param table
+     * @param args
+     */
+    private static async __cache(
+        dbFunction: (table: string, ...args: any) => Promise<QueryResultRow[]>,
+        table: string,
+        ...args: any[]
+    ): Promise<QueryResultRow[]> {
+        if (!(this.name in MODEL_CACHE)) {
+            MODEL_CACHE[this.name] = {};
+        }
+        const cache = MODEL_CACHE[this.name];
+        const cacheKey = JSON.stringify(args);
+        if (!(cacheKey in cache)) {
+            // Ensures cache doesn't overflow its allowed limit
+            while (Object.keys(cache).length >= CACHE_LIMIT) {
+                const firstKey = Object.keys(cache).shift()!;
+                delete cache[firstKey];
+            }
+            // Registers the new result at the querried key
+            cache[cacheKey] = await dbFunction(table, ...args);
+        }
+        return JSON.parse(JSON.stringify(cache[cacheKey]));
+    }
+
+    private static __ensureTable(): void {
         if (!this.table) {
             throw new Error(
-                `Model "${
-                    this.name
-                }" is not stored in the database. Use 'Object.assign(${this.name.toLocaleLowerCase()}, ...)' instead.`
+                `Model "${this.name}" is not stored in the database.`
             );
         }
-        if (!Array.isArray(ids)) {
-            ids = [ids];
-        }
-        const results: any[] = await update(this.table, ids, values);
-        const instances: T[] = results.map(
-            (result: any): T => {
-                const instance = this.find(
-                    (instance: T) => instance.id === result.id
-                );
-                for (const key in result) {
-                    instance![<keyof T>key] = result[key];
-                }
-                return instance!;
-            }
-        );
-        return instances;
     }
 
-    public static all<T extends Model>(): T[] {
-        return Model.instances[this.name];
-    }
-
-    public static filter<T extends Model>(
-        callbackfn: (object: T, index: number) => boolean
-    ): T[] {
-        return Model.instances[this.name].filter(callbackfn);
-    }
-
-    public static find<T extends Model>(
-        predicate: (object: T, index: number) => boolean
-    ): T | null {
-        return Model.instances[this.name].find(predicate);
-    }
-
-    public static each<T extends Model>(
-        callbackfn: (object: T, index: number) => any
+    private static __ensureContent(
+        object: any,
+        method: string,
+        param: string
     ): void {
-        return Model.instances[this.name].forEach(callbackfn);
+        let hasContent: boolean;
+        if (Array.isArray(object)) {
+            hasContent = Boolean(object.length);
+        } else if (typeof object === "object" && object !== null) {
+            hasContent = Boolean(Object.keys(object).length);
+        } else {
+            hasContent = Boolean(object);
+        }
+        if (!hasContent) {
+            throw new Error(`Param "${param}" of method "${method}" is empty`);
+        }
     }
 
-    public static map<T extends Model>(
-        callbackfn: (object: T, index: number) => any
-    ): any[] {
-        return Model.instances[this.name].map(callbackfn);
-    }
-
-    public static sort<T extends Model>(
-        comparefn: (object: T, index: number) => number
-    ): T[] {
-        return Model.instances[this.name].sort(comparefn);
+    /**
+     * To call on an update/deletion on the model to invalidate the current
+     * cache.
+     */
+    private static __invalidateCache(): void {
+        MODEL_CACHE[this.name] = {};
     }
 }
 

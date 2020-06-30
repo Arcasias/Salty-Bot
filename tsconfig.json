@@ -15,7 +15,7 @@
             "esnext.symbol"
         ],
         "removeComments": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "outDir": "dist",
         "esModuleInterop": true
     },

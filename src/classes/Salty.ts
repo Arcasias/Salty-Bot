@@ -1,5 +1,7 @@
-import Discord, {
+import {
     Channel,
+    Client,
+    Guild,
     GuildChannel,
     GuildMember,
     Message,
@@ -10,15 +12,16 @@ import Discord, {
     PermissionString,
     ReactionCollector,
     TextChannel,
+    User
 } from "discord.js";
 import { prefix } from "../config";
 import { intro, keywords } from "../terms";
 import {
     Dictionnary,
     FieldsDescriptor,
-    MessageTarget,
+    MessageActor,
     Runnable,
-    SaltyEmbedOptions,
+    SaltyEmbedOptions
 } from "../types";
 import {
     choice,
@@ -31,14 +34,14 @@ import {
     log,
     request,
     search,
-    title,
+    title
 } from "../utils";
 import Command from "./Command";
+import Crew from "./Crew";
 import { connect, disconnect } from "./Database";
 import Formatter from "./Formatter";
-import Guild from "./Guild";
 import QuickCommand from "./QuickCommand";
-import User from "./User";
+import Sailor from "./Sailor";
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 
@@ -55,7 +58,7 @@ function catchHandler(
 }
 
 class Salty {
-    public bot = new Discord.Client();
+    public bot = new Client();
     public startTime = new Date();
     private formatter: Formatter;
 
@@ -81,194 +84,15 @@ class Salty {
         this.bot.on("ready", catchHandler(this.onReady.bind(this)));
     }
 
-    //-----------------------------------------------------------------------------
-    // Not exported
-    //-----------------------------------------------------------------------------
-
-    private async onChannelDelete(
-        channel: PartialDMChannel | Channel
-    ): Promise<void> {
-        if (!(channel instanceof GuildChannel)) {
-            return;
-        }
-        Guild.each(async (guild: Guild) => {
-            if (guild.default_channel === channel.id) {
-                const relatedGuild = Guild.get(channel.guild.id);
-                if (relatedGuild) {
-                    Guild.update(relatedGuild.id, { default_channel: false });
-                }
-            }
+    public get sailor() {
+        return new Sailor({
+            id: false,
+            discord_id: this.user.id,
         });
     }
 
-    private async onError(err: Error): Promise<void> {
-        logError(err);
-        this.restart();
-    }
-
-    private async onGuildCreate(guild: Discord.Guild): Promise<void> {
-        Guild.create({ discord_id: guild.id });
-    }
-
-    private async onGuildDelete(guild: Discord.Guild): Promise<void> {
-        if (guild.member(this.bot.user!)) {
-            const relatedGuild = Guild.get(guild.id);
-            if (relatedGuild) {
-                Guild.remove(relatedGuild.id);
-            }
-        }
-    }
-
-    private async onGuildMemberAdd(
-        member: GuildMember | PartialGuildMember
-    ): Promise<void> {
-        const guild = Guild.get(member.guild.id);
-        if (guild?.default_channel) {
-            const channel = this.getTextChannel(guild.default_channel);
-            channel.send(
-                `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
-            );
-        }
-        if (guild?.default_role) {
-            member.roles.add(guild.default_role);
-        }
-    }
-
-    private async onGuildMemberRemove(
-        member: GuildMember | PartialGuildMember
-    ): Promise<void> {
-        const guild = Guild.get(member.guild.id);
-        if (guild?.default_channel) {
-            const channel = this.getTextChannel(guild.default_channel);
-            const name = member.user?.username || "unknown";
-            channel.send(`Well, looks like ${name} got bored of us :c`);
-        }
-    }
-
-    private async onMessage(msg: Message): Promise<any> {
-        const { author, guild, mentions } = msg;
-        let { content } = msg;
-
-        // Ignore all bots
-        if (author.bot) {
-            return;
-        }
-
-        const user = User.get(author.id);
-        const mention = mentions.users.first();
-        const mentioned = Boolean(msg.mentions.users.size);
-        const target: MessageTarget = {
-            user: mentioned ? msg.mentions.users.first()! : msg.author,
-            member: mentioned ? msg.mentions.members!.first()! : msg.member,
-            isMention: mentioned,
-            name: "",
-        };
-        const nickname = guild?.members.cache.get(this.bot.user!.id)?.nickname;
-        const botNameRegex: string =
-            this.bot.user!.username + (nickname ? `|${clean(nickname)}` : "");
-
-        // Look for username/nickname match or a mention if in a guild, else (DM) interaction
-        // is always true.
-        let interaction = content.startsWith(prefix);
-        // Look for a prefix. Deleted if found.
-        if (interaction) {
-            content = content.slice(1);
-        } else if (msg.guild) {
-            interaction =
-                new RegExp(botNameRegex, "i").test(content) ||
-                mention?.id === this.bot.user!.id;
-        }
-        // Need an interaction passed point. Everything else is a "normal" message.
-        if (!interaction) {
-            return;
-        }
-        request(msg.guild?.name || "DM", author.username, content);
-        // Warning if blacklisted
-        if (user?.black_listed) {
-            return this.error(
-                msg,
-                "you seem to be blacklisted. To find out why, ask my glorious creator"
-            );
-        }
-        // Ensures the user and all mentions are already registered
-        if (!user) {
-            await User.create({ discord_id: author.id });
-        }
-        if (mention && !mention.bot) {
-            const mentionUser = User.get(mention.id);
-            if (!mentionUser) {
-                await User.create({ discord_id: mention.id });
-            }
-        }
-        // Clean the message of any undesired spaces
-        const msgArgs = content
-            .split(" ")
-            .filter((word) => Boolean(word.trim()));
-        if (!msgArgs.length) {
-            return this.message(msg, "yes?");
-        }
-        const actionName = msgArgs.shift() || "";
-        const commandName = Command.aliases.get(clean(actionName));
-        let command: Runnable;
-        let commandArgs = msgArgs;
-        if (commandName) {
-            if (keywords.help.includes(msgArgs[0])) {
-                commandArgs = [commandName];
-                command = Command.list.get("help")!;
-            } else {
-                command = Command.list.get(commandName)!;
-            }
-        } else {
-            const closests = search([...Command.aliases.keys()], actionName, 2);
-            if (closests.length) {
-                const cmds: Dictionnary<string> = {};
-                for (const key of closests) {
-                    const cmdName = Command.aliases.get(key)!;
-                    if (!(cmdName in cmds)) {
-                        cmds[cmdName] = key;
-                    }
-                }
-                return this.message(
-                    msg,
-                    `command "*${actionName}*" doesn't exist. Did you mean "*${Object.values(
-                        cmds
-                    ).join(`*" or "*`)}*"?`
-                );
-            }
-            commandArgs.unshift(actionName);
-            command = Command.list.get("talk")!;
-        }
-        command.run(msg, commandArgs, target);
-    }
-
-    private async onReady(): Promise<void> {
-        const preGuilds: FieldsDescriptor[] = [];
-        this.bot.user!.setStatus("online"); // dnd , online , idle
-        this.bot.guilds.cache.forEach((discordGuild) => {
-            const guild = Guild.get(discordGuild.id);
-            if (guild) {
-                if (guild.default_channel) {
-                    const channel = this.getTextChannel(guild.default_channel);
-                    channel.send(title(choice(intro)));
-                }
-            } else {
-                preGuilds.push({ discord_id: discordGuild.id });
-            }
-        });
-        if (preGuilds.length) {
-            await Guild.create(...preGuilds);
-        }
-        const loadingTime: number =
-            Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
-
-        log(
-            `${Command.list.size} commands loaded. ${Command.aliases.size} keys in total.`
-        );
-        log(
-            `Salty loaded in ${loadingTime} second${
-                loadingTime === 1 ? "" : "s"
-            } and ready to salt the chat :D`
-        );
+    public get user() {
+        return this.bot.user!;
     }
 
     //-----------------------------------------------------------------------------
@@ -285,7 +109,7 @@ class Salty {
             collector.stop("restarted");
         }
         this.bot.destroy();
-        this.bot = new Discord.Client();
+        this.bot = new Client();
         await disconnect();
         await this.start();
     }
@@ -438,8 +262,8 @@ class Salty {
      */
     public hasAccess(
         access: string,
-        user: Discord.User,
-        guild: Discord.Guild | null = null
+        user: User,
+        guild: Guild | null = null
     ): boolean {
         if (access === "public") {
             return true;
@@ -459,9 +283,9 @@ class Salty {
      * @param guild
      * @param permisson
      */
-    public hasPermission(guild: Discord.Guild, permisson: PermissionString) {
+    public hasPermission(guild: Guild, permisson: PermissionString) {
         return guild.members.cache
-            .get(this.bot.user!.id)
+            .get(this.user.id)
             ?.permissions.has(permisson);
     }
 
@@ -506,17 +330,13 @@ class Salty {
      * Entry point of the module. This function is responsible of executing the following
      * actions in the given order:
      * 1. Establish a connection with the PostgreSQL database
-     * 2. Load the models: QuickCommand, Guild and User (order is irrelevant)
+     * 2. Load the models: QuickCommand, Crew and Sailor (order is irrelevant)
      * 3. Log into Discord through the API
      */
     public async start(): Promise<void> {
         log("Initializing Salty");
         await connect();
-        await Promise.all([
-            QuickCommand.load(),
-            User.load<User>(),
-            Guild.load<Guild>(),
-        ]);
+        await QuickCommand.load();
         await this.bot.login(process.env.DISCORD_API);
     }
 
@@ -573,6 +393,235 @@ class Salty {
      */
     public wtf(msg: Message) {
         return this.error(msg, "What the fuck");
+    }
+
+    //-----------------------------------------------------------------------------
+    // Not exported
+    //-----------------------------------------------------------------------------
+
+    private async onChannelDelete(
+        channel: PartialDMChannel | Channel
+    ): Promise<void> {
+        if (!(channel instanceof GuildChannel)) {
+            return;
+        }
+        await Crew.update(
+            { default_channel: channel.id },
+            { default_channel: null }
+        );
+    }
+
+    private async onError(err: Error): Promise<void> {
+        logError(err);
+        this.restart();
+    }
+
+    private async onGuildCreate(guild: Guild): Promise<void> {
+        Crew.create({ discord_id: guild.id });
+    }
+
+    private async onGuildDelete(guild: Guild): Promise<void> {
+        if (guild.member(this.user)) {
+            await Crew.remove({ discord_id: guild.id });
+        }
+    }
+
+    private async onGuildMemberAdd(
+        member: GuildMember | PartialGuildMember
+    ): Promise<void> {
+        const guild = await Crew.get(member.guild.id);
+        if (guild?.default_channel) {
+            const channel = this.getTextChannel(guild.default_channel);
+            channel.send(
+                `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
+            );
+        }
+        if (guild?.default_role) {
+            member.roles.add(guild.default_role);
+        }
+    }
+
+    private async onGuildMemberRemove(
+        member: GuildMember | PartialGuildMember
+    ): Promise<void> {
+        const guild = await Crew.get(member.guild.id);
+        if (guild?.default_channel) {
+            const channel = this.getTextChannel(guild.default_channel);
+            const name = member.user?.username || "unknown";
+            channel.send(`Well, looks like ${name} got bored of us :c`);
+        }
+    }
+
+    private async onMessage(msg: Message): Promise<any> {
+        const { author, cleanContent, guild, member, mentions } = msg;
+
+        // Ignore all bots
+        if (author.bot) {
+            return;
+        }
+
+        // Look for an interaction
+        const mention = mentions.users.first();
+        const nickname = guild?.members.cache.get(this.user.id)?.nickname;
+        const botNameRegex = new RegExp(
+            `${this.user.username}${nickname ? `|@?${clean(nickname)}` : ""}`,
+            "i"
+        );
+        const hasPrefix = cleanContent.startsWith(prefix);
+        const content = hasPrefix
+            ? cleanContent.slice(prefix.length)
+            : cleanContent;
+        if (
+            !hasPrefix && // starts with prefix
+            guild && // is direct message
+            mention?.id !== this.user.id && // mentions Salty
+            !botNameRegex.test(content) // contains Salty alias or name
+        ) {
+            // The action is discarded if none of the above criteria are met
+            return;
+        }
+
+        // Logs the  action
+        request(guild?.name || "DM", author.username, content);
+
+        // Fetches the actors of the action
+        const toFetch = [author.id];
+        if (mention && !mention.bot) {
+            toFetch.push(mention.id);
+        }
+        let [sourceSailor, targetSailor]: Sailor[] = await Sailor.search({
+            discord_id: toFetch,
+        });
+        if (sourceSailor?.black_listed) {
+            // The action is discarded if the user is black-listed
+            return;
+        }
+
+        // Cleans the message of any undesired spaces
+        if (!content.replace(botNameRegex, "").trim().length) {
+            // Drops the action here if the message is empty
+            return this.message(msg, "yes?");
+        }
+
+        // Ensures the user and all mentions are correctly registered
+        const toCreate = [];
+        if (!sourceSailor) {
+            toCreate.push({ discord_id: author.id });
+        } else if (mention && !targetSailor) {
+            if (mention.id === author.id) {
+                targetSailor = sourceSailor;
+            } else if (mention.id === this.bot.user?.id) {
+                targetSailor = this.sailor;
+            } else if (!mention.bot) {
+                toCreate.push({ discord_id: mention.id });
+            }
+        }
+        if (toCreate.length) {
+            const created: Sailor[] = await Sailor.create(...toCreate);
+            if (created.length && !sourceSailor) {
+                sourceSailor = created.shift()!;
+            }
+            if (created.length && !targetSailor) {
+                targetSailor = created.shift()!;
+            }
+        }
+
+        // Generates the source actor object
+        const source: MessageActor = {
+            user: author,
+            member,
+            sailor: sourceSailor,
+            name: member?.displayName || author.username,
+        };
+        let target: MessageActor | null = null;
+        if (targetSailor) {
+            const mem = mentions.members?.first() || null;
+            // Generates the target actor object if a mention exists
+            target = {
+                user: mention!,
+                member: mem,
+                sailor: targetSailor,
+                name: mem?.displayName || mention!.username,
+            };
+        }
+
+        // Handles the actual command if found
+        const msgArgs = content
+            .split(" ")
+            .filter((word) => Boolean(word.trim()));
+        const actionName = msgArgs.shift() || "";
+        const commandName = Command.aliases.get(clean(actionName));
+        let command: Runnable;
+        let commandArgs = msgArgs;
+        if (commandName) {
+            if (keywords.help.includes(msgArgs[0])) {
+                commandArgs = [commandName];
+                command = Command.list.get("help")!;
+            } else {
+                command = Command.list.get(commandName)!;
+            }
+        } else {
+            // If no command found, tries to find the closest matches
+            const closests = search([...Command.aliases.keys()], actionName, 2);
+            if (closests.length) {
+                const cmds: Dictionnary<string> = {};
+                for (const key of closests) {
+                    const cmdName = Command.aliases.get(key)!;
+                    if (!(cmdName in cmds)) {
+                        cmds[cmdName] = key;
+                    }
+                }
+                return this.message(
+                    msg,
+                    `command "*${actionName}*" doesn't exist. Did you mean "*${Object.values(
+                        cmds
+                    ).join(`*" or "*`)}*"?`
+                );
+            }
+            commandArgs.unshift(actionName);
+            command = Command.list.get("talk")!;
+        }
+        // If no command nor close match, the "talk" command is called instead
+        command.run(msg, commandArgs, source, target);
+    }
+
+    private async onReady(): Promise<void> {
+        this.user.setStatus("online");
+        // Fetch all guilds
+        const activeGuilds: string[] = this.bot.guilds.cache.map(
+            (guild) => guild.id
+        );
+        const guilds: Crew[] = await Crew.search();
+        const toRemove: number[] = guilds
+            .filter((g) => !activeGuilds.includes(g.discord_id))
+            .map((g) => g.id);
+        const toCreate: FieldsDescriptor[] = activeGuilds
+            .filter((id) => !guilds.some((g) => g.discord_id === id))
+            .map((id) => ({ discord_id: id }));
+        if (toCreate.length) {
+            await Crew.create(...toCreate);
+        }
+        if (toRemove.length) {
+            // No need to wait for this one
+            Crew.remove(toRemove);
+        }
+        for (const guild of guilds) {
+            if (guild.default_channel) {
+                const channel = this.getTextChannel(guild.default_channel);
+                channel.send(title(choice(intro)));
+            }
+        }
+        const loadingTime: number =
+            Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
+
+        log(
+            `${Command.list.size} commands loaded. ${Command.aliases.size} keys in total.`
+        );
+        log(
+            `Salty loaded in ${loadingTime} second${
+                loadingTime === 1 ? "" : "s"
+            } and ready to salt the chat :D`
+        );
     }
 }
 

@@ -9,11 +9,13 @@ import {
     User,
 } from "discord.js";
 import { Item } from "warframe-items";
+import Sailor from "./classes/Sailor";
 
 export interface ActionParameters {
     readonly args: string[];
     readonly msg: Message;
-    readonly target: MessageTarget;
+    readonly source: MessageActor;
+    readonly target: MessageActor | null;
 }
 export interface CommandCategoryDoc {
     description: string;
@@ -56,10 +58,10 @@ export interface MeaningInfo {
     answers: string[];
     list: string[];
 }
-export interface MessageTarget {
+export interface MessageActor {
     user: User;
     member: GuildMember | null;
-    isMention: boolean;
+    sailor: Sailor;
     name: string;
 }
 export interface PollOption {
@@ -68,7 +70,13 @@ export interface PollOption {
     reaction: string;
 }
 export interface Runnable {
-    run: (msg: Message, args: string[], target: MessageTarget) => Promise<any>;
+    run: (
+        msg: Message,
+        args: string[],
+        source: MessageActor,
+        target: MessageActor | null
+    ) => Promise<any>;
+    type: CommandType;
 }
 export interface SaltyEmbedOptions extends MessageEmbedOptions {
     actions?: {
@@ -125,6 +133,7 @@ export type Categories = { [key in AvailableCategories]: string };
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
 export type CommandChannel = "all" | "guild";
+export type CommandType = "core" | "quick";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
 export type FieldsDescriptor = Dictionnary<any>;

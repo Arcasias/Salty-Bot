@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
+import Playlist from "../../classes/Playlist";
 import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 import { formatDuration, meaning } from "../../utils";
@@ -29,7 +29,7 @@ Command.register({
     channel: "guild",
 
     async action({ args, msg }) {
-        const { playlist } = Guild.get(msg.guild!.id)!;
+        const playlist = Playlist.get(msg.guild!.id);
 
         switch (meaning(args[0])) {
             case "remove": {

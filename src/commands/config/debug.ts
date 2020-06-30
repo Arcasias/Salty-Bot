@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
+import Crew from "../../classes/Crew";
+import Sailor from "../../classes/Sailor";
 import Salty from "../../classes/Salty";
-import User from "../../classes/User";
 import salty from "../../salty";
 import { debug, ellipsis } from "../../utils";
 
@@ -40,8 +40,8 @@ function stringify(variable: any, depth: number): string {
 }
 
 function evalInContext(code: string): any {
-    const G = Guild;
-    const U = User;
+    const G = Crew;
+    const U = Sailor;
     return eval(code);
 }
 

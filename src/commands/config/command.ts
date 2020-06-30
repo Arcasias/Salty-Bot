@@ -15,7 +15,7 @@ Command.register({
         },
         {
             argument:
-                "***command key 1***, ***command key 2***, ...  \\`\\`\\`***command block***\\`\\`\\`",
+                "***command key 1***, ***command key 2***, ...  // ***answer 1***, ***answer 2***, ... ",
             effect:
                 "Creates a new command having ***command aliases*** as its triggers. ***command effect*** will then be displayed as a response",
         },
@@ -25,35 +25,43 @@ Command.register({
     async action({ args, msg }) {
         switch (meaning(args[0])) {
             case "remove": {
-                const commandName: string = args[1];
-                if (!commandName) {
+                const alias: string = args[1];
+                if (!alias) {
                     return salty.warn(
                         msg,
                         "You need to specify which command to remove."
                     );
                 }
-                const command = QuickCommand.find((cmd: QuickCommand) =>
-                    cmd.aliases.includes(commandName)
-                );
-                if (!command) {
+                const name = Command.aliases.get(alias);
+                if (!name) {
                     return salty.warn(msg, "That command doesn't exist.");
                 }
-                await QuickCommand.remove(command.id);
-                return salty.success(
-                    msg,
-                    `Command "**${command.name}**" deleted`
-                );
+                const command = Command.list.get(name)!;
+                if (command.type === "core") {
+                    return salty.warn(
+                        msg,
+                        `That is a core command, you can't remove it`
+                    );
+                }
+                await QuickCommand.remove({
+                    name,
+                });
+                return salty.success(msg, `Command "**${name}**" deleted`);
             }
             case "list":
             case null: {
-                if (!QuickCommand.size) {
+                const quickCommands = Command.list.filter(
+                    (c) => c.type === "quick"
+                );
+                if (!quickCommands.size) {
                     return salty.info(msg, `No quick commands set.`);
                 }
+                let index = 1;
                 return salty.embed(msg, {
                     title: "List of commands",
-                    description: QuickCommand.map(
-                        (cmd: QuickCommand, i) => `${i! + 1}) ${cmd.name}`
-                    ).join("\n"),
+                    description: quickCommands
+                        .map((cmd) => `${index++}) ${cmd.name}`)
+                        .join("\n"),
                 });
             }
             case "add": {

@@ -22,28 +22,29 @@ Command.register({
         },
     ],
 
-    async action({ msg, target }) {
+    async action({ msg, source, target }) {
+        const query = target || source;
         const options: SaltyEmbedOptions = {
-            title: `this is ${possessive(target.name)} profile pic`,
-            color: target.member?.displayColor,
+            title: `this is ${possessive(query.name)} profile pic`,
+            color: query.member?.displayColor,
         };
-        if (target.user.id === salty.bot.user!.id) {
+        if (query.user.id === salty.bot.user!.id) {
             // if Salty
             const files = fs.readdirSync(SALTY_IMAGES_PATH);
             const pics = files.filter((f) => f.split(".").pop() === "png");
             options.title = `This is a picture of me. `;
             options.files = [path.join(SALTY_IMAGES_PATH, choice(pics))];
         } else {
-            if (target.user.bot) {
+            if (query.user.bot) {
                 options.description = "That's just a crappy bot"; // bot
-            } else if (isOwner(target.user)) {
+            } else if (isOwner(query.user)) {
                 options.description = "He's the coolest guy i know ^-^"; // owner
-            } else if (msg.guild && isAdmin(target.user, msg.guild)) {
+            } else if (msg.guild && isAdmin(query.user, msg.guild)) {
                 options.description = "It's a cute piece of shit"; // admin
             } else {
                 options.description = "This is a huge piece of shit"; // else
             }
-            const url = target.user.avatarURL({ size: 1024 });
+            const url = query.user.avatarURL({ size: 1024 });
             if (url) {
                 options.image = { url };
             }

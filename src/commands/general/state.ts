@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
-import User from "../../classes/User";
+import Crew from "../../classes/Crew";
+import Sailor from "../../classes/Sailor";
 import { devs, homepage, owner } from "../../config";
 import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
@@ -18,7 +18,10 @@ Command.register({
     access: "dev",
 
     async action({ msg }) {
-        const blacklist = User.filter((u: User) => u.black_listed);
+        const [crewsCount, sailorsCount] = await Promise.all([
+            Crew.count(),
+            Sailor.count(),
+        ]);
         const options: SaltyEmbedOptions = {
             title: `Salty Bot`,
             url: homepage,
@@ -36,19 +39,16 @@ Command.register({
                 { name: `Owner`, value: owner.username },
                 { name: `Developers`, value: `${devs.length} contributors` },
                 {
-                    name: `Servers`,
-                    value: `Handling ${Guild.size} servers`,
+                    name: `Crews`,
+                    value: `Handling ${crewsCount} crews`,
                 },
-                { name: `Users`, value: `Handling ${User.size} users` },
+                {
+                    name: `Users`,
+                    value: `Watching over ${sailorsCount} sailors`,
+                },
             ],
             inline: true,
         };
-        if (blacklist.length) {
-            options.fields!.push({
-                name: `Blacklist`,
-                value: `${blacklist.length} troublemakers`,
-            });
-        }
         if (process.env.DEBUG === "true") {
             options.footer = { text: `Debug mode active` };
         }

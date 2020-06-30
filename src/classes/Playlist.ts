@@ -1,6 +1,6 @@
 import { VoiceChannel, VoiceConnection } from "discord.js";
 import ytdl from "ytdl-core";
-import { Song } from "../types";
+import { Dictionnary, Song } from "../types";
 import { randInt } from "../utils";
 
 const TIMEOUT = 5 * 60 * 1000;
@@ -12,6 +12,8 @@ class Playlist {
     public queue: Song[] = [];
     public repeat: string = "off";
     private timeout: NodeJS.Timeout | null = null;
+
+    private static guilds: Dictionnary<Playlist> = {};
 
     public get playing(): Song {
         return this.queue[this.pointer];
@@ -148,6 +150,13 @@ class Playlist {
                 this.timeout = null;
             }, TIMEOUT);
         }
+    }
+
+    public static get(id: string): Playlist {
+        if (!(id in this.guilds)) {
+            this.guilds[id] = new this();
+        }
+        return this.guilds[id];
     }
 }
 

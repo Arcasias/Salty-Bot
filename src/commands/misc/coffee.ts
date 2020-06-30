@@ -18,24 +18,26 @@ Command.register({
     ],
     channel: "guild",
 
-    async action({ msg, target }) {
+    async action({ msg, source, target }) {
+        const query = target || source;
         const options: SaltyEmbedOptions = {
-            title: "this is a nice coffee",
-            description: "specially made for you ;)",
+            title: "This is a nice coffee",
             image: {
                 url:
                     "https://cdn.cnn.com/cnnnext/dam/assets/150929101049-black-coffee-stock-super-tease.jpg",
             },
             color: 0x523415,
         };
-        if (target.isMention) {
-            if (target.user.id === salty.bot.user!.id) {
-                options.description = "how cute, you gave me a coffee ^-^";
+        if (target) {
+            if (query.user.id === salty.bot.user!.id) {
+                options.description = "How cute, you gave me a coffee ^-^";
             } else {
                 options.description = `Made with ♥ by **${
                     msg.member!.displayName
-                }** for **${target.name}**`;
+                }** for **${query.name}**`;
             }
+        } else {
+            options.description = "Specially made for you ;)";
         }
         await salty.embed(msg, options);
     },

@@ -1,5 +1,5 @@
 import Command from "../../classes/Command";
-import User from "../../classes/User";
+import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
 import { clean, levenshtein, meaning } from "../../utils";
 
@@ -18,22 +18,11 @@ Command.register({
         },
     ],
 
-    async action({ args, msg }) {
-        const user = User.get(msg.author.id)!;
-
+    async action({ args, msg, source }) {
+        const { todos } = source.sailor;
         switch (meaning(args[0])) {
-            case "add":
-            case "string": {
-                const newTodo = args.join(" ");
-                const todos = [...user.todos, newTodo];
-                await User.update(user.id, { todos });
-                return salty.success(
-                    msg,
-                    `I added "**${newTodo}**" to your todo list.`
-                );
-            }
             case "remove": {
-                if (!user.todos.length) {
+                if (!todos.length) {
                     return salty.info(msg, "Your todo list is empty.");
                 }
                 if (!args[1]) {
@@ -45,14 +34,14 @@ Command.register({
                 let targetIndex: number;
                 if (!isNaN(Number(args[1]))) {
                     targetIndex = Number(args[1]) - 1;
-                    if (!user.todos[targetIndex]) {
+                    if (!todos[targetIndex]) {
                         return salty.warn(
                             msg,
-                            `Your todo list has ${user.todos.length} items: ${args[1]} is out of range.`
+                            `Your todo list has ${todos.length} items: ${args[1]} is out of range.`
                         );
                     }
                 } else {
-                    targetIndex = user.todos.findIndex(
+                    targetIndex = todos.findIndex(
                         (todo: string) =>
                             levenshtein(clean(args[1]), clean(todo)) <= 1
                     );
@@ -63,35 +52,46 @@ Command.register({
                         );
                     }
                 }
-                const todos: string[] = [];
+                const newTodos: string[] = [];
                 let removed: string;
-                for (let i = 0; i < user.todos.length; i++) {
+                for (let i = 0; i < todos.length; i++) {
                     if (i === targetIndex) {
-                        removed = user.todos[i];
+                        removed = todos[i];
                     } else {
-                        todos.push(user.todos[i]);
+                        newTodos.push(todos[i]);
                     }
                 }
-                await User.update(user.id, { todos });
+                await Sailor.update(source.sailor.id, { todos: newTodos });
                 return salty.success(
                     msg,
                     `"**${removed!}**" removed from your todo list`
                 );
             }
             case "clear": {
-                await User.update(user.id, { todos: [] });
+                await Sailor.update(source.sailor.id, { todos: [] });
                 return salty.success(msg, "Your todo list has been cleared.");
             }
-            default: {
-                if (!user.todos.length) {
+            case "list":
+            case null: {
+                if (!todos.length) {
                     return salty.info(msg, "Your todo list is empty.");
                 }
                 return salty.embed(msg, {
                     title: "<authors> todo list",
-                    description: user.todos
+                    description: todos
                         .map((todo: string) => `• ${todo}`)
                         .join("\n"),
                 });
+            }
+            default: {
+                const newTodo = args.join(" ");
+                await Sailor.update(source.sailor.id, {
+                    todos: [...todos, newTodo],
+                });
+                return salty.success(
+                    msg,
+                    `I added "**${newTodo}**" to your todo list.`
+                );
             }
         }
     },

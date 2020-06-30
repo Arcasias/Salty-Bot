@@ -2,6 +2,9 @@ import { MessageEmbed } from "discord.js";
 import Command from "../../classes/Command";
 import salty from "../../salty";
 
+const JS_STANDARD_KEY = /\b(?<!")(\w+)(?!")\b\s*:/g;
+const JS_TRAILING_COMA = /,([\s\n]*[\}\]])/g;
+
 Command.register({
     name: "embed",
     aliases: ["json", "parse"],
@@ -18,18 +21,42 @@ Command.register({
     ],
 
     async action({ args, msg }) {
+        const raw = args
+            .join(" ")
+            .replace(JS_STANDARD_KEY, (_, match) => `"${match}":`)
+            .replace(JS_TRAILING_COMA, (_, match) => match);
         let parsed;
         try {
-            parsed = JSON.parse(args.join(" "));
+            parsed = JSON.parse(raw);
         } catch (error) {
             return salty.warn(
                 msg,
-                "Given data must be formatted as a JSON string."
+                "Given data must be formatted as a JSON string or a JavaScript object."
             );
         }
         if (!Object.keys(parsed).length) {
             return salty.warn(msg, "You must give me some data to parse.");
         }
-        await salty.message(msg, null, { embed: new MessageEmbed(parsed) });
+        const embed = new MessageEmbed(parsed);
+        try {
+            await salty.message(msg, null, { embed });
+        } catch (err) {
+            const [property, detail] =
+                (<Error>err).message.split(/\n/).pop()?.split(/:/) || [];
+            if (property && detail) {
+                return salty.error(
+                    msg,
+                    `Invalid embed property: ${property.replace(
+                        /embed\./,
+                        ""
+                    )} (${detail.trim()})`
+                );
+            } else {
+                return salty.error(
+                    msg,
+                    `Uuuuuh something went wrong, check your spelling ?`
+                );
+            }
+        }
     },
 });

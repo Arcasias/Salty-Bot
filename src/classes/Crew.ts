@@ -1,10 +1,7 @@
 import { FieldsDescriptor } from "../types";
 import Model from "./Model";
-import Playlist from "./Playlist";
 
-class Guild extends Model {
-    public id!: number;
-    public playlist: Playlist = new Playlist();
+class Crew extends Model {
     public discord_id!: string;
     public default_channel!: string | null;
     public default_role!: string | null;
@@ -14,11 +11,12 @@ class Guild extends Model {
         default_channel: null,
         default_role: null,
     };
-    protected static readonly table: string = "guilds";
+    protected static readonly table: string = "crews";
 
-    public static get(id: string) {
-        return this.find((guild: Guild) => guild.discord_id === id);
+    public static async get(discordId: string): Promise<Crew> {
+        const results: Crew[] = await this.search({ discord_id: discordId });
+        return results[0] || null;
     }
 }
 
-export default Guild;
+export default Crew;

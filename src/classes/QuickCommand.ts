@@ -1,15 +1,15 @@
 import { Message } from "discord.js";
 import salty from "../salty";
-import { FieldsDescriptor, Runnable } from "../types";
+import { CommandType, Dictionnary, FieldsDescriptor, Runnable } from "../types";
 import { choice } from "../utils";
 import Command from "./Command";
 import Model from "./Model";
 
 class QuickCommand extends Model implements Runnable {
-    public id!: number;
     public name!: string;
     public aliases!: string[];
     public answers!: string[];
+    public type: CommandType = "quick";
 
     protected static readonly fields: FieldsDescriptor = {
         name: "",
@@ -34,25 +34,27 @@ class QuickCommand extends Model implements Runnable {
     }
 
     /**
-     * @override
+     * Returns the list of instances fetched from the attached database table.
      */
-    public static async load<T extends Model>() {
-        const commands = await super.load();
-        for (const command of commands) {
-            const cmd = <QuickCommand>command;
+    public static async load(): Promise<QuickCommand[]> {
+        const records: FieldsDescriptor[] = await this.search({});
+        const commands = records.map((values) => new this(values));
+        for (const cmd of commands) {
             for (const alias of cmd.aliases) {
                 Command.aliases.set(alias, cmd.name);
             }
             Command.list.set(cmd.name, cmd);
         }
-        return <T[]>commands;
+        return commands;
     }
 
     /**
      * @override
      */
-    public static async remove<T extends Model>(...ids: number[]) {
-        const commands = await super.remove(...ids);
+    public static async remove<T extends Model>(
+        idsOrWhere: number | number[] | Dictionnary<any>
+    ) {
+        const commands = await super.remove(idsOrWhere);
         for (const command of commands) {
             const cmd = <QuickCommand>command;
             for (const alias of cmd.aliases) {

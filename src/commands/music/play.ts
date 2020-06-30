@@ -3,7 +3,6 @@ import { youtube_v3 } from "googleapis";
 import { promisify } from "util";
 import ytdl, { videoInfo } from "ytdl-core";
 import Command from "../../classes/Command";
-import Guild from "../../classes/Guild";
 import Playlist from "../../classes/Playlist";
 import salty from "../../salty";
 import { surpriseSong } from "../../terms";
@@ -71,7 +70,7 @@ Command.register({
         if (!voiceChannel) {
             return salty.warn(msg, "You're not in a voice channel.");
         }
-        const { playlist } = Guild.get(msg.guild!.id)!;
+        const playlist = Playlist.get(msg.guild!.id);
         let arg = Array.isArray(args) ? args[0] : args;
         if (!arg) {
             if (!playlist.queue[0]) {

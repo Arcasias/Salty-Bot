@@ -32,9 +32,9 @@ Command.register({
         },
     ],
 
-    async action({ args, msg, target }) {
+    async action({ args, msg, source, target }) {
         if (!args[0]) {
-            return Command.list.get("talk")!.run(msg, args, target);
+            return Command.list.get("talk")!.run(msg, args, source, target);
         }
         let message;
         for (let sa of specialActions) {

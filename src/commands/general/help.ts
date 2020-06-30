@@ -23,7 +23,7 @@ Command.register({
         },
     ],
 
-    async action({ args, msg, target }) {
+    async action({ args, msg, source, target }) {
         const options: SaltyEmbedOptions = {
             fields: [],
         };
@@ -113,6 +113,7 @@ Command.register({
                         return this.action({
                             args: [mapping[emoji.name]],
                             msg,
+                            source,
                             target,
                         });
                     }

@@ -1,14 +1,23 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
 import { separator } from "../config";
 import { Dictionnary, FieldsDescriptor } from "../types";
-import { debug, error, log } from "../utils";
+import { error, log } from "../utils";
 
 const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
-let client: Client | null = null;
+let clientInstance: Client | null = null;
 
 //-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
+
+function ensureClient(method: string): Client {
+    if (!clientInstance) {
+        throw new Error(
+            `Could not perform action "${method}": client is not connected`
+        );
+    }
+    return clientInstance;
+}
 
 function formatValues(values: FieldsDescriptor) {
     for (const key in values) {
@@ -45,10 +54,10 @@ function sanitizeTable(table: string): string {
 //-----------------------------------------------------------------------------
 
 export async function connect(): Promise<void> {
-    if (client) {
+    if (clientInstance) {
         throw new Error(`Could not client: client is already connected`);
     }
-    client = new Client({
+    clientInstance = new Client({
         database: process.env.DATABASE_DATABASE,
         host: process.env.DATABASE_HOST,
         password: process.env.DATABASE_PASSWORD,
@@ -57,21 +66,55 @@ export async function connect(): Promise<void> {
         ssl: { rejectUnauthorized: false },
     });
     try {
-        await client.connect();
+        await clientInstance.connect();
     } catch (err) {
         error(err.stack);
     }
 }
 
 export async function disconnect(): Promise<void> {
-    if (!client) {
-        throw new Error(`Could not disconnect client: client is not connected`);
-    }
+    const client = ensureClient("disconnect");
     try {
         await client.end();
-        client = null;
+        clientInstance = null;
     } catch (err) {
         error(err.stack);
+    }
+}
+
+export async function count(
+    table: string,
+    where?: Dictionnary<any>
+): Promise<QueryResultRow[]> {
+    const client = ensureClient("count");
+    const queryArray: string[] = [
+        `SELECT COUNT(*) FROM ${sanitizeTable(table)}`,
+    ];
+    const variables: string[] = [];
+    let varCount: number = 0;
+
+    if (where && Object.keys(where).length) {
+        const whereString = [];
+        for (const key in where) {
+            if (Array.isArray(where[key])) {
+                const values = where[key].map(() => `$${++varCount}`);
+                whereString.push(`${key} IN (${values})`);
+                variables.push(...where[key]);
+            } else if (typeof key === "string") {
+                whereString.push(`${key} = $${++varCount}`);
+                variables.push(where[key]);
+            }
+        }
+        queryArray.push("WHERE", whereString.join(" AND "));
+    }
+
+    const query = queryArray.join(" ") + ";";
+    try {
+        const result = await client.query(query, variables);
+        return result.rows;
+    } catch (err) {
+        error(err.stack);
+        return [];
     }
 }
 
@@ -79,11 +122,7 @@ export async function create(
     table: string,
     ...allValues: FieldsDescriptor[]
 ): Promise<QueryResultRow[]> {
-    if (!client) {
-        throw new Error(
-            `Could not perform action "create": client is not connected`
-        );
-    }
+    const client = ensureClient("create");
     const queryArray: string[] = ["INSERT INTO", sanitizeTable(table)];
     const variables: string[] = [];
     let varCount: number = 0;
@@ -101,12 +140,9 @@ export async function create(
         );
         variables.push(...Object.values(formattedValues));
     });
-    queryArray.push(allFormattedValues.join());
-    queryArray.push("RETURNING *");
+    queryArray.push(allFormattedValues.join(), "RETURNING *");
 
     const query = queryArray.join(" ") + ";";
-    debug({ query }, variables);
-
     try {
         const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" created.`);
@@ -119,29 +155,27 @@ export async function create(
 
 export async function remove(
     table: string,
-    ids: number | number[]
+    where: Dictionnary<any>
 ): Promise<QueryResultRow[]> {
-    if (!client) {
-        throw new Error(
-            `Could not perform action "remove": client is not connected`
-        );
-    }
+    const client = ensureClient("remove");
     const queryArray: string[] = ["DELETE FROM", sanitizeTable(table)];
     const variables: number[] = [];
     let varCount = 0;
 
-    if (!Array.isArray(ids)) {
-        ids = [ids];
+    const whereString = [];
+    for (const key in where) {
+        if (Array.isArray(where[key])) {
+            const values = where[key].map(() => `$${++varCount}`);
+            whereString.push(`${key} IN (${values})`);
+            variables.push(...where[key]);
+        } else if (typeof key === "string") {
+            whereString.push(`${key} = $${++varCount}`);
+            variables.push(where[key]);
+        }
     }
-
-    queryArray.push(
-        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`
-    );
-    variables.push(...ids);
+    queryArray.push("WHERE", whereString.join(" AND "), "RETURNING *");
 
     const query = queryArray.join(" ") + ";";
-    debug({ query }, variables);
-
     try {
         const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" removed.`);
@@ -157,11 +191,7 @@ export async function read(
     where?: Dictionnary<any>,
     fields?: string[]
 ): Promise<QueryResultRow[]> {
-    if (!client) {
-        throw new Error(
-            `Could not perform action "read": client is not connected`
-        );
-    }
+    const client = ensureClient("read");
     const queryArray: string[] = ["SELECT"];
     const variables: string[] = [];
     let varCount: number = 0;
@@ -178,7 +208,7 @@ export async function read(
 
     queryArray.push(`FROM ${sanitizeTable(table)}`);
 
-    if (where) {
+    if (where && Object.keys(where).length) {
         const whereString = [];
         for (const key in where) {
             if (Array.isArray(where[key])) {
@@ -194,8 +224,6 @@ export async function read(
     }
 
     const query = queryArray.join(" ") + ";";
-    debug({ query }, variables);
-
     try {
         const result = await client.query(query, variables);
         return parseResult(result);
@@ -207,21 +235,13 @@ export async function read(
 
 export async function update(
     table: string,
-    ids: number | number[],
+    where: Dictionnary<any>,
     values: FieldsDescriptor
 ): Promise<QueryResultRow[]> {
-    if (!client) {
-        throw new Error(
-            `Could not perform action "update": client is not connected`
-        );
-    }
+    const client = ensureClient("update");
     const queryArray = ["UPDATE", sanitizeTable(table), "SET"];
     const variables = [];
     let varCount = 0;
-
-    if (!Array.isArray(ids)) {
-        ids = [ids];
-    }
 
     const valuesArray: string[] = [];
     const formattedValues = formatValues(values);
@@ -229,16 +249,22 @@ export async function update(
         valuesArray.push(`${fieldName}=$${++varCount}`);
         variables.push(formattedValues[fieldName]);
     }
-
     queryArray.push(valuesArray.join());
-    queryArray.push(
-        `WHERE id IN (${ids.map(() => `$${++varCount}`)}) RETURNING *`
-    );
-    variables.push(...ids);
+
+    const whereString = [];
+    for (const key in where) {
+        if (Array.isArray(where[key])) {
+            const values = where[key].map(() => `$${++varCount}`);
+            whereString.push(`${key} IN (${values})`);
+            variables.push(...where[key]);
+        } else if (typeof key === "string") {
+            whereString.push(`${key} = $${++varCount}`);
+            variables.push(where[key]);
+        }
+    }
+    queryArray.push("WHERE", whereString.join(" AND "), "RETURNING *");
 
     const query = queryArray.join(" ") + ";";
-    debug({ query }, variables);
-
     try {
         const result = await client.query(query, variables);
         log(`${result.rows.length} record(s) of type "${table}" updated.`);
