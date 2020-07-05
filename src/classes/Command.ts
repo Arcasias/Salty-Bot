@@ -13,7 +13,7 @@ import {
     MessageActor,
     Runnable,
 } from "../types";
-import { isAdmin, isDev, isOwner } from "../utils";
+import { error, isAdmin, isDev, isOwner } from "../utils";
 import QuickCommand from "./QuickCommand";
 
 const permissions: {
@@ -83,7 +83,8 @@ class Command implements CommandDescriptor, Runnable {
         try {
             await this.action(commandParams);
         } catch (err) {
-            return salty.error(msg, `Whoops! ${err.message}`);
+            error(err.stack);
+            await salty.error(msg, `Whoops! ${err.message}`);
         }
     }
 

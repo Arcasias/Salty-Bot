@@ -28,6 +28,7 @@ import {
     clean,
     ellipsis,
     error as logError,
+    format,
     isAdmin,
     isDev,
     isOwner,
@@ -39,7 +40,6 @@ import {
 import Command from "./Command";
 import Crew from "./Crew";
 import { connect, disconnect } from "./Database";
-import Formatter from "./Formatter";
 import QuickCommand from "./QuickCommand";
 import Sailor from "./Sailor";
 
@@ -60,11 +60,8 @@ function catchHandler(
 class Salty {
     public bot = new Client();
     public startTime = new Date();
-    private formatter: Formatter;
 
-    constructor(formatter: Formatter) {
-        this.formatter = formatter;
-
+    constructor() {
         this.bot.on(
             "channelDelete",
             catchHandler(this.onChannelDelete.bind(this))
@@ -143,25 +140,19 @@ class Salty {
             options.color = 0xfefefe;
         }
         if (options.title) {
-            options.title = this.formatter.format(title(options.title), msg);
+            options.title = format(options.title, msg);
         }
         if (options.description) {
-            options.description = this.formatter.format(
-                title(options.description),
-                msg
-            );
+            options.description = format(options.description, msg);
         }
         if (options.footer?.text) {
-            options.footer.text = this.formatter.format(
-                title(options.footer.text),
-                msg
-            );
+            options.footer.text = format(options.footer.text, msg);
         }
         if (options.fields) {
             options.fields = options.fields.map((field) => {
                 return {
-                    name: title(field.name),
-                    value: this.formatter.format(title(field.value), msg),
+                    name: format(field.name, msg),
+                    value: format(field.value, msg),
                     inline,
                 };
             });
@@ -169,7 +160,7 @@ class Salty {
         const embed = new MessageEmbed(options);
         const newMessage: Message = await this.message(
             msg,
-            ellipsis(title(this.formatter.format(content, msg))),
+            ellipsis(format(content, msg)),
             {
                 embed,
                 files: options.files,
@@ -320,10 +311,7 @@ class Salty {
         text: string | null,
         options?: MessageOptions
     ): Promise<any> {
-        return msg.channel.send(
-            text && ellipsis(title(this.formatter.format(text, msg))),
-            options
-        );
+        return msg.channel.send(text && ellipsis(format(text, msg)), options);
     }
 
     /**

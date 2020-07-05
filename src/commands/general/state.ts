@@ -30,7 +30,7 @@ Command.register({
             }`,
             fields: [
                 {
-                    name: `Hosted on`,
+                    name: `Hosting`,
                     value:
                         process.env.MODE === "server"
                             ? "Server"
@@ -43,7 +43,7 @@ Command.register({
                     value: `Handling ${crewsCount} crews`,
                 },
                 {
-                    name: `Users`,
+                    name: `Sailors`,
                     value: `Watching over ${sailorsCount} sailors`,
                 },
             ],

@@ -1,47 +1,42 @@
 import { GuildMember, Message } from "discord.js";
 import Command from "../../classes/Command";
-import PromiseManager from "../../classes/PromiseManager";
 import salty from "../../salty";
 import { meaning } from "../../utils";
 
 async function changeNames(
     msg: Message,
-    transformation: (nickname: string) => string
+    mutator: (nickname: string) => string
 ) {
     const members: GuildMember[] = msg.guild!.members.cache.array();
     const progressMsg: Message = await salty.message(
         msg,
-        `changing nicknames: 0/${members.length}`
+        `Changing ${members.length} nicknames...`
     );
-    const pm: PromiseManager = new PromiseManager();
-    for (let i = 0; i < members.length; i++) {
-        const newNick = transformation(members[i].displayName);
-        if (newNick !== members[i].nickname) {
+    let updating: boolean = false;
+    const promises = members.map(async (member, i) => {
+        const newNick: string = mutator(member.displayName);
+        if (newNick !== member.displayName) {
             try {
-                await members[i].setNickname(newNick);
-                pm.add(
-                    progressMsg.edit.bind(progressMsg, {
-                        content: `changing nicknames: ${i++}/${members.length}`,
-                    })
-                );
+                await member.setNickname(newNick);
             } catch (err) {
-                if (
-                    err.name !== "DiscordAPIError" ||
-                    err.message !== "Missing Permissions"
-                ) {
+                if (err.message !== "Missing Permissions") {
                     throw err;
                 }
             }
-        } else {
-            pm.add(
-                progressMsg.edit.bind(progressMsg, {
-                    content: `changing nicknames: ${i++}/${members.length}`,
-                })
-            );
         }
-    }
-    pm.add(progressMsg.delete.bind(progressMsg));
-    return salty.success(msg, "nicknames successfully changed");
+        if (!updating) {
+            updating = true;
+            await progressMsg.edit({
+                content: `Changing nicknames: ${i++}/${members.length}`,
+            });
+            updating = false;
+        }
+    });
+    await Promise.all(promises);
+    await Promise.all([
+        progressMsg.delete(),
+        salty.success(msg, "Nicknames successfully changed"),
+    ]);
 }
 
 Command.register({
@@ -67,19 +62,26 @@ Command.register({
     channel: "guild",
 
     async action({ args, msg }) {
-        const particle = args.slice(1).join(" ");
+        const particle: string = args.slice(1).join(" ");
         const particleRegex = new RegExp(particle, "g");
+
+        if (!salty.hasPermission(msg.guild!, "MANAGE_NICKNAMES")) {
+            return salty.warn(msg, `I don't have the permission to do that.`);
+        }
+
         switch (meaning(args[0])) {
             case "add":
             case "set": {
-                return changeNames.call(this, msg, (nickname: string) =>
-                    nickname.match(particleRegex)
+                return changeNames(msg, (nickname: string) => {
+                    const transformed = `${nickname.trim()} ${particle}`;
+                    return particleRegex.test(nickname) || // already contains the particle
+                        transformed.length > 32 // not enough space
                         ? nickname
-                        : `${nickname.trim()} ${particle}`
-                );
+                        : transformed;
+                });
             }
             case "remove": {
-                return changeNames.call(this, msg, (nickname: string) =>
+                return changeNames(msg, (nickname: string) =>
                     nickname.replace(particleRegex, "").trim()
                 );
             }

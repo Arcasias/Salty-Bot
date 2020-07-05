@@ -7,10 +7,10 @@ const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
 class Model {
     public id!: number;
-    protected Class!: typeof Model;
+    public Class!: typeof Model;
 
-    protected static readonly fields: FieldsDescriptor = {};
-    protected static readonly table: string;
+    public static readonly fields: FieldsDescriptor = {};
+    public static readonly table: string;
 
     constructor(values: FieldsDescriptor = {}) {
         this.Class = (<any>this).constructor;

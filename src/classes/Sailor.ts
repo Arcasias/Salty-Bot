@@ -6,12 +6,12 @@ class Sailor extends Model {
     public black_listed!: boolean;
     public todos!: string[];
 
-    protected static readonly fields: FieldsDescriptor = {
+    public static readonly fields: FieldsDescriptor = {
         discord_id: "",
         black_listed: false,
         todos: [],
     };
-    protected static readonly table = "sailors";
+    public static readonly table = "sailors";
 
     public static async get(discordId: string): Promise<Sailor | null> {
         const results: Sailor[] = await this.search({ discord_id: discordId });

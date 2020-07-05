@@ -11,12 +11,12 @@ class QuickCommand extends Model implements Runnable {
     public answers!: string[];
     public type: CommandType = "quick";
 
-    protected static readonly fields: FieldsDescriptor = {
+    public static readonly fields: FieldsDescriptor = {
         name: "",
         aliases: [],
         answers: [],
     };
-    protected static readonly table = "commands";
+    public static readonly table = "commands";
 
     /**
      * @override

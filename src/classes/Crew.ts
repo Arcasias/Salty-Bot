@@ -6,12 +6,12 @@ class Crew extends Model {
     public default_channel!: string | null;
     public default_role!: string | null;
 
-    protected static readonly fields: FieldsDescriptor = {
+    public static readonly fields: FieldsDescriptor = {
         discord_id: "",
         default_channel: null,
         default_role: null,
     };
-    protected static readonly table: string = "crews";
+    public static readonly table: string = "crews";
 
     public static async get(discordId: string): Promise<Crew> {
         const results: Crew[] = await this.search({ discord_id: discordId });

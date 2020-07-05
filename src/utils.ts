@@ -1,7 +1,7 @@
 import { Guild, User } from "discord.js";
 import { devs, owner } from "./config";
 import { keywords } from "./terms";
-import { MeaningKeys, Meanings } from "./types";
+import { ExpressionDescriptor, MeaningKeys, Meanings } from "./types";
 
 const CONSOLE_RED = "\x1b[31m";
 const CONSOLE_GREEN = "\x1b[32m";
@@ -25,6 +25,30 @@ const NUMBER_REACTIONS = [
     "8️⃣",
     "9️⃣",
     "🔟",
+];
+
+const expressions: ExpressionDescriptor[] = [
+    {
+        expr: /authors?/,
+        replacer: (match, ctx) => {
+            const { displayName } = ctx.member;
+            return match.endsWith("s") ? possessive(displayName) : displayName;
+        },
+    },
+    {
+        expr: /mentions?/,
+        replacer: (match, ctx) => {
+            const { displayName } = ctx.mentions.members.first();
+            return match.endsWith("s") ? possessive(displayName) : displayName;
+        },
+    },
+    {
+        expr: /targets?/,
+        replacer: (match, ctx) => {
+            const { displayName } = ctx.mentions.members.first() || ctx.member;
+            return match.endsWith("s") ? possessive(displayName) : displayName;
+        },
+    },
 ];
 
 //-----------------------------------------------------------------------------
@@ -51,6 +75,19 @@ export function clean(text: string): string {
 
 export function ellipsis(text: string, limit: number = 2000): string {
     return text.length < limit ? text : `${text.slice(0, limit - 4)} ...`;
+}
+
+export function format(raw: string, context: any): string {
+    const formatted = raw.replace(/<\w+>/g, (match) => {
+        const matchExpr = match.slice(1, -1);
+        const { replacer } =
+            expressions.find(({ expr }) => expr.test(matchExpr)) || {};
+        if (replacer) {
+            return replacer(matchExpr, context);
+        }
+        return match;
+    });
+    return title(formatted);
 }
 
 /**
