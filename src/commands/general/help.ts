@@ -77,7 +77,7 @@ Command.register({
                 options.footer = {
                     text: `${category.icon} ${title(category.name)}`,
                 };
-                if (doc.aliases.length) {
+                if (doc.aliases?.length) {
                     const aliases: string = Array.isArray(doc.aliases)
                         ? doc.aliases.join("**, **")
                         : doc.aliases;

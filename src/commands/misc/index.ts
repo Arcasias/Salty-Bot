@@ -6,6 +6,7 @@ import "./future";
 import "./joke";
 import "./monkey";
 import "./space";
+import "./weeb";
 
 const categoryInfo: CommandCategoryDoc = {
     name: "miscellaneous",

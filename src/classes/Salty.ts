@@ -24,10 +24,12 @@ import {
     SaltyEmbedOptions,
 } from "../types";
 import {
+    catchError,
     choice,
     clean,
     ellipsis,
     error as logError,
+    escapeRegex,
     format,
     isAdmin,
     isDev,
@@ -45,41 +47,9 @@ import Sailor from "./Sailor";
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 
-function catchHandler(
-    handler: (...args: any[]) => any
-): (...args: any[]) => any {
-    return function () {
-        try {
-            return handler(...arguments);
-        } catch (err) {
-            logError(err);
-        }
-    };
-}
-
 class Salty {
-    public bot = new Client();
+    public bot: Client = this.createClient();
     public startTime = new Date();
-
-    constructor() {
-        this.bot.on(
-            "channelDelete",
-            catchHandler(this.onChannelDelete.bind(this))
-        );
-        this.bot.on("error", catchHandler(this.onError.bind(this)));
-        this.bot.on("guildCreate", catchHandler(this.onGuildCreate.bind(this)));
-        this.bot.on("guildDelete", catchHandler(this.onGuildDelete.bind(this)));
-        this.bot.on(
-            "guildMemberAdd",
-            catchHandler(this.onGuildMemberAdd.bind(this))
-        );
-        this.bot.on(
-            "guildMemberRemove",
-            catchHandler(this.onGuildMemberRemove.bind(this))
-        );
-        this.bot.on("message", catchHandler(this.onMessage.bind(this)));
-        this.bot.on("ready", catchHandler(this.onReady.bind(this)));
-    }
 
     public get sailor() {
         return new Sailor({
@@ -92,23 +62,19 @@ class Salty {
         return this.bot.user!;
     }
 
-    //-----------------------------------------------------------------------------
-    // Exported
-    //-----------------------------------------------------------------------------
-
-    /**
-     * Restarts the bot instance by reloading the command files and recreate a bot
-     * instance.
-     */
-    public async restart(): Promise<void> {
-        log("Restarting ...");
-        for (const collector of Object.values(runningCollectors)) {
-            collector.stop("restarted");
-        }
-        this.bot.destroy();
-        this.bot = new Client();
-        await disconnect();
-        await this.start();
+    public createClient() {
+        // Creates new client
+        const bot = new Client();
+        // Binds handlers
+        bot.on("channelDelete", catchError(this.onChannelDelete, this));
+        bot.on("error", catchError(this.onError, this));
+        bot.on("guildCreate", catchError(this.onGuildCreate, this));
+        bot.on("guildDelete", catchError(this.onGuildDelete, this));
+        bot.on("guildMemberAdd", catchError(this.onGuildMemberAdd, this));
+        bot.on("guildMemberRemove", catchError(this.onGuildMemberRemove, this));
+        bot.on("message", catchError(this.onMessage, this));
+        bot.on("ready", catchError(this.onReady, this));
+        return bot;
     }
 
     /**
@@ -315,6 +281,21 @@ class Salty {
     }
 
     /**
+     * Restarts the bot instance by reloading the command files and recreate a bot
+     * instance.
+     */
+    public async restart(): Promise<void> {
+        log("Restarting ...");
+        for (const collector of Object.values(runningCollectors)) {
+            collector.stop("restarted");
+        }
+        this.bot.destroy();
+        this.bot = this.createClient();
+        await disconnect();
+        await this.start();
+    }
+
+    /**
      * Entry point of the module. This function is responsible of executing the following
      * actions in the given order:
      * 1. Establish a connection with the PostgreSQL database
@@ -383,9 +364,80 @@ class Salty {
         return this.error(msg, "What the fuck");
     }
 
-    //-----------------------------------------------------------------------------
-    // Not exported
-    //-----------------------------------------------------------------------------
+    /**
+     * @param nickname
+     */
+    private getInteractionRegex(nickname?: string | null): RegExp {
+        const terms = [
+            `^(${escapeRegex(prefix)})`,
+            `(\\b${escapeRegex(this.user.username)}\\b)`,
+        ];
+        if (nickname) {
+            terms.push(`(@?${escapeRegex(nickname)})`);
+        }
+        return new RegExp(terms.join("|"));
+    }
+
+    /**
+     * @param msg
+     */
+    private async getMessageActors({
+        author,
+        member,
+        mentions,
+    }: Message): Promise<{
+        source: MessageActor;
+        target: MessageActor | null;
+    }> {
+        const mention = mentions.users.first();
+        const toFetch = [author.id];
+        if (mention && !mention.bot) {
+            toFetch.push(mention.id);
+        }
+        let [sourceSailor, targetSailor]: Sailor[] = await Sailor.search({
+            discord_id: toFetch,
+        });
+        const toCreate = [];
+        if (!sourceSailor) {
+            toCreate.push({ discord_id: author.id });
+        } else if (mention && !targetSailor) {
+            if (mention.id === author.id) {
+                targetSailor = sourceSailor;
+            } else if (mention.id === this.bot.user?.id) {
+                targetSailor = this.sailor;
+            } else if (!mention.bot) {
+                toCreate.push({ discord_id: mention.id });
+            }
+        }
+        if (toCreate.length) {
+            const created: Sailor[] = await Sailor.create(...toCreate);
+            if (created.length && !sourceSailor) {
+                sourceSailor = created.shift()!;
+            }
+            if (created.length && !targetSailor) {
+                targetSailor = created.shift()!;
+            }
+        }
+
+        const source: MessageActor = {
+            user: author,
+            member,
+            sailor: sourceSailor,
+            name: member?.displayName || author.username,
+        };
+        let target: MessageActor | null = null;
+        if (targetSailor) {
+            const mem = mentions.members?.first() || null;
+            // Generates the target actor object if a mention exists
+            target = {
+                user: mention!,
+                member: mem,
+                sailor: targetSailor,
+                name: mem?.displayName || mention!.username,
+            };
+        }
+        return { source, target };
+    }
 
     private async onChannelDelete(
         channel: PartialDMChannel | Channel
@@ -441,7 +493,7 @@ class Salty {
     }
 
     private async onMessage(msg: Message): Promise<any> {
-        const { author, cleanContent, guild, member, mentions } = msg;
+        const { author, cleanContent, guild } = msg;
 
         // Ignore all bots
         if (author.bot) {
@@ -449,88 +501,32 @@ class Salty {
         }
 
         // Look for an interaction
-        const mention = mentions.users.first();
-        const nickname = guild?.members.cache.get(this.user.id)?.nickname;
-        const botNameRegex = new RegExp(
-            `${this.user.username}${nickname ? `|@?${clean(nickname)}` : ""}`,
-            "i"
+        let interaction: boolean = !guild;
+        const interactRegex = this.getInteractionRegex(
+            guild?.members.cache.get(this.user.id)?.nickname
         );
-        const hasPrefix = cleanContent.startsWith(prefix);
-        const content = hasPrefix
-            ? cleanContent.slice(prefix.length)
-            : cleanContent;
-        if (
-            !hasPrefix && // starts with prefix
-            guild && // is direct message
-            mention?.id !== this.user.id && // mentions Salty
-            !botNameRegex.test(content) // contains Salty alias or name
-        ) {
-            // The action is discarded if none of the above criteria are met
+        const content = cleanContent
+            .replace(interactRegex, () => {
+                interaction = true;
+                return "";
+            })
+            .trim();
+        if (!interaction) {
             return;
         }
 
         // Logs the  action
-        request(guild?.name || "DM", author.username, content);
+        request(guild?.name || "DM", author.username, cleanContent);
 
         // Fetches the actors of the action
-        const toFetch = [author.id];
-        if (mention && !mention.bot) {
-            toFetch.push(mention.id);
-        }
-        let [sourceSailor, targetSailor]: Sailor[] = await Sailor.search({
-            discord_id: toFetch,
-        });
-        if (sourceSailor?.black_listed) {
+        const { source, target } = await this.getMessageActors(msg);
+        if (source.sailor.black_listed) {
             // The action is discarded if the user is black-listed
             return;
         }
-
-        // Cleans the message of any undesired spaces
-        if (!content.replace(botNameRegex, "").trim().length) {
-            // Drops the action here if the message is empty
-            return this.message(msg, "yes?");
-        }
-
-        // Ensures the user and all mentions are correctly registered
-        const toCreate = [];
-        if (!sourceSailor) {
-            toCreate.push({ discord_id: author.id });
-        } else if (mention && !targetSailor) {
-            if (mention.id === author.id) {
-                targetSailor = sourceSailor;
-            } else if (mention.id === this.bot.user?.id) {
-                targetSailor = this.sailor;
-            } else if (!mention.bot) {
-                toCreate.push({ discord_id: mention.id });
-            }
-        }
-        if (toCreate.length) {
-            const created: Sailor[] = await Sailor.create(...toCreate);
-            if (created.length && !sourceSailor) {
-                sourceSailor = created.shift()!;
-            }
-            if (created.length && !targetSailor) {
-                targetSailor = created.shift()!;
-            }
-        }
-
-        // Generates the source actor object
-        const source: MessageActor = {
-            user: author,
-            member,
-            sailor: sourceSailor,
-            name: member?.displayName || author.username,
-        };
-        let target: MessageActor | null = null;
-        if (targetSailor) {
-            const mem = mentions.members?.first() || null;
-            // Generates the target actor object if a mention exists
-            target = {
-                user: mention!,
-                member: mem,
-                sailor: targetSailor,
-                name: mem?.displayName || mention!.username,
-            };
+        if (!content.length) {
+            // Simple interaction if the messsage is empty
+            return this.message(msg, "Yes?");
         }
 
         // Handles the actual command if found

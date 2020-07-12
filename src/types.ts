@@ -25,22 +25,19 @@ export interface CommandCategoryDoc {
 export interface CommandCategoryInfo extends CommandCategoryDoc {
     commands: string[];
 }
-export interface CommandDescriptor {
-    readonly action: CommandAction;
-    readonly category: AvailableCategories;
-    readonly name: string;
-    readonly help?: CommandHelpSection[];
-    readonly aliases?: string[];
+export interface CommandBasicDescriptor {
     readonly access?: CommandAccess;
+    readonly aliases?: string[];
+    readonly category: AvailableCategories;
     readonly channel?: CommandChannel;
+    readonly name: string;
 }
-export interface CommandHelpDescriptor {
-    access: CommandAccess;
-    aliases: string[];
-    category: string;
-    channel: CommandChannel;
-    name: string;
-    sections: CommandHelpSection[];
+export interface CommandDescriptor extends CommandBasicDescriptor {
+    readonly action: CommandAction;
+    readonly help?: CommandHelpSection[];
+}
+export interface CommandHelpDescriptor extends CommandBasicDescriptor {
+    readonly sections: CommandHelpSection[];
 }
 export interface CommandHelpSection {
     argument: string | null;

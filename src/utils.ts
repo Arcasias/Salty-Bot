@@ -55,6 +55,19 @@ const expressions: ExpressionDescriptor[] = [
 // Utility functions
 //-----------------------------------------------------------------------------
 
+export function catchError<T>(
+    cb: (...args: any[]) => any,
+    context: any = null
+): (...args: any[]) => T {
+    return function () {
+        try {
+            return cb.call(context, ...arguments);
+        } catch (err) {
+            error(err);
+        }
+    };
+}
+
 /**
  * Returns a random item from a given array.
  * @param array
@@ -75,6 +88,10 @@ export function clean(text: string): string {
 
 export function ellipsis(text: string, limit: number = 2000): string {
     return text.length < limit ? text : `${text.slice(0, limit - 4)} ...`;
+}
+
+export function escapeRegex(regex: string): string {
+    return regex.replace(/[\.\*\+\?\^\$\{\}\(\)\|\[\]\\]/g, "\\$&");
 }
 
 export function format(raw: string, context: any): string {
