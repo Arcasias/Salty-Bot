@@ -8,7 +8,7 @@
         "dev": "ts-node src/local.ts",
         "local": "node dist/local.js",
         "start": "node dist/index.js",
-        "test": "node dist/test.js"
+        "test": "jest"
     },
     "repository": {
         "type": "git",
@@ -25,19 +25,39 @@
         "discord.js": "github:discordjs/discord.js",
         "erlpack": "github:discordapp/erlpack",
         "googleapis": "^50.0.0",
-        "npm": "^6.14.5",
-        "pg": "^8.1.0",
-        "prettier": "^2.0.5",
-        "pureimage": "^0.2.1",
-        "qunit": "^2.10.0",
-        "warframe-items": "^1.917.0",
-        "ytdl-core": "^2.1.2"
+        "npm": "^6.14.8",
+        "pg": "^8.3.3",
+        "prettier": "^2.1.2",
+        "pureimage": "^0.2.5",
+        "ytdl-core": "^2.1.7"
     },
     "devDependencies": {
-        "@types/node": "^13.13.5",
-        "@types/pg": "^7.14.3",
-        "@types/ws": "^7.2.4",
-        "ts-node": "^8.10.1",
-        "typescript": "^3.8.3"
-    }
+        "@types/jest": "^26.0.14",
+        "@types/node": "^13.13.21",
+        "@types/pg": "^7.14.5",
+        "@types/ws": "^7.2.7",
+        "jest": "^26.4.2",
+        "ts-jest": "^26.4.1",
+        "ts-node": "^8.10.2",
+        "typescript": "^3.9.7"
+	},
+
+	"jest": {
+		"roots": [
+		  	"<rootDir>/tests"
+		],
+		"transform": {
+		  	"^.+\\.ts?$": "ts-jest"
+		},
+		"verbose": false,
+		"testRegex": "(/tests/.*(test|spec))\\.ts?$",
+		"moduleFileExtensions": [
+		  	"ts",
+		  	"tsx",
+		  	"js",
+		  	"jsx",
+		  	"json",
+		  	"node"
+		]
+	}
 }

@@ -11,7 +11,6 @@ import image from "./image";
 import misc from "./misc";
 import music from "./music";
 import text from "./text";
-import warframe from "./warframe";
 
 const categories: { [key in AvailableCategories]: any } = {
     config,
@@ -20,7 +19,6 @@ const categories: { [key in AvailableCategories]: any } = {
     image,
     misc,
     music,
-    warframe,
 };
 
 for (const category in categories) {

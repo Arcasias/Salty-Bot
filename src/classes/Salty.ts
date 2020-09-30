@@ -49,7 +49,8 @@ const runningCollectors: Dictionnary<ReactionCollector> = {};
 
 class Salty {
     public bot: Client = this.createClient();
-    public startTime = new Date();
+	public startTime = new Date();
+	private token: string | null = null;
 
     public get sailor() {
         return new Sailor({
@@ -277,7 +278,7 @@ class Salty {
         text: string | null,
         options?: MessageOptions
     ): Promise<any> {
-        return msg.channel.send(text && ellipsis(format(text, msg)), options);
+        return msg.channel.send(text && ellipsis(format(text, msg)), options || {});
     }
 
     /**
@@ -285,6 +286,9 @@ class Salty {
      * instance.
      */
     public async restart(): Promise<void> {
+		if (!this.token) {
+			throw new Error("Could not restart Salty: missing token");
+		}
         log("Restarting ...");
         for (const collector of Object.values(runningCollectors)) {
             collector.stop("restarted");
@@ -292,7 +296,7 @@ class Salty {
         this.bot.destroy();
         this.bot = this.createClient();
         await disconnect();
-        await this.start();
+        await this.start(this.token);
     }
 
     /**
@@ -301,12 +305,14 @@ class Salty {
      * 1. Establish a connection with the PostgreSQL database
      * 2. Load the models: QuickCommand, Crew and Sailor (order is irrelevant)
      * 3. Log into Discord through the API
+	 * @param token
      */
-    public async start(): Promise<void> {
-        log("Initializing Salty");
+    public async start(token: string): Promise<void> {
+		log("Initializing Salty");
+		this.token = token;
         await connect();
         await QuickCommand.load();
-        await this.bot.login(process.env.DISCORD_API);
+        await this.bot.login(this.token);
     }
 
     /**

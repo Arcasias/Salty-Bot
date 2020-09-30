@@ -316,7 +316,7 @@ export function title(string: string) {
  * @param color
  * @param timestamp
  */
-export function consoleColor(
+function consoleColor(
     part: string,
     color = CONSOLE_RESET,
     timestamp = true

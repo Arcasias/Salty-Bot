@@ -8,7 +8,6 @@ import {
     Snowflake,
     User,
 } from "discord.js";
-import { Item } from "warframe-items";
 import Sailor from "./classes/Sailor";
 
 export interface ActionParameters {
@@ -113,19 +112,13 @@ export interface Waifu {
     readonly image: string[];
 }
 
-export interface Weapon extends Item {
-    multishot?: number;
-    range?: number;
-}
-
 export type AvailableCategories =
     | "config"
     | "general"
     | "image"
     | "misc"
     | "music"
-    | "text"
-    | "warframe";
+    | "text";
 export type Categories = { [key in AvailableCategories]: string };
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionparams: ActionParameters) => Promise<any>;

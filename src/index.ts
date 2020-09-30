@@ -13,4 +13,4 @@ process.env.DEBUG = String(debugMode);
 debug(`Debug is active`);
 
 // Initialize bot
-salty.start();
+salty.start(process.env.DISCORD_API!);
