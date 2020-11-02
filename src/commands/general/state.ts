@@ -1,7 +1,8 @@
+import { env } from "process";
 import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
-import { devs, homepage, owner } from "../../config";
+import { devs, homepage } from "../../config";
 import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 
@@ -31,12 +32,8 @@ Command.register({
             fields: [
                 {
                     name: `Hosting`,
-                    value:
-                        process.env.MODE === "server"
-                            ? "Server"
-                            : "Local instance",
+                    value: env.MODE === "server" ? "Server" : "Local instance",
                 },
-                { name: `Owner`, value: owner.username },
                 { name: `Developers`, value: `${devs.length} contributors` },
                 {
                     name: `Crews`,
@@ -49,7 +46,7 @@ Command.register({
             ],
             inline: true,
         };
-        if (process.env.DEBUG === "true") {
+        if (env.DEBUG === "true") {
             options.footer = { text: `Debug mode active` };
         }
         await salty.embed(msg, options);

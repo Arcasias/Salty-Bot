@@ -1,4 +1,5 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
+import { env } from "process";
 import { separator } from "../config";
 import { Dictionnary, FieldsDescriptor } from "../types";
 import { error, log } from "../utils";
@@ -58,11 +59,11 @@ export async function connect(): Promise<void> {
         throw new Error(`Could not client: client is already connected`);
     }
     clientInstance = new Client({
-        database: process.env.DATABASE_DATABASE,
-        host: process.env.DATABASE_HOST,
-        password: process.env.DATABASE_PASSWORD,
-        port: Number(process.env.DATABASE_PORT),
-        user: process.env.DATABASE_USER,
+        database: env.DATABASE_DATABASE,
+        host: env.DATABASE_HOST,
+        password: env.DATABASE_PASSWORD,
+        port: Number(env.DATABASE_PORT),
+        user: env.DATABASE_USER,
         ssl: { rejectUnauthorized: false },
     });
     try {

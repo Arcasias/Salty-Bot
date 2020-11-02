@@ -45,10 +45,6 @@ Command.register({
     category: "config",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "add ***particle***",
             effect:
                 "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters!",

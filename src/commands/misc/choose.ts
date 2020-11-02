@@ -8,10 +8,6 @@ Command.register({
     category: "misc",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "***first choice*** / ***second choice*** / ...",
             effect:
                 "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok?",

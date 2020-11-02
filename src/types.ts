@@ -117,7 +117,6 @@ export type AvailableCategories =
     | "general"
     | "image"
     | "misc"
-    | "music"
     | "text";
 export type Categories = { [key in AvailableCategories]: string };
 export type CommandAccess = "public" | "admin" | "dev" | "owner";

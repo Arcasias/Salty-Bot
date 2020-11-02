@@ -23,10 +23,6 @@ Command.register({
     category: "text",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "***anything***",
             effect: "Sends something. Who knows what?",
         },

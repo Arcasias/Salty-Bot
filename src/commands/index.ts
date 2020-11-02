@@ -9,7 +9,6 @@ import config from "./config";
 import general from "./general";
 import image from "./image";
 import misc from "./misc";
-import music from "./music";
 import text from "./text";
 
 const categories: { [key in AvailableCategories]: any } = {
@@ -18,7 +17,6 @@ const categories: { [key in AvailableCategories]: any } = {
     general,
     image,
     misc,
-    music,
 };
 
 for (const category in categories) {

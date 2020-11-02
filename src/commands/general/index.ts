@@ -1,5 +1,6 @@
 import { CommandCategoryDoc } from "../../types";
 import "./admin";
+import "./announcement";
 import "./help";
 import "./ping";
 import "./poll";

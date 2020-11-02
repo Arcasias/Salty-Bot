@@ -10,7 +10,7 @@ Command.register({
     help: [
         {
             argument: null,
-            effect: "",
+            effect: "TODO: documentation",
         },
     ],
 

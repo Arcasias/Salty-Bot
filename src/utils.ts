@@ -1,4 +1,5 @@
 import { Guild, User } from "discord.js";
+import { env } from "process";
 import { devs, owner } from "./config";
 import { keywords } from "./terms";
 import { ExpressionDescriptor, MeaningKeys, Meanings } from "./types";
@@ -26,6 +27,7 @@ const NUMBER_REACTIONS = [
     "9️⃣",
     "🔟",
 ];
+const PARSABLE = /true|false|null/i;
 
 const expressions: ExpressionDescriptor[] = [
     {
@@ -55,6 +57,12 @@ const expressions: ExpressionDescriptor[] = [
 // Utility functions
 //-----------------------------------------------------------------------------
 
+/**
+ * Returns a function wrapped around a given callback meant to catch any error
+ * and log them instead.
+ * @param cb
+ * @param context
+ */
 export function catchError<T>(
     cb: (...args: any[]) => any,
     context: any = null
@@ -94,6 +102,10 @@ export function escapeRegex(regex: string): string {
     return regex.replace(/[\.\*\+\?\^\$\{\}\(\)\|\[\]\\]/g, "\\$&");
 }
 
+/**
+ * @param raw
+ * @param context
+ */
 export function format(raw: string, context: any): string {
     const formatted = raw.replace(/<\w+>/g, (match) => {
         const matchExpr = match.slice(1, -1);
@@ -163,7 +175,7 @@ export function isDev(user: User): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 export function isOwner(user: User): boolean {
-    return user.id === owner.id;
+    return user.id === owner;
 }
 
 /**
@@ -307,6 +319,27 @@ export function title(string: string) {
     return string[0].toUpperCase() + string.slice(1);
 }
 
+/**
+ * Does the inverse job of `String(...)`.
+ * @param value
+ */
+export function toAny(value: any): any {
+    if (typeof value !== "string") {
+        return value;
+    }
+    if (value === "undefined") {
+        return undefined;
+    }
+    if (PARSABLE.test(value)) {
+        return JSON.parse(value.toLowerCase());
+    }
+    const num = Number(value);
+    if (!isNaN(num)) {
+        return num;
+    }
+    return value;
+}
+
 //-----------------------------------------------------------------------------
 // Log functions
 //-----------------------------------------------------------------------------
@@ -316,12 +349,8 @@ export function title(string: string) {
  * @param color
  * @param timestamp
  */
-function consoleColor(
-    part: string,
-    color = CONSOLE_RESET,
-    timestamp = true
-) {
-    if (process.env.MODE !== "local") {
+function consoleColor(part: string, color = CONSOLE_RESET, timestamp = true) {
+    if (env.MODE !== "local") {
         return part;
     }
     const finalMessage = [];
@@ -336,7 +365,7 @@ function consoleColor(
  * @param message
  */
 export function debug(...message: any[]) {
-    if (process.env.DEBUG !== "true") {
+    if (env.DEBUG !== "true") {
         return;
     }
     console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);

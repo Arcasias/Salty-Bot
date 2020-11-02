@@ -7,10 +7,6 @@ Command.register({
     category: "text",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "*delay* ***anything***",
             effect: "I'll tell what you want after a provided delay",
         },

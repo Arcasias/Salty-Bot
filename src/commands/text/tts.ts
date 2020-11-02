@@ -7,10 +7,6 @@ Command.register({
     category: "text",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "***something to say***",
             effect: "Says something out loud",
         },

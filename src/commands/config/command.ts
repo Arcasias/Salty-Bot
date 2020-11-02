@@ -10,10 +10,6 @@ Command.register({
     category: "config",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument:
                 "***command key 1***, ***command key 2***, ...  // ***answer 1***, ***answer 2***, ... ",
             effect:

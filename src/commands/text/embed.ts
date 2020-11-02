@@ -11,10 +11,6 @@ Command.register({
     category: "text",
     help: [
         {
-            argument: null,
-            effect: null,
-        },
-        {
             argument: "***JSON data***",
             effect: "Parses the provided JSON as a Discord embed",
         },

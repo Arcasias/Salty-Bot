@@ -84,14 +84,10 @@ Command.register({
                     options.description = `Alternative usage: **${aliases}**`;
                 }
                 doc.sections.forEach((usage) => {
-                    if (usage.effect) {
-                        options.fields!.push({
-                            name: `${prefix}${doc.name} ${
-                                usage.argument || ""
-                            }`,
-                            value: usage.effect,
-                        });
-                    }
+                    options.fields!.push({
+                        name: `${prefix}${doc.name} ${usage.argument || ""}`,
+                        value: usage.effect,
+                    });
                 });
             } else {
                 return salty.warn(
@@ -104,7 +100,7 @@ Command.register({
             const mapping: Dictionnary<string> = {};
             options.title = "list of commands";
             options.description =
-                "these are the commands categories. To get more information about a specific category, use the command `$help category_name`";
+                "These are the commands categories. Type the name of a category or a specific command after `$help` to have more information about it.";
             options.actions = {
                 reactions: [],
                 onAdd: ({ emoji }, user, abort) => {
@@ -130,10 +126,10 @@ Command.register({
                 mapping[icon] = category;
                 options.actions.reactions.push(icon);
                 options.fields!.push({
-                    name: `> \`${prefix}help ${category}\``,
-                    value: `${icon} **${title(name)}**  (${
+                    name: `${icon} **${title(name)}**  (${
                         commands.size
                     } commands)`,
+                    value: `> \`${prefix}help ${category}\``,
                 });
             }
         }
