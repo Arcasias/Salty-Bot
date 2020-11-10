@@ -1,7 +1,7 @@
 import { FieldsDescriptor } from "../types";
 import Model from "./Model";
 
-class Crew extends Model {
+export default class Crew extends Model {
     public discord_id!: string;
     public default_channel!: string | null;
     public default_role!: string | null;
@@ -18,5 +18,3 @@ class Crew extends Model {
         return results[0] || null;
     }
 }
-
-export default Crew;

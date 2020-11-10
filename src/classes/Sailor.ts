@@ -1,7 +1,7 @@
 import { FieldsDescriptor } from "../types";
 import Model from "./Model";
 
-class Sailor extends Model {
+export default class Sailor extends Model {
     public discord_id!: string;
     public black_listed!: boolean;
     public todos!: string[];
@@ -18,5 +18,3 @@ class Sailor extends Model {
         return results[0] || null;
     }
 }
-
-export default Sailor;

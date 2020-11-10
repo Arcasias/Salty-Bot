@@ -5,7 +5,7 @@ import { choice } from "../utils";
 import Command from "./Command";
 import Model from "./Model";
 
-class QuickCommand extends Model implements Runnable {
+export default class QuickCommand extends Model implements Runnable {
     public name!: string;
     public aliases!: string[];
     public answers!: string[];
@@ -69,5 +69,3 @@ class QuickCommand extends Model implements Runnable {
         return salty.message(msg, choice(this.answers));
     }
 }
-
-export default QuickCommand;

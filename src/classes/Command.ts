@@ -25,7 +25,7 @@ const permissions: {
     public: () => true,
 };
 
-class Command implements CommandDescriptor, Runnable {
+export default class Command implements CommandDescriptor, Runnable {
     // Action
     public action: CommandAction;
     // Infos
@@ -108,5 +108,3 @@ class Command implements CommandDescriptor, Runnable {
         });
     }
 }
-
-export default Command;

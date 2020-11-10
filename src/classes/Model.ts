@@ -5,7 +5,7 @@ import { count, create, read, remove, update } from "./Database";
 const CACHE_LIMIT = 1000;
 const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
-class Model {
+export default class Model {
     public id!: number;
     public Class!: typeof Model;
 
@@ -195,5 +195,3 @@ class Model {
         MODEL_CACHE[this.name] = {};
     }
 }
-
-export default Model;

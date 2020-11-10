@@ -1,55 +1,37 @@
 import {
-    Channel,
     Client,
+    ClientEvents,
     Guild,
-    GuildChannel,
-    GuildMember,
     Message,
     MessageEmbed,
     MessageOptions,
-    PartialDMChannel,
-    PartialGuildMember,
     PermissionString,
     ReactionCollector,
     TextChannel,
     User,
 } from "discord.js";
-import { prefix } from "../config";
-import { intro, keywords } from "../terms";
-import {
-    Dictionnary,
-    FieldsDescriptor,
-    MessageActor,
-    Runnable,
-    SaltyEmbedOptions,
-} from "../types";
+import { Dictionnary, SaltyEmbedOptions } from "../types";
 import {
     catchError,
-    choice,
-    clean,
     ellipsis,
-    error as logError,
-    escapeRegex,
     format,
     isAdmin,
     isDev,
     isOwner,
     log,
-    request,
-    search,
-    title,
 } from "../utils";
-import Command from "./Command";
-import Crew from "./Crew";
 import { connect, disconnect } from "./Database";
+import Event from "./Event";
+import Module from "./Module";
 import QuickCommand from "./QuickCommand";
 import Sailor from "./Sailor";
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 
-class Salty {
+export default class Salty {
     public bot: Client = this.createClient();
     public startTime = new Date();
+    private modules: Module[] = [];
     private token: string | null = null;
 
     public get sailor() {
@@ -67,14 +49,16 @@ class Salty {
         // Creates new client
         const bot = new Client();
         // Binds handlers
-        bot.on("channelDelete", catchError(this.onChannelDelete, this));
-        bot.on("error", catchError(this.onError, this));
-        bot.on("guildCreate", catchError(this.onGuildCreate, this));
-        bot.on("guildDelete", catchError(this.onGuildDelete, this));
-        bot.on("guildMemberAdd", catchError(this.onGuildMemberAdd, this));
-        bot.on("guildMemberRemove", catchError(this.onGuildMemberRemove, this));
-        bot.on("message", catchError(this.onMessage, this));
-        bot.on("ready", catchError(this.onReady, this));
+        bot.on(...this.createHandler("channelDelete", "onChannelDelete"));
+        bot.on(...this.createHandler("error", "onError"));
+        bot.on(...this.createHandler("guildCreate", "onGuildCreate"));
+        bot.on(...this.createHandler("guildDelete", "onGuildDelete"));
+        bot.on(...this.createHandler("guildMemberAdd", "onGuildMemberAdd"));
+        bot.on(
+            ...this.createHandler("guildMemberRemove", "onGuildMemberRemove")
+        );
+        bot.on(...this.createHandler("message", "onMessage"));
+        bot.on(...this.createHandler("ready", "onReady"));
         return bot;
     }
 
@@ -285,6 +269,13 @@ class Salty {
     }
 
     /**
+     * @param ModuleConstructor
+     */
+    public registerModule(ModuleConstructor: typeof Module): void {
+        this.modules.push(new ModuleConstructor());
+    }
+
+    /**
      * Restarts the bot instance by reloading the command files and recreate a bot
      * instance.
      */
@@ -373,249 +364,21 @@ class Salty {
         return this.error(msg, "What the fuck");
     }
 
-    /**
-     * @param nickname
-     */
-    private getInteractionRegex(nickname?: string | null): RegExp {
-        const terms = [
-            `^(${escapeRegex(prefix)})`,
-            `(\\b${escapeRegex(this.user.username)}\\b)`,
-        ];
-        if (nickname) {
-            terms.push(`(@?${escapeRegex(nickname)})`);
-        }
-        return new RegExp(terms.join("|"));
-    }
-
-    /**
-     * @param msg
-     */
-    private async getMessageActors({
-        author,
-        member,
-        mentions,
-    }: Message): Promise<{
-        source: MessageActor;
-        target: MessageActor | null;
-    }> {
-        const mention = mentions.users.first();
-        const toFetch = [author.id];
-        if (mention && !mention.bot) {
-            toFetch.push(mention.id);
-        }
-        let [sourceSailor, targetSailor]: Sailor[] = await Sailor.search({
-            discord_id: toFetch,
-        });
-        const toCreate = [];
-        if (!sourceSailor) {
-            toCreate.push({ discord_id: author.id });
-        } else if (mention && !targetSailor) {
-            if (mention.id === author.id) {
-                targetSailor = sourceSailor;
-            } else if (mention.id === this.bot.user?.id) {
-                targetSailor = this.sailor;
-            } else if (!mention.bot) {
-                toCreate.push({ discord_id: mention.id });
-            }
-        }
-        if (toCreate.length) {
-            const created: Sailor[] = await Sailor.create(...toCreate);
-            if (created.length && !sourceSailor) {
-                sourceSailor = created.shift()!;
-            }
-            if (created.length && !targetSailor) {
-                targetSailor = created.shift()!;
-            }
-        }
-
-        const source: MessageActor = {
-            user: author,
-            member,
-            sailor: sourceSailor,
-            name: member?.displayName || author.username,
-        };
-        let target: MessageActor | null = null;
-        if (targetSailor) {
-            const mem = mentions.members?.first() || null;
-            // Generates the target actor object if a mention exists
-            target = {
-                user: mention!,
-                member: mem,
-                sailor: targetSailor,
-                name: mem?.displayName || mention!.username,
-            };
-        }
-        return { source, target };
-    }
-
-    private async onChannelDelete(
-        channel: PartialDMChannel | Channel
-    ): Promise<void> {
-        if (!(channel instanceof GuildChannel)) {
-            return;
-        }
-        await Crew.update(
-            { default_channel: channel.id },
-            { default_channel: null }
-        );
-    }
-
-    private async onError(err: Error): Promise<void> {
-        logError(err);
-        this.restart();
-    }
-
-    private async onGuildCreate(guild: Guild): Promise<void> {
-        Crew.create({ discord_id: guild.id });
-    }
-
-    private async onGuildDelete(guild: Guild): Promise<void> {
-        if (guild.member(this.user)) {
-            await Crew.remove({ discord_id: guild.id });
-        }
-    }
-
-    private async onGuildMemberAdd(
-        member: GuildMember | PartialGuildMember
-    ): Promise<void> {
-        const guild = await Crew.get(member.guild.id);
-        if (guild?.default_channel) {
-            const channel = this.getTextChannel(guild.default_channel);
-            channel.send(
-                `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
-            );
-        }
-        if (guild?.default_role) {
-            member.roles.add(guild.default_role);
-        }
-    }
-
-    private async onGuildMemberRemove(
-        member: GuildMember | PartialGuildMember
-    ): Promise<void> {
-        const guild = await Crew.get(member.guild.id);
-        if (guild?.default_channel) {
-            const channel = this.getTextChannel(guild.default_channel);
-            const name = member.user?.username || "unknown";
-            channel.send(`Well, looks like ${name} got bored of us :c`);
-        }
-    }
-
-    private async onMessage(msg: Message): Promise<any> {
-        const { author, cleanContent, guild } = msg;
-
-        // Ignore all bots
-        if (author.bot) {
-            return;
-        }
-
-        // Look for an interaction
-        let interaction: boolean = !guild;
-        const interactRegex = this.getInteractionRegex(
-            guild?.members.cache.get(this.user.id)?.nickname
-        );
-        const content = cleanContent
-            .replace(interactRegex, () => {
-                interaction = true;
-                return "";
-            })
-            .trim();
-        if (!interaction) {
-            return;
-        }
-
-        // Logs the  action
-        request(guild?.name || "DM", author.username, cleanContent);
-
-        // Fetches the actors of the action
-        const { source, target } = await this.getMessageActors(msg);
-        if (source.sailor.black_listed) {
-            // The action is discarded if the user is black-listed
-            return;
-        }
-        if (!content.length) {
-            // Simple interaction if the messsage is empty
-            return this.message(msg, "Yes?");
-        }
-
-        // Handles the actual command if found
-        const msgArgs = content
-            .split(" ")
-            .filter((word) => Boolean(word.trim()));
-        const actionName = msgArgs.shift() || "";
-        const commandName = Command.aliases.get(clean(actionName));
-        let command: Runnable;
-        let commandArgs = msgArgs;
-        if (commandName) {
-            if (keywords.help.includes(msgArgs[0])) {
-                commandArgs = [commandName];
-                command = Command.list.get("help")!;
-            } else {
-                command = Command.list.get(commandName)!;
-            }
-        } else {
-            // If no command found, tries to find the closest matches
-            const closests = search([...Command.aliases.keys()], actionName, 2);
-            if (closests.length) {
-                const cmds: Dictionnary<string> = {};
-                for (const key of closests) {
-                    const cmdName = Command.aliases.get(key)!;
-                    if (!(cmdName in cmds)) {
-                        cmds[cmdName] = key;
-                    }
+    private createHandler<K extends keyof ClientEvents>(
+        type: K,
+        method: keyof Module
+    ): [K, (...args: any[]) => any] {
+        const handler = catchError(async (...args: ClientEvents[K]): Promise<
+            void
+        > => {
+            const event = new Event<K>(this, args);
+            for (const module of this.modules) {
+                await (<(event: Event<K>) => any>module[method])(event);
+                if (event.isStopped()) {
+                    break;
                 }
-                return this.message(
-                    msg,
-                    `command "*${actionName}*" doesn't exist. Did you mean "*${Object.values(
-                        cmds
-                    ).join(`*" or "*`)}*"?`
-                );
             }
-            commandArgs.unshift(actionName);
-            command = Command.list.get("talk")!;
-        }
-        // If no command nor close match, the "talk" command is called instead
-        command.run(msg, commandArgs, source, target);
-    }
-
-    private async onReady(): Promise<void> {
-        this.user.setStatus("online");
-        // Fetch all guilds
-        const activeGuilds: string[] = this.bot.guilds.cache.map(
-            (guild) => guild.id
-        );
-        const guilds: Crew[] = await Crew.search();
-        const toRemove: number[] = guilds
-            .filter((g) => !activeGuilds.includes(g.discord_id))
-            .map((g) => g.id);
-        const toCreate: FieldsDescriptor[] = activeGuilds
-            .filter((id) => !guilds.some((g) => g.discord_id === id))
-            .map((id) => ({ discord_id: id }));
-        if (toCreate.length) {
-            await Crew.create(...toCreate);
-        }
-        if (toRemove.length) {
-            // No need to wait for this one
-            Crew.remove(toRemove);
-        }
-        for (const guild of guilds) {
-            if (guild.default_channel) {
-                const channel = this.getTextChannel(guild.default_channel);
-                channel.send(title(choice(intro)));
-            }
-        }
-        const loadingTime: number =
-            Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
-
-        log(
-            `${Command.list.size} commands loaded. ${Command.aliases.size} keys in total.`
-        );
-        log(
-            `Salty loaded in ${loadingTime} second${
-                loadingTime === 1 ? "" : "s"
-            } and ready to salt the chat :D`
-        );
+        }, this);
+        return [type, handler];
     }
 }
-
-export default Salty;
