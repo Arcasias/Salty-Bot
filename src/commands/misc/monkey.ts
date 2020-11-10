@@ -2,9 +2,12 @@ import Command from "../../classes/Command";
 import salty from "../../salty";
 import { isSorted, shuffle } from "../../utils";
 
+const MAX_LENGTH = 12; // Let's not get over ourselves shall we?
+
 Command.register({
     name: "monkey",
     aliases: [
+        "monke",
         "bogosort",
         "monkeysort",
         "permutationsort",
@@ -29,16 +32,18 @@ Command.register({
         if (!args[0]) {
             return salty.warn(msg, "Missing the length of the array.");
         }
-        if (Number(args[0]) < 1) {
+
+        const length = Math.min(Number(args[0]), MAX_LENGTH);
+
+        if (isNaN(length) || length < 1) {
             return salty.warn(
                 msg,
-                "Array length must be a number between 1 and 10."
+                `Array length must be a number greater than 1.`
             );
         }
 
         const runningMsg = await salty.message(msg, "monkey sorting ...");
         let tests = 0;
-        let length = Math.min(Number(args[0]), 10);
         let list: number[] = [];
 
         const sortingTime = await new Promise((resolve) => {
@@ -60,7 +65,7 @@ Command.register({
         runningMsg.delete();
         await salty.info(
             msg,
-            `monkey sort on a **${length}** elements list took **${sortingTime}** seconds in **${tests}** tests`,
+            `Monkey sort on a **${length}** element list took **${sortingTime}** seconds in **${tests}** tests`,
             { react: "🐒" }
         );
     },
