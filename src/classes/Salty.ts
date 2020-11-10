@@ -4,21 +4,21 @@ import {
     Guild,
     Message,
     MessageEmbed,
-    MessageOptions,
     PermissionString,
     ReactionCollector,
     TextChannel,
     User,
 } from "discord.js";
-import { Dictionnary, SaltyEmbedOptions } from "../types";
+import { Dictionnary, SaltyEmbedOptions, SaltyMessageOptions } from "../types";
 import {
-    catchError,
     ellipsis,
+    error,
     format,
     isAdmin,
     isDev,
     isOwner,
     log,
+    title,
 } from "../utils";
 import { connect, disconnect } from "./Database";
 import Event from "./Event";
@@ -57,7 +57,13 @@ export default class Salty {
         bot.on(
             ...this.createHandler("guildMemberRemove", "onGuildMemberRemove")
         );
-        bot.on(...this.createHandler("message", "onMessage"));
+        bot.on(
+            ...this.createHandler(
+                "message",
+                "onMessage",
+                this.preprocessMessage
+            )
+        );
         bot.on(...this.createHandler("ready", "onReady"));
         return bot;
     }
@@ -91,19 +97,19 @@ export default class Salty {
             options.color = 0xfefefe;
         }
         if (options.title) {
-            options.title = format(options.title, msg);
+            options.title = title(format(options.title, msg));
         }
         if (options.description) {
-            options.description = format(options.description, msg);
+            options.description = title(format(options.description, msg));
         }
         if (options.footer?.text) {
-            options.footer.text = format(options.footer.text, msg);
+            options.footer.text = title(format(options.footer.text, msg));
         }
         if (options.fields) {
             options.fields = options.fields.map((field) => {
                 return {
-                    name: format(field.name, msg),
-                    value: format(field.value, msg),
+                    name: title(format(field.name, msg)),
+                    value: title(format(field.value, msg)),
                     inline,
                 };
             });
@@ -111,7 +117,7 @@ export default class Salty {
         const embed = new MessageEmbed(options);
         const newMessage: Message = await this.message(
             msg,
-            ellipsis(format(content, msg)),
+            ellipsis(title(format(content, msg))),
             {
                 embed,
                 files: options.files,
@@ -260,12 +266,23 @@ export default class Salty {
     public message(
         msg: Message,
         text: string | null,
-        options?: MessageOptions
+        options?: SaltyMessageOptions
     ): Promise<any> {
-        return msg.channel.send(
-            text && ellipsis(format(text, msg)),
-            options || {}
+        const defaultedOptions = Object.assign(
+            {
+                format: true,
+                title: true,
+            },
+            options
         );
+        let content = text || "";
+        if (defaultedOptions.format) {
+            content = format(content, msg);
+        }
+        if (defaultedOptions.title) {
+            content = title(content);
+        }
+        return msg.channel.send(ellipsis(content), options || {});
     }
 
     /**
@@ -366,19 +383,33 @@ export default class Salty {
 
     private createHandler<K extends keyof ClientEvents>(
         type: K,
-        method: keyof Module
+        method: keyof Module,
+        preprocess?: (...args: ClientEvents[K]) => boolean
     ): [K, (...args: any[]) => any] {
-        const handler = catchError(async (...args: ClientEvents[K]): Promise<
-            void
-        > => {
-            const event = new Event<K>(this, args);
+        const handler = async (...args: ClientEvents[K]): Promise<void> => {
+            if (preprocess && !preprocess.call(this, ...args)) {
+                return;
+            }
+            const event = new Event<K>(args);
             for (const module of this.modules) {
-                await (<(event: Event<K>) => any>module[method])(event);
+                try {
+                    await (<(event: Event<K>) => any>module[method])(event);
+                } catch (err) {
+                    error(err.message);
+                }
                 if (event.isStopped()) {
                     break;
                 }
             }
-        }, this);
+        };
         return [type, handler];
+    }
+
+    private preprocessMessage(msg: Message): boolean {
+        // Ignores bot messages
+        if (msg.author === this.user) {
+            return false;
+        }
+        return true;
     }
 }

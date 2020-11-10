@@ -58,25 +58,6 @@ const expressions: ExpressionDescriptor[] = [
 //-----------------------------------------------------------------------------
 
 /**
- * Returns a function wrapped around a given callback meant to catch any error
- * and log them instead.
- * @param cb
- * @param context
- */
-export function catchError<T>(
-    cb: (...args: any[]) => any,
-    context: any = null
-): (...args: any[]) => T {
-    return function () {
-        try {
-            return cb.call(context, ...arguments);
-        } catch (err) {
-            error(err);
-        }
-    };
-}
-
-/**
  * Returns a random item from a given array.
  * @param array
  */
@@ -107,7 +88,7 @@ export function escapeRegex(regex: string): string {
  * @param context
  */
 export function format(raw: string, context: any): string {
-    const formatted = raw.replace(/<\w+>/g, (match) => {
+    return raw.replace(/<\w+>/g, (match) => {
         const matchExpr = match.slice(1, -1);
         const { replacer } =
             expressions.find(({ expr }) => expr.test(matchExpr)) || {};
@@ -116,7 +97,6 @@ export function format(raw: string, context: any): string {
         }
         return match;
     });
-    return title(formatted);
 }
 
 /**

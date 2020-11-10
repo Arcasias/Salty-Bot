@@ -3,6 +3,7 @@ import {
     GuildMember,
     Message,
     MessageEmbedOptions,
+    MessageOptions,
     MessageReaction,
     PresenceStatusData,
     Snowflake,
@@ -95,6 +96,10 @@ export interface SaltyEmbedOptions extends MessageEmbedOptions {
     content?: string;
     inline?: boolean;
     react?: string;
+}
+export interface SaltyMessageOptions extends MessageOptions {
+    format?: boolean;
+    title?: boolean;
 }
 export interface Song {
     channel: string;

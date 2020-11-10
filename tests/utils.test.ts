@@ -1,5 +1,4 @@
 import {
-    catchError,
     choice,
     clean,
     ellipsis,
@@ -20,12 +19,6 @@ import {
     title,
     toAny
 } from "../src/utils";
-
-test("catchError", () => {
-    const catcher = jest.fn(catchError(() => new Error()));
-    catcher();
-    expect(catcher).toReturn();
-});
 
 test("choice", () => {
     const array = [1, 2, 3];
@@ -52,24 +45,24 @@ test("format", () => {
     interface MockMember {
         displayName: string;
     }
-    interface MockContext {
+    interface MockMessage {
         member: MockMember;
         mentions: { members: { first: () => (MockMember | null) } };
     }
 
-    const ctx: MockContext = {
+    const msg: MockMessage = {
         member: { displayName: "Author" },
-        mentions: { members: { first: () => ({ displayName: "Mention" }) } },
+        mentions: { members: { first: () => ({ displayName: "mention" }) } },
     };
 
-    expect(format("<authors> test", ctx)).toBe("Author's test");
-    expect(format("The test of <author>", ctx)).toBe("The test of Author");
-    expect(format("<mentions> test", ctx)).toBe("Mention's test");
-    expect(format("<targets> test", ctx)).toBe("Mention's test");
+    expect(format("<authors> test", msg)).toBe("Author's test");
+    expect(format("The test of <author>", msg)).toBe("The test of Author");
+    expect(format("<mentions> test", msg)).toBe("mention's test");
+    expect(format("<targets> test", msg)).toBe("mention's test");
 
-    ctx.mentions.members.first = () => null;
+    msg.mentions.members.first = () => null;
 
-    expect(format("<targets> test", ctx)).toBe("Author's test");
+    expect(format("<targets> test", msg)).toBe("Author's test");
 });
 
 test("formatDuration", () => {
