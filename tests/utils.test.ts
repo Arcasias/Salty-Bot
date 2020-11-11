@@ -16,6 +16,7 @@ import {
     randInt,
     search,
     shuffle,
+    stringToReaction,
     title,
     toAny
 } from "../src/utils";
@@ -47,7 +48,7 @@ test("format", () => {
     }
     interface MockMessage {
         member: MockMember;
-        mentions: { members: { first: () => (MockMember | null) } };
+        mentions: { members: { first: () => MockMember | null } };
     }
 
     const msg: MockMessage = {
@@ -66,7 +67,7 @@ test("format", () => {
 });
 
 test("formatDuration", () => {
-    expect(formatDuration(3610000)).toBe("01:00:10")
+    expect(formatDuration(3610000)).toBe("01:00:10");
 });
 
 test("generate", () => {
@@ -128,8 +129,15 @@ test("search", () => {
 
 test("shuffle", () => {
     const array = [1, 2, 3];
+    const shuffled = shuffle(array);
 
-    expect(shuffle(array)).not.toEqual(array);
+    expect(shuffled).toContain(1);
+    expect(shuffled).toContain(2);
+    expect(shuffled).toContain(3);
+});
+
+test("stringToReaction", () => {
+    expect(stringToReaction("aaa123")).toEqual(["🇦", "🅰️", "1️⃣", "2️⃣", "3️⃣"]);
 });
 
 test("title", () => {

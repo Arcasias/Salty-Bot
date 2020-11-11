@@ -31,7 +31,7 @@ const runningCollectors: Dictionnary<ReactionCollector> = {};
 export default class Salty {
     public bot: Client = this.createClient();
     public startTime = new Date();
-    private modules: Module[] = [];
+    private modules: Dictionnary<Module[]> = {};
     private token: string | null = null;
 
     public get sailor() {
@@ -288,8 +288,14 @@ export default class Salty {
     /**
      * @param ModuleConstructor
      */
-    public registerModule(ModuleConstructor: typeof Module): void {
-        this.modules.push(new ModuleConstructor());
+    public registerModule(
+        ModuleConstructor: typeof Module,
+        priority: number
+    ): void {
+        if (!(priority in this.modules)) {
+            this.modules[priority] = [];
+        }
+        this.modules[priority].push(new ModuleConstructor());
     }
 
     /**
@@ -381,6 +387,14 @@ export default class Salty {
         return this.error(msg, "What the fuck");
     }
 
+    private get orderedModules(): Module[] {
+        const modules: Module[] = [];
+        for (const priority in this.modules) {
+            modules.push(...this.modules[priority]);
+        }
+        return modules;
+    }
+
     private createHandler<K extends keyof ClientEvents>(
         type: K,
         method: keyof Module,
@@ -391,7 +405,7 @@ export default class Salty {
                 return;
             }
             const event = new Event<K>(args);
-            for (const module of this.modules) {
+            for (const module of this.orderedModules) {
                 try {
                     await (<(event: Event<K>) => any>module[method])(event);
                 } catch (err) {

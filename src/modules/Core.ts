@@ -20,12 +20,12 @@ import {
     error,
     escapeRegex,
     log,
-    request,
+    logRequest,
     search,
     title,
 } from "../utils";
 
-export default class CoreModule extends Module {
+class CoreModule extends Module {
     // Public handlers
 
     public async onChannelDelete({
@@ -150,7 +150,7 @@ export default class CoreModule extends Module {
         }
 
         // Logs the  action
-        request(guild?.name || "DM", author.username, cleanContent);
+        logRequest(guild?.name || "DM", author.username, cleanContent);
 
         // Fetches the actors of the action
         const { source, target } = await this.getMessageActors(msg, salty);
@@ -172,7 +172,7 @@ export default class CoreModule extends Module {
         let command: Runnable;
         let commandArgs = msgArgs;
         if (commandName) {
-            if (keywords.help.includes(msgArgs[0])) {
+            if (keywords.help.includes(clean(msgArgs[0]))) {
                 commandArgs = [commandName];
                 command = Command.list.get("help")!;
             } else {
@@ -282,3 +282,5 @@ export default class CoreModule extends Module {
         return { source, target };
     }
 }
+
+salty.registerModule(CoreModule, 0);

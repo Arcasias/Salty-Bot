@@ -2,7 +2,12 @@ import { Guild, User } from "discord.js";
 import { env } from "process";
 import { devs, owner } from "./config";
 import { keywords } from "./terms";
-import { ExpressionDescriptor, MeaningKeys, Meanings } from "./types";
+import {
+    Dictionnary,
+    ExpressionDescriptor,
+    MeaningKeys,
+    Meanings,
+} from "./types";
 
 const CONSOLE_RED = "\x1b[31m";
 const CONSOLE_GREEN = "\x1b[32m";
@@ -15,18 +20,45 @@ const CONSOLE_RESET = "\x1b[0m"; // default
 const LVD_REPLACE = 1.5;
 const LVD_INSERT = 1;
 const LVD_DELETE = 1;
-const NUMBER_REACTIONS = [
-    "1️⃣",
-    "2️⃣",
-    "3️⃣",
-    "4️⃣",
-    "5️⃣",
-    "6️⃣",
-    "7️⃣",
-    "8️⃣",
-    "9️⃣",
-    "🔟",
-];
+const REACTIONS: Dictionnary<string[]> = {
+    0: ["0️⃣"],
+    1: ["1️⃣"],
+    2: ["2️⃣"],
+    3: ["3️⃣"],
+    4: ["4️⃣"],
+    5: ["5️⃣"],
+    6: ["6️⃣"],
+    7: ["7️⃣"],
+    8: ["8️⃣"],
+    9: ["9️⃣"],
+    10: ["🔟"],
+    a: ["🇦", "🅰️"],
+    b: ["🇧", "🅱️"],
+    c: ["🇨"],
+    d: ["🇩"],
+    e: ["🇪"],
+    f: ["🇫"],
+    g: ["🇬"],
+    h: ["🇭"],
+    i: ["🇮", "ℹ️"],
+    j: ["🇯"],
+    k: ["🇰"],
+    l: ["🇱"],
+    m: ["🇲", "Ⓜ️"],
+    n: ["🇳"],
+    o: ["🇴", "🅾️", "⭕"],
+    p: ["🇵"],
+    q: ["🇶"],
+    r: ["🇷"],
+    s: ["🇸"],
+    t: ["🇹"],
+    u: ["🇺"],
+    v: ["🇻"],
+    w: ["🇼"],
+    x: ["🇽", "❌"],
+    y: ["🇾"],
+    z: ["🇿"],
+};
 const PARSABLE = /true|false|null/i;
 
 const expressions: ExpressionDescriptor[] = [
@@ -126,8 +158,10 @@ export function generate(percentage: number): boolean {
  * Gets the queried amount of number emojis.
  * @param length
  */
-export function getNumberReactions(length?: number) {
-    return NUMBER_REACTIONS.slice(0, length);
+export function getNumberReactions(length: number) {
+    return Object.values(REACTIONS)
+        .slice(1, length + 1)
+        .map(([react]) => react);
 }
 
 /**
@@ -289,6 +323,24 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 /**
+ * @param str
+ */
+export function stringToReaction(str: string): string[] {
+    const counters: Dictionnary<number> = {};
+    const result: string[] = [];
+
+    for (const key of str) {
+        const index = counters[key] || 0;
+        if (index < REACTIONS[key].length) {
+            result.push(REACTIONS[key][index]);
+            counters[key] = index + 1;
+        }
+    }
+
+    return result;
+}
+
+/**
  * Returns the given string with the first letter capitalized.
  * @param string
  */
@@ -370,7 +422,7 @@ export function log(...message: any[]) {
  * @param user
  * @param msg
  */
-export function request(guild: string, user: string, msg: string) {
+export function logRequest(guild: string, user: string, msg: string) {
     const content = msg
         ? consoleColor(`"${msg}"`, CONSOLE_GREEN, false)
         : consoleColor("[EMPTY MESSAGE]", CONSOLE_RED, false);

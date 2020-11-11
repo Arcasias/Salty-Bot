@@ -1,7 +1,6 @@
 import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
-import Salty from "../../classes/Salty";
 import salty from "../../salty";
 import { debug, ellipsis } from "../../utils";
 
@@ -60,7 +59,7 @@ Command.register({
         if (!args[0]) {
             return salty.warn(msg, "No code to execute.");
         }
-        const evalResult = evalInContext.call(Salty, args.join(" "));
+        const evalResult = evalInContext.call(salty, args.join(" "));
         const result = `${args.join(
             " "
         )} = /*${typeof evalResult}*/ ${stringify(evalResult, 0)}`;

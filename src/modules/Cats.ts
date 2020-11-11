@@ -8,6 +8,36 @@ import { meaning } from "../utils";
 const CHANNEL_PREFIX: string = "🐱";
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
 
+class CatsModule extends Module {
+    public async onMessage(event: Event<"message">): Promise<any> {
+        const {
+            payload: [msg],
+        } = event;
+        const channel = salty.getTextChannel(msg.channel.id);
+
+        // Only applies to "marked" channels
+        if (!channel.name.startsWith(CHANNEL_PREFIX)) {
+            return;
+        }
+
+        event.stop();
+
+        try {
+            msg.delete();
+        } catch (err) {}
+
+        const {
+            data: [firstResult],
+        } = await axios.get(CAT_API_URL);
+        await salty.message(msg, firstResult.url, {
+            format: false,
+            title: false,
+        });
+    }
+}
+
+salty.registerModule(CatsModule, 10);
+
 Command.register({
     name: "catify",
     aliases: ["cats"],
@@ -65,31 +95,3 @@ Command.register({
         }
     },
 });
-
-export default class CatsModule extends Module {
-    public async onMessage(event: Event<"message">): Promise<any> {
-        const {
-            payload: [msg],
-        } = event;
-        const channel = salty.getTextChannel(msg.channel.id);
-
-        // Only applies to "marked" channels
-        if (!channel.name.startsWith(CHANNEL_PREFIX)) {
-            return;
-        }
-
-        event.stop();
-
-        try {
-            msg.delete();
-        } catch (err) {}
-
-        const {
-            data: [firstResult],
-        } = await axios.get(CAT_API_URL);
-        await salty.message(msg, firstResult.url, {
-            format: false,
-            title: false,
-        });
-    }
-}

@@ -3,6 +3,7 @@ import "./delay";
 import "./embed";
 import "./interval";
 import "./purge";
+import "./react";
 import "./send";
 import "./talk";
 import "./tts";
