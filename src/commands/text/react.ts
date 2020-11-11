@@ -6,6 +6,13 @@ import { clean, stringToReaction } from "../../utils";
 Command.register({
     name: "react",
     category: "text",
+    help: [
+        {
+            argument: "***emoji_name*** or ***string***",
+            effect:
+                "Reacts with the given emoji name. If no emoji is found, the reaction will be a sequence of the characters composing the given string.",
+        },
+    ],
     async action({ args, msg }) {
         if (!args.length) {
             return salty.warn(msg, "What do you want to react with?");

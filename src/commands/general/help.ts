@@ -4,6 +4,8 @@ import salty from "../../salty";
 import { Dictionnary, SaltyEmbedOptions } from "../../types";
 import { title } from "../../utils";
 
+const SRC_PATH = ["blob", "master", "src"];
+
 Command.register({
     name: "help",
     aliases: ["info", "information", "wtf", "?", "doc", "documentation"],
@@ -64,12 +66,12 @@ Command.register({
                 const relativePath = __dirname
                     .slice(process.cwd().length)
                     .split(/[\\\/]/)
-                    .filter((w: string) => Boolean(w)) // remove empty strings
-                    .slice(0, -1); // remove current category
+                    .filter(Boolean) // remove path empty parts (idk why they exist)
+                    .slice(1, -1); // remove "dist" folder and "general" category to put command category
                 options.title = `**${doc.name.toUpperCase()}**`;
                 options.url = [
                     homepage,
-                    "blob/master",
+                    ...SRC_PATH,
                     ...relativePath,
                     doc.category,
                     doc.name.toLowerCase() + ".ts",
