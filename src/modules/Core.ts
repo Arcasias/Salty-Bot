@@ -12,17 +12,20 @@ import {
     Dictionnary,
     FieldsDescriptor,
     MessageActor,
-    Runnable,
+    Runnable
 } from "../types";
 import {
     choice,
     clean,
+
+
+
     error,
     escapeRegex,
     log,
     logRequest,
     search,
-    title,
+    title
 } from "../utils";
 
 class CoreModule extends Module {
@@ -172,7 +175,7 @@ class CoreModule extends Module {
         let command: Runnable;
         let commandArgs = msgArgs;
         if (commandName) {
-            if (keywords.help.includes(clean(msgArgs[0]))) {
+            if (msgArgs.length && keywords.help.includes(clean(msgArgs[0]))) {
                 commandArgs = [commandName];
                 command = Command.list.get("help")!;
             } else {
@@ -214,10 +217,10 @@ class CoreModule extends Module {
     ): RegExp {
         const terms = [
             `^(${escapeRegex(prefix)})`,
-            `(\\b${escapeRegex(username)}\\b)`,
+            `(@?.?${escapeRegex(username)})`,
         ];
         if (nickname) {
-            terms.push(`(@?${escapeRegex(nickname)})`);
+            terms.push(`(@?.?${escapeRegex(nickname)})`);
         }
         return new RegExp(terms.join("|"));
     }

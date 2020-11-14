@@ -7,6 +7,7 @@ import "./react";
 import "./send";
 import "./talk";
 import "./tts";
+import "./whisper";
 
 const categoryInfo: CommandCategoryDoc = {
     name: "text",

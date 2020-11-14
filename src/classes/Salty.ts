@@ -7,7 +7,7 @@ import {
     PermissionString,
     ReactionCollector,
     TextChannel,
-    User,
+    User
 } from "discord.js";
 import { Dictionnary, SaltyEmbedOptions, SaltyMessageOptions } from "../types";
 import {
@@ -18,7 +18,7 @@ import {
     isDev,
     isOwner,
     log,
-    title,
+    title
 } from "../utils";
 import { connect, disconnect } from "./Database";
 import Event from "./Event";
@@ -409,7 +409,7 @@ export default class Salty {
                 try {
                     await (<(event: Event<K>) => any>module[method])(event);
                 } catch (err) {
-                    error(err.message);
+                    error(err);
                 }
                 if (event.isStopped()) {
                     break;

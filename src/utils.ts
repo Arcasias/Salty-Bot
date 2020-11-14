@@ -1,4 +1,4 @@
-import { Guild, User } from "discord.js";
+import { Guild, Message, User } from "discord.js";
 import { env } from "process";
 import { devs, owner } from "./config";
 import { keywords } from "./terms";
@@ -6,7 +6,7 @@ import {
     Dictionnary,
     ExpressionDescriptor,
     MeaningKeys,
-    Meanings,
+    Meanings
 } from "./types";
 
 const CONSOLE_RED = "\x1b[31m";
@@ -287,6 +287,24 @@ export function randColor() {
  */
 export function randInt(min: number = 0, max: number = 1): number {
     return Math.floor(Math.random() * (max - min)) + min;
+}
+
+/**
+ * @param msg
+ * @param args
+ */
+export function removeMentions(msg: Message, args: string[]): string[] {
+    let content = args.join(" ");
+    if (msg.mentions.members) {
+        for (const [id, { displayName }] of msg.mentions.members) {
+            content = content.replace(new RegExp(`@.?${displayName}`), "");
+        }
+    } else {
+        for (const [id, { username }] of msg.mentions.users) {
+            content = content.replace(new RegExp(`@.?${username}`), "");
+        }
+    }
+    return content.split(/\s+/).filter(Boolean);
 }
 
 /**
