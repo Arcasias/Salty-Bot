@@ -137,7 +137,7 @@ test("shuffle", () => {
 });
 
 test("stringToReaction", () => {
-    expect(stringToReaction("aaa123")).toEqual(["🇦", "🅰️", "1️⃣", "2️⃣", "3️⃣"]);
+    expect(stringToReaction("aaa 1.2")).toEqual(["🇦", "🅰️", "1️⃣", "2️⃣"]);
 });
 
 test("title", () => {

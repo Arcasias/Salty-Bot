@@ -331,7 +331,7 @@ export function stringToReaction(str: string): string[] {
 
     for (const key of str) {
         const index = counters[key] || 0;
-        if (index < REACTIONS[key].length) {
+        if (index < REACTIONS[key]?.length) {
             result.push(REACTIONS[key][index]);
             counters[key] = index + 1;
         }
