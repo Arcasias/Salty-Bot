@@ -35,7 +35,7 @@ Command.register({
     }
     const embed = new MessageEmbed(parsed);
     try {
-      await salty.message(msg, null, { embed });
+      await salty.message(msg, "", { embed });
     } catch (err) {
       const [property, detail] =
         (<Error>err).message.split(/\n/).pop()?.split(/:/) || [];

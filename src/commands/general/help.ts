@@ -128,7 +128,7 @@ Command.register({
       }
     }
     const helpEmbed = await salty.embed(msg, options);
-    if (reactionActions) {
+    if (helpEmbed && reactionActions) {
       salty.addActions(msg.author.id, helpEmbed, reactionActions);
     }
   },

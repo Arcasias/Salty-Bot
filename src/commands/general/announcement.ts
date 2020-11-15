@@ -2,7 +2,6 @@ import { TextChannel } from "discord.js";
 import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
-import { title } from "../../utils";
 
 Command.register({
   name: "announcement",
@@ -26,7 +25,7 @@ Command.register({
           const channel = guild.channels.cache.get(default_channel);
           if (channel instanceof TextChannel) {
             withDefault += 1;
-            channel.send(title(args.join(" ")));
+            salty.message(channel, args.join(" "));
           }
         }
       }

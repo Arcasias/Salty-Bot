@@ -18,6 +18,6 @@ Command.register({
       return salty.warn(msg, "You need to tell me what to say.");
     }
     salty.deleteMessage(msg);
-    await msg.channel.send(args.join(" "), { tts: true });
+    await salty.message(msg, args.join(" "), { tts: true });
   },
 });

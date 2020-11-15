@@ -40,6 +40,10 @@ Command.register({
     }
 
     const runningMsg = await salty.message(msg, "monkey sorting ...");
+    if (!runningMsg) {
+      return;
+    }
+
     let tests = 0;
     let list: number[] = [];
 

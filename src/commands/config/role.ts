@@ -1,14 +1,15 @@
-import { Message } from "discord.js";
+import { Message, Role } from "discord.js";
 import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../terms";
 import { isDev, meaning, randColor } from "../../utils";
 
-function getRole(msg: Message, roleName: string) {
+function getRole(msg: Message, roleName: string): Role | false {
   return (
     msg.mentions.roles.first() ||
-    msg.guild!.roles.cache.find((r) => r.name === roleName)
+    msg.guild!.roles.cache.find((r) => r.name === roleName) ||
+    false
   );
 }
 
@@ -144,22 +145,27 @@ Command.register({
                   `This role doesn't exist. You can create it with "${commandString}".`
                 );
               } else {
-                role = await msg.guild!.roles.create({
-                  data: {
-                    name: roleName,
-                    mentionable: true,
-                    color: randColor(),
-                  },
-                  reason: `Created by ${msg.author.username} via Salty`,
-                });
+                role = await salty.api.do(() =>
+                  msg.guild!.roles.create({
+                    data: {
+                      name: roleName,
+                      mentionable: true,
+                      color: randColor(),
+                    },
+                    reason: `Created by ${msg.author.username} via Salty`,
+                  })
+                );
               }
             }
-            msg.member!.roles.add(role);
-            return salty.success(
-              msg,
-              `You have been assigned the role **${role.name}**.`,
-              { color: role.color }
-            );
+            if (role) {
+              const ensuredRole: Role = role;
+              salty.api.do(() => msg.member!.roles.add(ensuredRole));
+              return salty.success(
+                msg,
+                `You have been assigned the role **${role.name}**.`,
+                { color: role.color }
+              );
+            }
           }
           case "remove": {
             if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
@@ -176,7 +182,7 @@ Command.register({
                 "You need to specify the name of the role to delete."
               );
             }
-            role.delete("Deleted by Salty");
+            salty.api.do(() => role.delete("Deleted by Salty"));
             return salty.success(msg, `Role **${role.name}** deleted.`, {
               color: role.color,
             });

@@ -1,5 +1,6 @@
 import { DMChannel } from "discord.js";
 import Command from "../../classes/Command";
+import salty from "../../salty";
 
 Command.register({
   name: "whisper",
@@ -16,6 +17,6 @@ Command.register({
     if (msg.channel instanceof DMChannel) {
       return;
     }
-    await msg.author.send(args.join(" "));
+    await salty.message(msg.author, args.join(" "));
   },
 });

@@ -8,10 +8,13 @@ async function changeNames(
   mutator: (nickname: string) => string
 ) {
   const members: GuildMember[] = msg.guild!.members.cache.array();
-  const progressMsg: Message = await salty.message(
+  const progressMsg = await salty.message(
     msg,
     `Changing ${members.length} nicknames...`
   );
+  if (!progressMsg) {
+    return;
+  }
   let updating: boolean = false;
   const promises = members.map(async (member, i) => {
     const newNick: string = mutator(member.displayName);
@@ -26,7 +29,7 @@ async function changeNames(
     }
     if (!updating) {
       updating = true;
-      await progressMsg.edit({
+      await salty.editMessage(progressMsg, {
         content: `Changing nicknames: ${i++}/${members.length}`,
       });
       updating = false;

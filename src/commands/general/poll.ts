@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessageReaction, User } from "discord.js";
+import { Message, MessageEmbed } from "discord.js";
 import Command from "../../classes/Command";
 import salty from "../../salty";
 import { PollOption, SaltyEmbedOptions } from "../../types";
@@ -35,7 +35,7 @@ function update(
   if (end) {
     embed.setFooter("This poll has ended.");
   }
-  return message.edit(embed);
+  return salty.editMessage(message, embed);
 }
 
 Command.register({
@@ -62,20 +62,6 @@ Command.register({
 
     salty.deleteMessage(msg);
 
-    async function onAdd({ emoji }: MessageReaction, user: User) {
-      await initMessage;
-      const option = pollOptions.find((o) => o.reaction === emoji.name)!;
-      option.votes.add(user.username);
-      update(title, pollMessage, pollOptions);
-    }
-
-    async function onRemove({ emoji }: MessageReaction, user: User) {
-      await initMessage;
-      const option = pollOptions.find((o) => o.reaction === emoji.name)!;
-      option.votes.delete(user.username);
-      update(title, pollMessage, pollOptions);
-    }
-
     const title = `${possessive(msg.member!.displayName)} poll`;
     const numberEmojis = getNumberReactions(OPTION_AMOUNT);
     const pollOptions: PollOption[] = optionTexts.map((text, index) => ({
@@ -92,9 +78,24 @@ Command.register({
     };
     const initMessage = salty.embed(msg, embedOptions);
     const pollMessage = await initMessage;
+
+    if (!pollMessage) {
+      return;
+    }
+
     salty.addActions(msg.author.id, pollMessage, {
-      onAdd,
-      onRemove,
+      onAdd: async ({ emoji }, user) => {
+        await initMessage;
+        const option = pollOptions.find((o) => o.reaction === emoji.name)!;
+        option.votes.add(user.username);
+        update(title, pollMessage, pollOptions);
+      },
+      onRemove: async ({ emoji }, user) => {
+        await initMessage;
+        const option = pollOptions.find((o) => o.reaction === emoji.name)!;
+        option.votes.delete(user.username);
+        update(title, pollMessage, pollOptions);
+      },
       async onEnd() {
         await initMessage;
         update(title, pollMessage, pollOptions, true);

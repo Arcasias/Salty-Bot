@@ -1,10 +1,15 @@
 import {
+  APIMessage,
+  APIMessageContentResolvable,
   Client,
   ClientEvents,
+  DMChannel,
   Guild,
   GuildEmoji,
   Message,
+  MessageEditOptions,
   MessageEmbed,
+  NewsChannel,
   PermissionString,
   ReactionCollector,
   TextChannel,
@@ -34,9 +39,20 @@ import Sailor from "./Sailor";
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 
+class APIWrapper {
+  do<T>(action: (...args: any[]) => T): T | false {
+    try {
+      return action()!;
+    } catch (err) {
+      return false;
+    }
+  }
+}
+
 export default class Salty {
   public bot: Client = this.createClient();
   public startTime = new Date();
+  public api: APIWrapper = new APIWrapper();
   private modules: Dictionnary<Module[]> = {};
   private token: string | null = null;
 
@@ -51,6 +67,11 @@ export default class Salty {
     return this.bot.user!;
   }
 
+  /**
+   * @param userId
+   * @param msg
+   * @param actions
+   */
   public addActions(
     userId: string,
     msg: Message,
@@ -59,37 +80,37 @@ export default class Salty {
     if (userId in runningCollectors) {
       runningCollectors[userId].stop("NEW_COLLECTOR");
     }
-    if (msg.deleted) {
+    const collector = this.api.do(() =>
+      msg.createReactionCollector(
+        ({ emoji }, { bot }) => !bot && reactions.includes(emoji.name),
+        { time: 3 * 60 * 1000 }
+      )
+    );
+    if (!collector) {
       return;
     }
-    const collector = msg.createReactionCollector(
-      ({ emoji }, { bot }) => !bot && reactions.includes(emoji.name),
-      { time: 3 * 60 * 1000 }
-    );
     runningCollectors[userId] = collector;
     const abort = () => collector.stop("OPTION_SELECTED");
     const reactPromise = this.react(msg, ...reactions);
     if (onAdd) {
       collector.on("collect", async (reaction, user) => {
         await reactPromise;
-        return onAdd(reaction, user, abort);
+        onAdd(reaction, user, abort);
       });
     }
     if (onRemove) {
       collector.on("remove", async (reaction, user) => {
         await reactPromise;
-        return onRemove(reaction, user, abort);
+        onRemove(reaction, user, abort);
       });
     }
     collector.on("end", async (collected, reason) => {
       delete runningCollectors[userId];
       await reactPromise;
-      this.safeMessageOp(msg, (msg) => msg.reactions.removeAll(), [
-        "MANAGE_MESSAGES",
-      ]);
-      collector.empty();
+      this.api.do(() => msg.reactions.removeAll());
+      this.api.do(() => collector.empty());
       if (onEnd) {
-        return onEnd(collected, reason);
+        onEnd(collected, reason);
       }
     });
   }
@@ -115,7 +136,7 @@ export default class Salty {
    * @param msg
    */
   public async deleteMessage(msg: Message): Promise<any> {
-    await this.safeMessageOp(msg, (msg) => msg.delete(), ["MANAGE_MESSAGES"]);
+    await this.api.do(() => msg.delete());
   }
 
   /**
@@ -132,12 +153,27 @@ export default class Salty {
   }
 
   /**
+   * @param msg
+   * @param content
+   */
+  public async editMessage(
+    msg: Message,
+    content:
+      | APIMessageContentResolvable
+      | MessageEditOptions
+      | MessageEmbed
+      | APIMessage
+  ): Promise<void> {
+    await this.api.do(() => msg.edit(content));
+  }
+
+  /**
    * Sends an embed message in the channel of the given 'msg' object.
    */
   public async embed(
     msg: Message,
     options: SaltyEmbedOptions = {}
-  ): Promise<Message> {
+  ): Promise<Message | false> {
     // Other options that might change
     const defaultedOptions: SaltyEmbedOptions = Object.assign(
       {
@@ -172,7 +208,7 @@ export default class Salty {
       );
     }
     const embed = new MessageEmbed(defaultedOptions);
-    const newMessage: Message = await this.message(msg, content!, {
+    const newMessage = await this.message(msg, content!, {
       embed,
       files: defaultedOptions.files,
     });
@@ -273,11 +309,11 @@ export default class Salty {
   /**
    * Sends a simply structured message in the channel of the given 'msg' object.
    */
-  public message(
-    msg: Message,
-    text: string | null,
+  public async message(
+    target: Message | TextChannel | DMChannel | NewsChannel | User,
+    content: string = "",
     options?: SaltyMessageOptions
-  ): Promise<any> {
+  ): Promise<Message | false> {
     const defaultedOptions = Object.assign(
       {
         format: true,
@@ -285,14 +321,24 @@ export default class Salty {
       },
       options
     );
-    let content = text || "";
-    if (defaultedOptions.format) {
+    let channel: TextChannel | DMChannel | NewsChannel | User;
+    let msg: Message | null = null;
+    if (target instanceof Message) {
+      msg = target;
+      channel = msg.channel;
+    } else {
+      channel = target;
+    }
+    if (msg && defaultedOptions.format) {
       content = format(content, msg);
     }
     if (defaultedOptions.title) {
       content = title(content);
     }
-    return msg.channel.send(ellipsis(content), options || {});
+    const result = await this.api.do(() =>
+      channel.send(ellipsis(content), options || {})
+    );
+    return Array.isArray(result) ? result[0] : result;
   }
 
   /**
@@ -302,13 +348,10 @@ export default class Salty {
   public async react(
     msg: Message,
     ...reactions: (string | GuildEmoji)[]
-  ): Promise<boolean> {
+  ): Promise<any> {
     for (const react of reactions) {
-      await this.safeMessageOp(msg, (msg) => msg.react(react), [
-        "ADD_REACTIONS",
-      ]);
+      await this.api.do(() => msg.react(react));
     }
-    return true;
   }
 
   /**
@@ -421,6 +464,11 @@ export default class Salty {
     return modules;
   }
 
+  /**
+   * @param type
+   * @param method
+   * @param preprocess
+   */
   private createHandler<K extends keyof ClientEvents>(
     type: K,
     method: keyof Module,
@@ -445,32 +493,14 @@ export default class Salty {
     return [type, handler];
   }
 
+  /**
+   * @param msg
+   */
   private preprocessMessage(msg: Message): boolean {
     // Ignores bot messages
     if (msg.author === this.user) {
       return false;
     }
     return true;
-  }
-
-  /**
-   * @param msg
-   * @param callback
-   * @param permissions
-   */
-  private safeMessageOp<T>(
-    msg: Message,
-    op: (msg: Message) => T,
-    permissions?: PermissionString[]
-  ): T | false {
-    if (
-      msg.deleted ||
-      (permissions &&
-        msg.guild &&
-        !this.hasPermission(msg.guild, ...permissions))
-    ) {
-      return false;
-    }
-    return op(msg);
   }
 }

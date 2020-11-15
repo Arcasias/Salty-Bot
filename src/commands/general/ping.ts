@@ -36,6 +36,9 @@ Command.register({
     }
     // Sends another message and displays the difference between the first and the second
     const sentMsg = await salty.message(msg, "Pinging...");
+    if (!sentMsg) {
+      return;
+    }
     const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
     const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
 

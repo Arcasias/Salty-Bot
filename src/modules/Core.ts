@@ -22,7 +22,6 @@ import {
   log,
   logRequest,
   search,
-  title,
 } from "../utils";
 
 class CoreModule extends Module {
@@ -64,7 +63,10 @@ class CoreModule extends Module {
     const guild = await Crew.get(member.guild.id);
     if (guild?.default_channel) {
       const channel = salty.getTextChannel(guild.default_channel);
-      channel.send(`Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`);
+      salty.message(
+        channel,
+        `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
+      );
     }
     if (guild?.default_role) {
       member.roles.add(guild.default_role);
@@ -78,7 +80,7 @@ class CoreModule extends Module {
     if (guild?.default_channel) {
       const channel = salty.getTextChannel(guild.default_channel);
       const name = member.user?.username || "unknown";
-      channel.send(`Well, looks like ${name} got bored of us :c`);
+      salty.message(channel, `Well, looks like ${name} got bored of us :c`);
     }
   }
 
@@ -105,7 +107,7 @@ class CoreModule extends Module {
     for (const guild of guilds) {
       if (guild.default_channel) {
         const channel = salty.getTextChannel(guild.default_channel);
-        channel.send(title(choice(intro)));
+        salty.message(channel, choice(intro));
       }
     }
     const loadingTime: number =
