@@ -9,9 +9,9 @@ import "./space";
 import "./weeb";
 
 const categoryInfo: CommandCategoryDoc = {
-    name: "miscellaneous",
-    description: "various useless commands",
-    icon: "🦀",
+  name: "miscellaneous",
+  description: "various useless commands",
+  icon: "🦀",
 };
 
 export default categoryInfo;

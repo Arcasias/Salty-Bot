@@ -7,48 +7,48 @@ import salty from "../../salty";
 import { SaltyEmbedOptions } from "../../types";
 
 Command.register({
-    name: "state",
-    aliases: ["git", "local", "server"],
-    category: "general",
-    help: [
-        {
-            argument: null,
-            effect: "Gets you some information about me",
-        },
-    ],
-    access: "dev",
-
-    async action({ msg }) {
-        const [crewsCount, sailorsCount] = await Promise.all([
-            Crew.count(),
-            Sailor.count(),
-        ]);
-        const options: SaltyEmbedOptions = {
-            title: `Salty Bot`,
-            url: homepage,
-            description: `Last started on ${
-                salty.startTime.toString().split(" GMT")[0]
-            }`,
-            fields: [
-                {
-                    name: `Hosting`,
-                    value: env.MODE === "server" ? "Server" : "Local instance",
-                },
-                { name: `Developers`, value: `${devs.length} contributors` },
-                {
-                    name: `Crews`,
-                    value: `Handling ${crewsCount} crews`,
-                },
-                {
-                    name: `Sailors`,
-                    value: `Watching over ${sailorsCount} sailors`,
-                },
-            ],
-            inline: true,
-        };
-        if (env.DEBUG === "true") {
-            options.footer = { text: `Debug mode active` };
-        }
-        await salty.embed(msg, options);
+  name: "state",
+  aliases: ["git", "local", "server"],
+  category: "general",
+  help: [
+    {
+      argument: null,
+      effect: "Gets you some information about me",
     },
+  ],
+  access: "dev",
+
+  async action({ msg }) {
+    const [crewsCount, sailorsCount] = await Promise.all([
+      Crew.count(),
+      Sailor.count(),
+    ]);
+    const options: SaltyEmbedOptions = {
+      title: `Salty Bot`,
+      url: homepage,
+      description: `Last started on ${
+        salty.startTime.toString().split(" GMT")[0]
+      }`,
+      fields: [
+        {
+          name: `Hosting`,
+          value: env.MODE === "server" ? "Server" : "Local instance",
+        },
+        { name: `Developers`, value: `${devs.length} contributors` },
+        {
+          name: `Crews`,
+          value: `Handling ${crewsCount} crews`,
+        },
+        {
+          name: `Sailors`,
+          value: `Watching over ${sailorsCount} sailors`,
+        },
+      ],
+      inline: true,
+    };
+    if (env.DEBUG === "true") {
+      options.footer = { text: `Debug mode active` };
+    }
+    await salty.embed(msg, options);
+  },
 });

@@ -1,63 +1,64 @@
 {
-    "name": "salty",
-    "version": "1.0.0",
-    "description": "A crude and useful bot",
-    "main": "main.js",
-    "scripts": {
-        "build": "prettier --write \"./src/**/*.{ts,json}\" && tsc",
-        "dev": "ts-node src/local.ts",
-        "local": "node dist/local.js",
-        "start": "node dist/index.js",
-        "test": "jest"
+  "name": "salty",
+  "version": "1.0.0",
+  "description": "A crude and useful bot",
+  "main": "main.js",
+  "scripts": {
+    "build": "prettier --write \"./src/**/*.{ts,json}\" && tsc",
+    "dev": "ts-node src/local.ts",
+    "local": "node dist/local.js",
+    "start": "node dist/index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arcasias/Salty-Bot.git"
+  },
+  "author": "Julien Mougenot",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Arcasias/Salty-Bot/issues"
+  },
+  "homepage": "https://github.com/Arcasias/Salty-Bot",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "axios": "^0.21.0",
+    "discord.js": "github:discordjs/discord.js",
+    "erlpack": "github:discordapp/erlpack",
+    "googleapis": "^50.0.0",
+    "npm": "^6.14.8",
+    "pg": "^8.4.1",
+    "pureimage": "^0.2.5",
+    "ytdl-core": "^2.1.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "@types/node": "^13.13.28",
+    "@types/pg": "^7.14.5",
+    "@types/ws": "^7.2.7",
+    "jest": "^26.6.1",
+    "ts-jest": "^26.4.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7",
+    "prettier": "^2.1.2"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "testEnvironment": "node",
+    "testRegex": "(/tests/.*(test|spec))\\.ts?$",
+    "transform": {
+      "^.+\\.ts?$": "ts-jest"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Arcasias/Salty-Bot.git"
-    },
-    "author": "Julien Mougenot",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/Arcasias/Salty-Bot/issues"
-    },
-    "homepage": "https://github.com/Arcasias/Salty-Bot",
-    "dependencies": {
-        "@discordjs/opus": "^0.3.2",
-        "axios": "^0.21.0",
-        "discord.js": "github:discordjs/discord.js",
-        "erlpack": "github:discordapp/erlpack",
-        "googleapis": "^50.0.0",
-        "npm": "^6.14.8",
-        "pg": "^8.4.1",
-        "prettier": "^2.1.2",
-        "pureimage": "^0.2.5",
-        "ytdl-core": "^2.1.7"
-    },
-    "devDependencies": {
-        "@types/jest": "^26.0.15",
-        "@types/node": "^13.13.28",
-        "@types/pg": "^7.14.5",
-        "@types/ws": "^7.2.7",
-        "jest": "^26.6.1",
-        "ts-jest": "^26.4.2",
-        "ts-node": "^8.10.2",
-        "typescript": "^3.9.7"
-    },
-    "jest": {
-        "roots": [
-            "<rootDir>/tests"
-        ],
-        "transform": {
-            "^.+\\.ts?$": "ts-jest"
-        },
-        "verbose": false,
-        "testRegex": "(/tests/.*(test|spec))\\.ts?$",
-        "moduleFileExtensions": [
-            "ts",
-            "tsx",
-            "js",
-            "jsx",
-            "json",
-            "node"
-        ]
-    }
+    "verbose": false
+  }
 }

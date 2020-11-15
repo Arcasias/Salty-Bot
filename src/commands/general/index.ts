@@ -8,9 +8,9 @@ import "./state";
 import "./todo";
 
 const categoryInfo: CommandCategoryDoc = {
-    name: "general",
-    description: "basic commands",
-    icon: "📁",
+  name: "general",
+  description: "basic commands",
+  icon: "📁",
 };
 
 export default categoryInfo;

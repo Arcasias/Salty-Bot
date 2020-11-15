@@ -4,9 +4,9 @@ import "./emoji";
 import "./waifu";
 
 const categoryInfo: CommandCategoryDoc = {
-    name: "image",
-    description: "image related commands",
-    icon: "🏖",
+  name: "image",
+  description: "image related commands",
+  icon: "🏖",
 };
 
 export default categoryInfo;

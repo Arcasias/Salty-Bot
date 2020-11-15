@@ -1,4 +1,12 @@
 import {
+    Client,
+    Guild,
+    GuildMember,
+    Message,
+    TextChannel,
+    User
+} from "discord.js";
+import {
     choice,
     clean,
     ellipsis,
@@ -20,6 +28,80 @@ import {
     title,
     toAny
 } from "../src/utils";
+
+/**
+ * Setup a test message, along with the following objects:
+ *
+ * - client: Client
+ *
+ * - author: User & GuildMember
+ *      > client: Client()
+ *      > id: "1111111111111111111"
+ *
+ * - mention: User & GuildMember
+ *      > client: Client()
+ *      > id: "222222222222222222"
+ *
+ * - guild: Guild
+ *      > client: Client()
+ *      > id: "333333333333333333"
+ *
+ * - channel: TextChannel
+ *      > guild: Guild("333333333333333333")
+ *      > id: "444444444444444444"
+ *      > type: "text"
+ *
+ * - message: Message
+ *      > author: User("1111111111111111111")
+ *      > client: Client()
+ *      > content: "Test message"
+ *      > id: "555555555555555555"
+ *      > mentions: [User("222222222222222222")]
+ *
+ * @param msgData
+ * @returns Message("555555555555555555")
+ */
+function createMockMessage(msgData?: any) {
+    const client = new Client();
+    const author = new User(client, {
+        id: "111111111111111111",
+        username: "Author",
+    });
+    const mention = new User(client, {
+        id: "222222222222222222",
+        username: "Mention",
+    });
+    const guild = new Guild(client, {
+        id: "333333333333333333",
+    });
+    guild.members.add(new GuildMember(client, { user: author }, guild));
+    guild.members.add(new GuildMember(client, { user: mention }, guild));
+
+    const channel = new TextChannel(guild, {
+        id: "444444444444444444",
+        type: "text",
+    });
+    const messageData = Object.assign(
+        {
+            author,
+            content: "Test message",
+            id: "555555555555555555",
+            mentions: [mention],
+        },
+        msgData
+    );
+    return new Message(client, messageData, channel);
+}
+
+test("mockMessage", () => {
+    const msg = createMockMessage();
+
+    expect(msg.author.id).toBe("111111111111111111");
+    expect(msg.mentions.users.first()?.id).toBe("222222222222222222");
+    expect(msg.guild?.id).toBe("333333333333333333");
+    expect(msg.channel.id).toBe("444444444444444444");
+    expect(msg.id).toBe("555555555555555555");
+});
 
 test("choice", () => {
     const array = [1, 2, 3];
@@ -43,25 +125,14 @@ test("escapeRegex", () => {
 });
 
 test("format", () => {
-    interface MockMember {
-        displayName: string;
-    }
-    interface MockMessage {
-        member: MockMember;
-        mentions: { members: { first: () => MockMember | null } };
-    }
-
-    const msg: MockMessage = {
-        member: { displayName: "Author" },
-        mentions: { members: { first: () => ({ displayName: "mention" }) } },
-    };
+    const msg = createMockMessage();
 
     expect(format("<authors> test", msg)).toBe("Author's test");
     expect(format("The test of <author>", msg)).toBe("The test of Author");
-    expect(format("<mentions> test", msg)).toBe("mention's test");
-    expect(format("<targets> test", msg)).toBe("mention's test");
+    expect(format("<mentions> test", msg)).toBe("Mention's test");
+    expect(format("<targets> test", msg)).toBe("Mention's test");
 
-    msg.mentions.members.first = () => null;
+    msg.mentions.members!.delete("222222222222222222");
 
     expect(format("<targets> test", msg)).toBe("Author's test");
 });

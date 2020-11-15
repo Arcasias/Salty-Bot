@@ -10,9 +10,9 @@ import "./tts";
 import "./whisper";
 
 const categoryInfo: CommandCategoryDoc = {
-    name: "text",
-    description: "Text commands",
-    icon: "🗨️",
+  name: "text",
+  description: "Text commands",
+  icon: "🗨️",
 };
 
 export default categoryInfo;

@@ -10,9 +10,9 @@ import "./restart";
 import "./role";
 
 const categoryInfo: CommandCategoryDoc = {
-    name: "configuration",
-    description: "configuration commands used for administration",
-    icon: "⚙",
+  name: "configuration",
+  description: "configuration commands used for administration",
+  icon: "⚙",
 };
 
 export default categoryInfo;
