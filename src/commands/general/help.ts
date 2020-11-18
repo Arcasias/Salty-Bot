@@ -54,8 +54,8 @@ Command.register({
               ? ` (or ***${command.aliases.join("***, ***")}***)`
               : "";
             options.fields!.push({
-              name: `> \`${prefix}help ${command.name}\``,
-              value: `**${title(command.name)}**${aliases}`,
+              name: `**${title(command.name)}**${aliases}`,
+              value: `> \`${prefix}help ${command.name}\``,
             });
           }
         }

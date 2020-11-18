@@ -87,7 +87,7 @@ export default class Salty {
    * @param msg
    * @param actions
    */
-  public async addActions(
+  public addActions(
     userId: string,
     msg: Message,
     { actions, onEnd }: MessageActionsDescriptor
