@@ -31,6 +31,7 @@ import {
   SaltyMessageOptions,
 } from "../types";
 import {
+  apiCatch,
   choice,
   clean,
   ellipsis,
@@ -91,19 +92,16 @@ export default class Salty {
     msg: Message,
     { actions, onEnd }: MessageActionsDescriptor
   ) {
+    if (msg.deleted) {
+      return;
+    }
     if (userId in runningCollectors) {
       runningCollectors[userId].stop("NEW_COLLECTOR");
     }
-    const collector = this.apiCatch(() =>
-      msg.createReactionCollector(
-        ({ emoji }, { bot }) => !bot && actions.has(emoji.name),
-        { time: 3 * 60 * 1000 }
-      )
+    const collector = msg.createReactionCollector(
+      ({ emoji }, { bot }) => !bot && actions.has(emoji.name),
+      { time: 3 * 60 * 1000 }
     );
-
-    if (!collector) {
-      return;
-    }
 
     runningCollectors[userId] = collector;
     const abort = () => collector.stop("OPTION_SELECTED");
@@ -123,23 +121,12 @@ export default class Salty {
     });
     collector.on("end", async (collected, reason) => {
       delete runningCollectors[userId];
-      this.apiCatch(() => msg.reactions.removeAll());
-      this.apiCatch(() => collector.empty());
+      apiCatch(() => msg.reactions.removeAll());
+      collector.empty();
       if (onEnd) {
         onEnd(collected, reason);
       }
     });
-  }
-
-  /**
-   * @param action
-   */
-  public apiCatch<T>(action: (...args: any[]) => T): T | false {
-    try {
-      return action()!;
-    } catch (err) {
-      return false;
-    }
   }
 
   public createClient() {
@@ -161,7 +148,7 @@ export default class Salty {
    * @param msg
    */
   public async deleteMessage(msg: Message): Promise<any> {
-    await this.apiCatch(() => msg.delete());
+    await apiCatch(() => msg.delete());
   }
 
   /**
@@ -189,7 +176,7 @@ export default class Salty {
       | MessageEmbed
       | APIMessage
   ): Promise<void> {
-    await this.apiCatch(() => msg.edit(content));
+    await apiCatch(() => msg.edit(content));
   }
 
   /**
@@ -360,7 +347,7 @@ export default class Salty {
     if (defaultedOptions.title) {
       content = title(content);
     }
-    const result = await this.apiCatch(() =>
+    const result = await apiCatch(() =>
       channel.send(ellipsis(content), options || {})
     );
     return Array.isArray(result) ? result[0] : result;
@@ -375,7 +362,9 @@ export default class Salty {
     ...reactions: (string | GuildEmoji)[]
   ): Promise<any> {
     for (const react of reactions) {
-      await this.apiCatch(() => msg.react(react));
+      const result = apiCatch(() => msg.react(react));
+      if (!result) {
+      }
     }
   }
 

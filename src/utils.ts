@@ -98,6 +98,22 @@ export class ResolvablePromise<T> extends Promise<T> {
 //-----------------------------------------------------------------------------
 
 /**
+ * Meant to be wrapped around potentially failing API calls, for example:
+ * - calling a method on a deleted Discord message
+ * - performing an action without the appropriate permissions
+ * @param action
+ */
+export async function apiCatch<T>(
+  action: (...args: any[]) => Promise<T>
+): Promise<T | false> {
+  try {
+    return await action();
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
  * Returns a random item from a given array.
  * @param array
  */

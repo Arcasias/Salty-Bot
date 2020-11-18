@@ -1,7 +1,7 @@
 import { GuildEmoji, Message } from "discord.js";
 import Command from "../../classes/Command";
 import salty from "../../salty";
-import { clean, stringToReaction } from "../../utils";
+import { apiCatch, clean, stringToReaction } from "../../utils";
 
 const messageCache: WeakMap<Message, Promise<any>> = new WeakMap();
 
@@ -51,7 +51,7 @@ Command.register({
         return salty.react(lastMessage, guildEmoji);
       }
       // Remove previous reactions
-      await salty.apiCatch(() => lastMessage.reactions.removeAll());
+      await apiCatch(() => lastMessage.reactions.removeAll());
       await salty.react(lastMessage, ...stringToReaction(reaction));
     }
   },
