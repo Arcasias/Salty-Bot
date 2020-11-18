@@ -1,3 +1,3 @@
 import Salty from "./classes/Salty";
 
-export default new Salty();
+export default Salty.create();

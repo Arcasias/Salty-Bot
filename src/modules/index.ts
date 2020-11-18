@@ -1,2 +1,1 @@
 import "./Cats";
-import "./Core";

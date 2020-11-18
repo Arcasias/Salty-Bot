@@ -1,7 +1,8 @@
+import { Collection } from "discord.js";
 import Command from "../../classes/Command";
 import { homepage, prefix } from "../../config";
 import salty from "../../salty";
-import { Dictionnary, ReactionActions, SaltyEmbedOptions } from "../../types";
+import { MessageActionsDescriptor, SaltyEmbedOptions } from "../../types";
 import { title } from "../../utils";
 
 const SRC_PATH = ["blob", "master", "src"];
@@ -29,7 +30,9 @@ Command.register({
     const options: SaltyEmbedOptions = {
       fields: [],
     };
-    let reactionActions: ReactionActions | null = null;
+    const messageActions: MessageActionsDescriptor = {
+      actions: new Collection(),
+    };
     if (args.length) {
       const arg = args[0].toLowerCase();
       // query is a category name
@@ -97,30 +100,26 @@ Command.register({
       }
       // no query: displays all commands
     } else {
-      const mapping: Dictionnary<string> = {};
       options.title = "list of commands";
       options.description =
         "These are the commands categories. Type the name of a category or a specific command after `$help` to have more information about it.";
-      reactionActions = {
-        reactions: [],
-        onAdd: ({ emoji }, user, abort) => {
-          if (user === msg.author) {
-            abort();
-            return this.action({
-              args: [mapping[emoji.name]],
-              msg,
-              source,
-              targets,
-            });
-          }
-        },
-      };
       for (const [category, { name, icon }] of Command.categories.entries()) {
         const commands = Command.list.filter(
           (command) => "category" in command && command.category === category
         );
-        mapping[icon] = category;
-        reactionActions.reactions.push(icon);
+        messageActions.actions.set(icon, {
+          onAdd: (user, abort) => {
+            if (user === msg.author) {
+              abort();
+              return this.action({
+                args: [category],
+                msg,
+                source,
+                targets,
+              });
+            }
+          },
+        });
         options.fields!.push({
           name: `${icon} **${title(name)}**  (${commands.size} commands)`,
           value: `> \`${prefix}help ${category}\``,
@@ -128,8 +127,8 @@ Command.register({
       }
     }
     const helpEmbed = await salty.embed(msg, options);
-    if (helpEmbed && reactionActions) {
-      salty.addActions(msg.author.id, helpEmbed, reactionActions);
+    if (helpEmbed && messageActions.actions.size) {
+      salty.addActions(msg.author.id, helpEmbed, messageActions);
     }
   },
 });

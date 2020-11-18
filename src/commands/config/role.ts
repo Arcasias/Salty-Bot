@@ -145,7 +145,7 @@ Command.register({
                   `This role doesn't exist. You can create it with "${commandString}".`
                 );
               } else {
-                role = await salty.api.do(() =>
+                role = await salty.apiCatch(() =>
                   msg.guild!.roles.create({
                     data: {
                       name: roleName,
@@ -159,7 +159,7 @@ Command.register({
             }
             if (role) {
               const ensuredRole: Role = role;
-              salty.api.do(() => msg.member!.roles.add(ensuredRole));
+              salty.apiCatch(() => msg.member!.roles.add(ensuredRole));
               return salty.success(
                 msg,
                 `You have been assigned the role **${role.name}**.`,
@@ -182,7 +182,7 @@ Command.register({
                 "You need to specify the name of the role to delete."
               );
             }
-            salty.api.do(() => role.delete("Deleted by Salty"));
+            salty.apiCatch(() => role.delete("Deleted by Salty"));
             return salty.success(msg, `Role **${role.name}** deleted.`, {
               color: role.color,
             });

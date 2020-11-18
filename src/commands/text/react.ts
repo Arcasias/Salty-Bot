@@ -51,11 +51,7 @@ Command.register({
         return salty.react(lastMessage, guildEmoji);
       }
       // Remove previous reactions
-      try {
-        await lastMessage.reactions.removeAll();
-      } catch (err) {
-        return;
-      }
+      await salty.apiCatch(() => lastMessage.reactions.removeAll());
       await salty.react(lastMessage, ...stringToReaction(reaction));
     }
   },

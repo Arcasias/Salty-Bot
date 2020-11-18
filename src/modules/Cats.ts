@@ -1,40 +1,37 @@
 import axios from "axios";
+import { Message } from "discord.js";
 import Command from "../classes/Command";
-import Event from "../classes/Event";
-import Module from "../classes/Module";
+import Salty from "../classes/Salty";
 import salty from "../salty";
 import { meaning } from "../utils";
 
-const CHANNEL_PREFIX: string = "🐱";
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
+const CAT_PREFIX: string = "🐱";
 
-class CatsModule extends Module {
-  public async onMessage(event: Event<"message">): Promise<any> {
-    const {
-      payload: [msg],
-    } = event;
-    const channel = salty.getTextChannel(msg.channel.id);
+Salty.extend(
+  (S: typeof Salty) =>
+    class CatsModule extends S {
+      /**
+       * @override
+       */
+      protected async onMessage(msg: Message): Promise<any> {
+        // Only applies to "marked" channels
+        if (!this.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
+          return super.onMessage(msg);
+        }
 
-    // Only applies to "marked" channels
-    if (!channel.name.startsWith(CHANNEL_PREFIX)) {
-      return;
+        this.deleteMessage(msg);
+
+        const {
+          data: [firstResult],
+        } = await axios.get(CAT_API_URL);
+        await this.message(msg, firstResult.url, {
+          format: false,
+          title: false,
+        });
+      }
     }
-
-    event.stop();
-
-    salty.deleteMessage(msg);
-
-    const {
-      data: [firstResult],
-    } = await axios.get(CAT_API_URL);
-    await salty.message(msg, firstResult.url, {
-      format: false,
-      title: false,
-    });
-  }
-}
-
-salty.registerModule(CatsModule, 10);
+);
 
 Command.register({
   name: "catify",
@@ -53,7 +50,7 @@ Command.register({
   ],
   async action({ args, msg }) {
     const channel = salty.getTextChannel(msg.channel.id);
-    const isCatified = channel.name.startsWith(CHANNEL_PREFIX);
+    const isCatified = channel.name.startsWith(CAT_PREFIX);
     const reason = `cat channel toggled by ${msg.author.username}`;
     switch (meaning(args[0])) {
       case "add":
@@ -62,11 +59,11 @@ Command.register({
           return salty.warn(msg, "This is already a cat channel!");
         }
         await channel.edit(
-          { name: [CHANNEL_PREFIX, channel.name].join("") },
+          { name: [CAT_PREFIX, channel.name].join("") },
           reason
         );
         return salty.success(msg, "Channel set as a cat channel", {
-          react: CHANNEL_PREFIX,
+          react: CAT_PREFIX,
         });
       }
       case "remove": {
@@ -74,11 +71,11 @@ Command.register({
           return salty.warn(msg, "This channel is not a cat channel!");
         }
         await channel.edit(
-          { name: channel.name.slice(CHANNEL_PREFIX.length) },
+          { name: channel.name.slice(CAT_PREFIX.length) },
           reason
         );
         return salty.success(msg, "Channel unset as a cat channel", {
-          react: CHANNEL_PREFIX,
+          react: CAT_PREFIX,
         });
       }
       default: {

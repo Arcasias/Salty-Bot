@@ -86,6 +86,14 @@ const expressions: ExpressionDescriptor[] = [
 ];
 
 //-----------------------------------------------------------------------------
+// Utility classes
+//-----------------------------------------------------------------------------
+
+export class ResolvablePromise<T> extends Promise<T> {
+  public resolve(): void {}
+}
+
+//-----------------------------------------------------------------------------
 // Utility functions
 //-----------------------------------------------------------------------------
 
@@ -236,6 +244,13 @@ export function levenshtein(a: string, b: string): number {
   }
   // Minimal distance is the last element
   return matrix[a.length][b.length];
+}
+
+export function makeResolvablePromise<T>(): ResolvablePromise<T> {
+  let resolve: () => void;
+  const promise = new ResolvablePromise<T>((r) => (resolve = r));
+  promise.resolve = resolve!;
+  return promise;
 }
 
 /**

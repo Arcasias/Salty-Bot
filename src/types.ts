@@ -55,6 +55,17 @@ export interface MeaningInfo {
   answers: string[];
   list: string[];
 }
+export interface MessageAction {
+  onAdd?: (user: User, abort: () => void) => void;
+  onRemove?: (user: User, abort: () => void) => void;
+}
+export interface MessageActionsDescriptor {
+  actions: Collection<string, MessageAction>;
+  onEnd?: (
+    collected: Collection<Snowflake, MessageReaction>,
+    reason: string
+  ) => void;
+}
 export interface MessageActor {
   user: User;
   member: GuildMember | null;
@@ -65,15 +76,6 @@ export interface PollOption {
   text: string;
   votes: Set<string>;
   reaction: string;
-}
-export interface ReactionActions {
-  reactions: string[];
-  onAdd?: (reaction: MessageReaction, user: User, abort: () => void) => void;
-  onRemove?: (reaction: MessageReaction, user: User, abort: () => void) => void;
-  onEnd?: (
-    collected: Collection<Snowflake, MessageReaction>,
-    reason: string
-  ) => void;
 }
 export interface Runnable {
   run: (

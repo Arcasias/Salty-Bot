@@ -1,7 +1,7 @@
-import { DMChannel, Message } from "discord.js";
+import { Collection, DMChannel, Message } from "discord.js";
 import Command from "../../classes/Command";
 import salty from "../../salty";
-import { Dictionnary } from "../../types";
+import { MessageAction } from "../../types";
 import { meaning, removeMentions } from "../../utils";
 
 async function removeMessages(
@@ -22,9 +22,13 @@ async function removeMessages(
     limit = Math.min(length, 100);
   }
 
-  const mapping: Dictionnary<() => Promise<any>> = {
-    // Confirm deleting
-    "✅": async () => {
+  const actions: Collection<string, MessageAction> = new Collection();
+  // Confirm deleting
+  actions.set("✅", {
+    onAdd: async (user) => {
+      if (msg.author.id !== user.id) {
+        return;
+      }
       await salty.deleteMessage(msg);
       const messages = await channel.messages.fetch({ limit: 100 });
       const filtered = filter ? messages.filter(filter) : messages;
@@ -35,20 +39,17 @@ async function removeMessages(
         await channel.bulkDelete(toDelete, true);
       }
     },
-    // Cancel deletion
-    "❌": async () => {
-      return salty.deleteMessage(msg);
-    },
-  };
-
-  return salty.addActions(msg.author.id, msg, {
-    reactions: Object.keys(mapping),
-    onAdd({ emoji }, user) {
+  });
+  // Cancel deletion
+  actions.set("❌", {
+    onAdd: async (user) => {
       if (msg.author.id === user.id) {
-        mapping[emoji.name]();
+        salty.deleteMessage(msg);
       }
     },
   });
+
+  return salty.addActions(msg.author.id, msg, { actions });
 }
 
 Command.register({

@@ -1,42 +1,12 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Collection, MessageEmbed } from "discord.js";
 import Command from "../../classes/Command";
 import salty from "../../salty";
-import { PollOption, SaltyEmbedOptions } from "../../types";
+import { MessageAction, PollOption, SaltyEmbedOptions } from "../../types";
 import { getNumberReactions, possessive } from "../../utils";
 
 const VOTE_LENGTH = 20;
-const VOTE_CHAR = "🟦";
+const VOTE_CHARS = ["🟥", "🟩", "🟦", "🟨", "🟪", "🟫", "⬜", "🟧", " ⬛"];
 const OPTION_SEPARATOR = ";";
-const OPTION_AMOUNT = 10;
-
-function update(
-  title: string,
-  message: Message,
-  options: PollOption[],
-  end: boolean = false
-) {
-  const votes = options.map((option) => option.votes.size);
-  const mostVotes = Math.max(1, ...votes);
-  const embed = new MessageEmbed({
-    title,
-    fields: options.map((option, index) => {
-      const length = Math.floor(VOTE_LENGTH / mostVotes) * votes[index];
-      const voteString =
-        length > 0 ? new Array(length).fill(VOTE_CHAR).join(" ") : "No votes";
-      return {
-        name: `${index + 1}) ${option.text}${
-          end && votes[index] === mostVotes ? " (won)" : ""
-        }`,
-        value: voteString,
-        inline: false,
-      };
-    }),
-  });
-  if (end) {
-    embed.setFooter("This poll has ended.");
-  }
-  return salty.editMessage(message, embed);
-}
 
 Command.register({
   name: "poll",
@@ -53,17 +23,17 @@ Command.register({
         `You need to specify more than one option to create a poll.`
       );
     }
-    if (optionTexts.length > OPTION_AMOUNT) {
+    if (optionTexts.length > VOTE_CHARS.length) {
       return salty.warn(
         msg,
-        `You need to specify less than ${OPTION_AMOUNT} options to create a poll.`
+        `You need to specify less than ${VOTE_CHARS.length} options to create a poll.`
       );
     }
 
     salty.deleteMessage(msg);
 
     const title = `${possessive(msg.member!.displayName)} poll`;
-    const numberEmojis = getNumberReactions(OPTION_AMOUNT);
+    const numberEmojis = getNumberReactions(VOTE_CHARS.length);
     const pollOptions: PollOption[] = optionTexts.map((text, index) => ({
       text,
       votes: new Set(),
@@ -83,24 +53,53 @@ Command.register({
       return;
     }
 
+    function getEmbed(end?: boolean) {
+      const votes = pollOptions.map(({ votes }) => votes.size);
+      const mostVotes = Math.max(1, ...votes);
+      const embed = new MessageEmbed({
+        title,
+        fields: pollOptions.map(({ text }, index) => {
+          const length = Math.floor(VOTE_LENGTH / mostVotes) * votes[index];
+          const voteString =
+            length > 0
+              ? new Array(length).fill(VOTE_CHARS[index]).join(" ")
+              : "No votes";
+          const won = end && votes[index] === mostVotes ? " (won)" : "";
+          return {
+            name: `${index + 1}) ${text}${won}`,
+            value: voteString,
+            inline: false,
+          };
+        }),
+      });
+      if (end) {
+        embed.setFooter("This poll has ended.");
+      }
+      return embed;
+    }
+
+    const actions = new Collection<string, MessageAction>();
+    for (const option of pollOptions) {
+      const { reaction } = option;
+      actions.set(reaction, {
+        onAdd: async (user) => {
+          await initMessage;
+          option.votes.add(user.username);
+          await salty.editMessage(pollMessage, getEmbed());
+        },
+        onRemove: async (user) => {
+          await initMessage;
+          option.votes.delete(user.username);
+          await salty.editMessage(pollMessage, getEmbed());
+        },
+      });
+    }
     salty.addActions(msg.author.id, pollMessage, {
-      onAdd: async ({ emoji }, user) => {
-        await initMessage;
-        const option = pollOptions.find((o) => o.reaction === emoji.name)!;
-        option.votes.add(user.username);
-        update(title, pollMessage, pollOptions);
-      },
-      onRemove: async ({ emoji }, user) => {
-        await initMessage;
-        const option = pollOptions.find((o) => o.reaction === emoji.name)!;
-        option.votes.delete(user.username);
-        update(title, pollMessage, pollOptions);
-      },
+      actions,
       async onEnd() {
         await initMessage;
-        update(title, pollMessage, pollOptions, true);
+        await salty.editMessage(pollMessage, getEmbed(true));
       },
-      reactions: pollOptions.map((o) => o.reaction),
     });
   },
 });
