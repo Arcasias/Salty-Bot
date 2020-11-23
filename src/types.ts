@@ -136,4 +136,5 @@ export type Meanings = {
   remove: string[];
   set: string[];
 };
+export type MessageHandler = (msg: Message) => any;
 export type StatusInfos = { [status in PresenceStatusData]: StatusInfo };

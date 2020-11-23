@@ -182,6 +182,11 @@ export const answers: Dictionnary<string[]> = {
     "you sure you're old enough to use that word?",
   ],
 };
+export const help: string[] = [
+  "Hello! Try `$help` to see what I'm capable of!",
+  "Hi! If you need anything try typing `$help`!",
+  "Hey there! Type `$help` if you need anything!",
+];
 export const intro: string[] = [
   "did you miss me?",
   "here I come to salt the day!",

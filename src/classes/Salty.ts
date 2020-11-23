@@ -20,13 +20,14 @@ import {
   User,
 } from "discord.js";
 import { prefix } from "../config";
-import { intro, keywords } from "../terms";
+import { help, intro, keywords } from "../terms";
 import {
   Dictionnary,
   FieldsDescriptor,
   MessageAction,
   MessageActionsDescriptor,
   MessageActor,
+  MessageHandler,
   SaltyEmbedOptions,
   SaltyMessageOptions,
 } from "../types";
@@ -76,6 +77,7 @@ export default class Salty {
   // Private properties
   //===========================================================================
 
+  private extraHandlerRegistry: MessageHandler[] = [];
   private token: string | null = null;
 
   //===========================================================================
@@ -369,6 +371,13 @@ export default class Salty {
   }
 
   /**
+   * @param handler
+   */
+  public registerExtraHandler(handler: MessageHandler): void {
+    this.extraHandlerRegistry.push(handler);
+  }
+
+  /**
    * Restarts the bot instance by reloading the command files and recreate a bot
    * instance.
    */
@@ -521,11 +530,17 @@ export default class Salty {
     return { source, targets };
   }
 
+  private anyMessageAction(msg: Message): any {
+    for (const handler of this.extraHandlerRegistry) {
+      handler(msg);
+    }
+  }
+
   //===========================================================================
   // Private handlers
   //===========================================================================
 
-  protected async onChannelDelete(channel: Channel): Promise<any> {
+  private async onChannelDelete(channel: Channel): Promise<any> {
     if (channel instanceof GuildChannel) {
       await Crew.update(
         { default_channel: channel.id },
@@ -534,22 +549,22 @@ export default class Salty {
     }
   }
 
-  protected async onError(err: Error): Promise<any> {
+  private async onError(err: Error): Promise<any> {
     error(err.message);
     this.restart();
   }
 
-  protected async onGuildCreate(guild: Guild): Promise<any> {
+  private async onGuildCreate(guild: Guild): Promise<any> {
     Crew.create({ discord_id: guild.id });
   }
 
-  protected async onGuildDelete(guild: Guild): Promise<any> {
+  private async onGuildDelete(guild: Guild): Promise<any> {
     if (guild.member(this.user)) {
       await Crew.remove({ discord_id: guild.id });
     }
   }
 
-  protected async onGuildMemberAdd(
+  private async onGuildMemberAdd(
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
     const guild = await Crew.get(member.guild.id);
@@ -565,7 +580,7 @@ export default class Salty {
     }
   }
 
-  protected async onGuildMemberRemove(
+  private async onGuildMemberRemove(
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
     const guild = await Crew.get(member.guild.id);
@@ -578,7 +593,7 @@ export default class Salty {
     }
   }
 
-  protected async onReady(): Promise<any> {
+  private async onReady(): Promise<any> {
     this.user.setStatus("online");
     // Fetch all guilds
     const activeGuilds: string[] = this.bot.guilds.cache.map(
@@ -617,21 +632,26 @@ export default class Salty {
     );
   }
 
-  protected async onMessage(msg: Message): Promise<any> {
+  private async onMessage(msg: Message): Promise<any> {
     if (msg.author.bot) {
       return false;
     }
+
     const { attachments, author, cleanContent, guild } = msg;
     let content = cleanContent;
 
     // Look for an interaction: DM, prefix or mention
-    const hasPrefix = content.startsWith(prefix);
-    if (guild && !msg.mentions.users.has(this.user.id) && !hasPrefix) {
-      return;
+    const prefixInteraction: boolean = content.startsWith(prefix);
+    const mentionInteraction: boolean = msg.mentions.users.has(this.user.id);
+    if (guild && !mentionInteraction && !prefixInteraction) {
+      return this.anyMessageAction(msg);
     }
-    if (hasPrefix) {
+    if (prefixInteraction) {
       // Prefix is removed
       content = content.slice(prefix.length);
+    } else if (guild && mentionInteraction) {
+      const name = guild.members.cache.get(this.user.id)!.displayName;
+      content = content.replace(new RegExp(`@.?${name}`), "");
     }
 
     // Logs the  action
@@ -643,16 +663,18 @@ export default class Salty {
       // The action is discarded if the user is black-listed
       return;
     }
-    if (!content.length && !attachments.size) {
-      // Simple interaction if the messsage is empty
-      return this.message(msg, "Yes?");
-    }
 
     // Handles the actual command if found
     const msgArgs = content
       .split(/\s+/)
       .map((w) => w.trim())
       .filter(Boolean);
+
+    if (!msgArgs.length && !attachments.size) {
+      // Simple interaction if the messsage is empty
+      return this.message(msg, choice(help), { reply: msg.author });
+    }
+
     const rawArgs = msgArgs.slice();
     const rawCommandName = msgArgs.shift() || "";
     const commandName = Command.aliases.get(clean(rawCommandName));
@@ -671,10 +693,11 @@ export default class Salty {
       clean(rawCommandName),
       2
     );
+
     if (!closest) {
-      // If no command nor close match, the "talk" command is called instead
-      return Command.list.get("talk")!.run(msg, rawArgs, source, targets);
+      return this.message(msg, choice(help), { reply: msg.author });
     }
+
     const cmdName = Command.aliases.get(closest)!;
     const helpMessage = await this.message(
       msg,
@@ -702,25 +725,5 @@ export default class Salty {
     return this.addActions(author.id, helpMessage, {
       actions,
     });
-  }
-
-  //===========================================================================
-  // Static properties
-  //===========================================================================
-
-  public static construct: typeof Salty = Salty;
-
-  //===========================================================================
-  // Static methods
-  //===========================================================================
-
-  public static create() {
-    return new this.construct();
-  }
-
-  public static extend<T extends typeof Salty>(
-    extender: (cls: typeof Salty) => T
-  ): void {
-    this.construct = extender(this.construct);
   }
 }

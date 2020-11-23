@@ -1,37 +1,26 @@
 import axios from "axios";
 import { Message } from "discord.js";
 import Command from "../classes/Command";
-import Salty from "../classes/Salty";
 import salty from "../salty";
 import { meaning } from "../utils";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
 const CAT_PREFIX: string = "🐱";
 
-Salty.extend(
-  (S: typeof Salty) =>
-    class CatsModule extends S {
-      /**
-       * @override
-       */
-      protected async onMessage(msg: Message): Promise<any> {
-        // Only applies to "marked" channels
-        if (!this.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
-          return super.onMessage(msg);
-        }
-
-        this.deleteMessage(msg);
-
-        const {
-          data: [firstResult],
-        } = await axios.get(CAT_API_URL);
-        await this.message(msg, firstResult.url, {
-          format: false,
-          title: false,
-        });
-      }
-    }
-);
+salty.registerExtraHandler(async (msg: Message) => {
+  // Only applies to "marked" channels
+  if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
+    return;
+  }
+  salty.deleteMessage(msg);
+  const {
+    data: [firstResult],
+  } = await axios.get(CAT_API_URL);
+  await salty.message(msg, firstResult.url, {
+    format: false,
+    title: false,
+  });
+});
 
 Command.register({
   name: "catify",
@@ -81,7 +70,7 @@ Command.register({
       default: {
         await salty.message(
           msg,
-          `This channel is${isCatified ? "" : " not"}catified`
+          `This channel is ${isCatified ? "" : "not "}catified`
         );
       }
     }
