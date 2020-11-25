@@ -1,15 +1,13 @@
 import { env } from "process";
-import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import { devs, homepage } from "../../config";
 import salty from "../../salty";
-import { SaltyEmbedOptions } from "../../types";
+import { CommandDescriptor, SaltyEmbedOptions } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "state",
   aliases: ["git", "local", "server"],
-  category: "general",
   help: [
     {
       argument: null,
@@ -51,4 +49,6 @@ Command.register({
     }
     await salty.embed(msg, options);
   },
-});
+};
+
+export default command;

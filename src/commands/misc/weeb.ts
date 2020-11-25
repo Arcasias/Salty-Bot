@@ -1,5 +1,5 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { clean } from "../../utils";
 
 const expressions: Map<RegExp, string> = new Map<RegExp, string>([
@@ -132,7 +132,7 @@ const expressions: Map<RegExp, string> = new Map<RegExp, string>([
   [/[wh]/g, ""],
 ]);
 
-Command.register({
+const command: CommandDescriptor = {
   name: "weeb",
   help: [
     {
@@ -140,7 +140,6 @@ Command.register({
       effect: "Roughly translates the given string into japanese katakanas",
     },
   ],
-  category: "misc",
   async action({ args, msg }) {
     let transformed: string = clean(args.join(" "));
     for (const [regex, value] of expressions) {
@@ -151,4 +150,6 @@ Command.register({
     }
     await salty.message(msg, transformed);
   },
-});
+};
+
+export default command;

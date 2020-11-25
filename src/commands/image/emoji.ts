@@ -1,16 +1,15 @@
 import fs from "fs";
 import { promisify } from "util";
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { choice } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";
 const readDir = promisify(fs.readdir.bind(fs));
 
-Command.register({
+const command: CommandDescriptor = {
   name: "emoji",
   aliases: ["emojis", "saltmoji", "saltmojis"],
-  category: "image",
   help: [
     {
       argument: null,
@@ -48,4 +47,6 @@ Command.register({
       description: emojiNames.join("\n"),
     });
   },
-});
+};
+
+export default command;

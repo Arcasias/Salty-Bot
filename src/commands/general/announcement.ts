@@ -1,12 +1,11 @@
 import { TextChannel } from "discord.js";
-import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "announcement",
   aliases: ["announce", "broadcast"],
-  category: "general",
   help: [
     {
       argument: "***text***",
@@ -35,4 +34,6 @@ Command.register({
       `Announcement sent accross ${withDefault} servers.`
     );
   },
-});
+};
+
+export default command;

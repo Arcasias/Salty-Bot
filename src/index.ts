@@ -1,11 +1,7 @@
 import { env } from "process";
-import "./commands";
 import { debugMode } from "./config";
-import "./modules";
 import salty from "./salty";
-import { debug, log } from "./utils";
-
-log(`Running on ${env.MODE} environment`);
+import { debug } from "./utils";
 
 env.DEBUG = String(debugMode);
 debug(`Debug is active`);

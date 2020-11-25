@@ -1,6 +1,7 @@
 import Command from "../../classes/Command";
 import { prefix } from "../../config";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
 const specialActions = [
   {
@@ -17,10 +18,9 @@ const specialActions = [
   },
 ];
 
-Command.register({
+const command: CommandDescriptor = {
   name: "send",
   aliases: ["say", prefix],
-  category: "text",
   help: [
     {
       argument: "***anything***",
@@ -44,4 +44,6 @@ Command.register({
     }
     await salty.message(msg, message);
   },
-});
+};
+
+export default command;

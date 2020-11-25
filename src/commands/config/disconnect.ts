@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { answers } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { choice } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "disconnect",
   aliases: ["destroy"],
-  category: "config",
   help: [
     {
       argument: null,
@@ -20,4 +19,6 @@ Command.register({
     await salty.info(msg, `${choice(answers.bye)} ♥`);
     await salty.destroy();
   },
-});
+};
+
+export default command;

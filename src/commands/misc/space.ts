@@ -1,5 +1,5 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
 const SPACE = [
   `.　　　　　　　　　　 ✦ 　　　　   　 　　　˚　　　　　　　　　　　　　　*　　　　　　   　　　　　　　　　　　　　　　.　　　　　　　　　　　　　　. 　　 　　　　　　　 ✦ 　　　　　　　　　　 　 ‍ ‍ ‍ ‍ 　　　　 　　　　　　　　　　　　,　　   　`,
@@ -10,10 +10,9 @@ const SPACE = [
   `.　　　　　　　　　　　　　.　　　ﾟ　  　　　.　　　　　　　　　　　　　.`,
 ].join("\n\n");
 
-Command.register({
+const command: CommandDescriptor = {
   name: "space",
   aliases: ["universe"],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -24,4 +23,6 @@ Command.register({
   async action({ msg }) {
     await salty.message(msg, SPACE);
   },
-});
+};
+
+export default command;

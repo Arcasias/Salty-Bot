@@ -2,20 +2,18 @@ import { Collection, Guild, Message, User } from "discord.js";
 import salty from "../salty";
 import {
   ActionParameters,
-  AvailableCategories,
+  Category,
+  CategoryDescriptor,
+  CategoryId,
   CommandAccess,
   CommandAction,
-  CommandCategoryInfo,
   CommandChannel,
   CommandDescriptor,
   CommandHelpDescriptor,
   CommandHelpSection,
-  CommandType,
   MessageActor,
-  Runnable,
 } from "../types";
 import { error, isAdmin, isDev, isOwner } from "../utils";
-import QuickCommand from "./QuickCommand";
 
 const permissions: {
   [key in CommandAccess]: (user: User, guild: Guild) => boolean;
@@ -26,33 +24,27 @@ const permissions: {
   public: () => true,
 };
 
-export default class Command implements CommandDescriptor, Runnable {
+export default class Command implements CommandDescriptor {
   // Action
   public action: CommandAction;
   // Infos
   public name: string;
   public aliases: string[];
-  public category: AvailableCategories;
+  public category: CategoryId;
   public help: CommandHelpSection[];
   // Restrictions
   public access: CommandAccess;
   public channel: CommandChannel;
-  public type: CommandType = "core";
 
   public static aliases = new Collection<string, string>();
-  public static categories = new Collection<string, CommandCategoryInfo>();
+  public static categories = new Collection<CategoryId, Category>();
   public static doc = new Collection<string, CommandHelpDescriptor>();
-  public static list = new Collection<string, Command | QuickCommand>();
+  public static list = new Collection<string, Command>();
 
-  constructor({
-    action,
-    category,
-    help,
-    aliases,
-    name,
-    access,
-    channel,
-  }: CommandDescriptor) {
+  constructor(
+    { action, help, aliases, name, access, channel }: CommandDescriptor,
+    category: CategoryId
+  ) {
     this.action = action;
     this.name = name;
     this.aliases = aliases || [];
@@ -89,23 +81,58 @@ export default class Command implements CommandDescriptor, Runnable {
     }
   }
 
-  public static register(descriptor: CommandDescriptor) {
-    const command = new this(descriptor);
-    const { access, category, channel, help, aliases, name } = command;
+  public static registerCategory(
+    id: CategoryId,
+    descriptor: CategoryDescriptor
+  ) {
+    const category: Category = Object.assign({}, descriptor, {
+      commands: [],
+    });
+    this.categories.set(id, category);
+  }
+
+  public static registerCommand(
+    descriptor: CommandDescriptor,
+    categoryId: CategoryId
+  ): void {
+    const command = new this(descriptor, categoryId);
+    const { access, channel, help, aliases, name } = command;
     this.list.set(name, command);
     for (const key of [name, ...aliases]) {
       if (this.aliases.has(key)) {
-        throw new Error(`Duplicate key "${key}" in command "${name}".`);
+        // throw new Error(`Duplicate key "${key}" in command "${name}".`);
       }
       this.aliases.set(key, name);
     }
     this.doc.set(name, {
       access,
-      category,
+      category: categoryId,
       channel,
       aliases,
       name,
       sections: help,
     });
+    this.categories.get(categoryId)!.commands.push(command.name);
+  }
+
+  /**
+   * @param command
+   */
+  public static removeCommand({ aliases, name }: CommandDescriptor) {
+    for (const alias of aliases || []) {
+      this.aliases.delete(alias);
+    }
+    this.list.delete(name);
+  }
+
+  /**
+   * Resets all collections. This is typically done when starting or
+   * restarting.
+   */
+  public static clearAll() {
+    this.aliases = new Collection<string, string>();
+    this.categories = new Collection<CategoryId, Category>();
+    this.doc = new Collection<string, CommandHelpDescriptor>();
+    this.list = new Collection<string, Command>();
   }
 }

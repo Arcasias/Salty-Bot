@@ -1,25 +1,26 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "alwaysStrict": true,
-        "moduleResolution": "node",
-        "declaration": false,
-        "pretty": false,
-        "module": "commonjs",
-        "target": "es2019",
-        "lib": [
-            "esnext",
-            "esnext.array",
-            "esnext.asynciterable",
-            "esnext.intl",
-            "esnext.symbol"
-        ],
-        "removeComments": true,
-        "sourceMap": true,
-        "outDir": "dist",
-        "esModuleInterop": true
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"],
-    "typeRoots": ["./node_modules/@types"]
+  "compilerOptions": {
+    "strict": true,
+    "alwaysStrict": true,
+    "moduleResolution": "node",
+    "declaration": false,
+    "pretty": false,
+    "module": "commonjs",
+    "target": "es2019",
+    "lib": [
+      "esnext",
+      "esnext.array",
+      "esnext.asynciterable",
+      "esnext.intl",
+      "esnext.symbol"
+    ],
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "exclude": ["node_modules"],
+  "typeRoots": ["./node_modules/@types"]
 }

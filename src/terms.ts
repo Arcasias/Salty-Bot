@@ -1,15 +1,27 @@
 import { Dictionnary, Joke, MeaningInfo, Meanings, Waifu } from "./types";
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Meanings
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 export const keywords: Meanings = {
   add: ["add", "append", "create", "push", "link"],
   bot: ["bot", "salty"],
   default: ["default", "def"],
   clear: ["clear", "cls", "empty", "cancel", "stop"],
-  help: ["help", "halp", "info", "infos", "wtf", "?"],
+  help: [
+    "help",
+    "halp",
+    "info",
+    "infos",
+    "information",
+    "wtf",
+    "?",
+    "doc",
+    "documentation",
+    "manual",
+    "man",
+  ],
   list: ["list", "ls", "l"],
   remove: ["delete", "remove", "del", "rm", "erase", "unset", "unlink"],
   set: ["set", "modify", "mod", "update"],
@@ -94,9 +106,9 @@ export const meaning: Dictionnary<MeaningInfo> = {
   },
 };
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Answers
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 export const answers: Dictionnary<string[]> = {
   yes: ["yes", "yeah", "of course", "affirmative", "yup", "definitely"],
@@ -272,9 +284,9 @@ export const pureSalt: string[] = [
   'I wrote you a poem, it goes like this: "Roses are red, go fuck yourself"',
 ];
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Other
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 export const fault: Dictionnary<string[]> = {
   start: [

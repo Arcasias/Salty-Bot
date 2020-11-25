@@ -1,11 +1,10 @@
 import { DMChannel } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "whisper",
   aliases: ["dm"],
-  category: "text",
   help: [
     {
       argument: "***anything***",
@@ -19,4 +18,6 @@ Command.register({
     }
     await salty.message(msg.author, args.join(" "));
   },
-});
+};
+
+export default command;

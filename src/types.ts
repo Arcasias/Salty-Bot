@@ -17,27 +17,27 @@ export interface ActionParameters {
   readonly source: MessageActor;
   readonly targets: MessageActor[];
 }
-export interface CommandCategoryDoc {
+export interface BasicCommandDescriptor {
+  readonly access?: CommandAccess;
+  readonly aliases?: string[];
+  readonly channel?: CommandChannel;
+  readonly name: string;
+}
+export interface Category extends CategoryDescriptor {
+  commands: string[];
+}
+export interface CategoryDescriptor {
   description: string;
   icon: string;
   name: string;
 }
-export interface CommandCategoryInfo extends CommandCategoryDoc {
-  commands: string[];
-}
-export interface CommandBasicDescriptor {
-  readonly access?: CommandAccess;
-  readonly aliases?: string[];
-  readonly category: AvailableCategories;
-  readonly channel?: CommandChannel;
-  readonly name: string;
-}
-export interface CommandDescriptor extends CommandBasicDescriptor {
+export interface CommandDescriptor extends BasicCommandDescriptor {
   readonly action: CommandAction;
   readonly help?: CommandHelpSection[];
 }
-export interface CommandHelpDescriptor extends CommandBasicDescriptor {
+export interface CommandHelpDescriptor extends BasicCommandDescriptor {
   readonly sections: CommandHelpSection[];
+  readonly category: CategoryId;
 }
 export interface CommandHelpSection {
   argument: string | null;
@@ -72,19 +72,15 @@ export interface MessageActor {
   sailor: Sailor;
   name: string;
 }
+export interface Module {
+  commands: { category: CategoryId; command: CommandDescriptor }[];
+  onLoad?: () => any;
+  onMessage?: (msg: Message) => any;
+}
 export interface PollOption {
   text: string;
   votes: Set<string>;
   reaction: string;
-}
-export interface Runnable {
-  run: (
-    msg: Message,
-    args: string[],
-    source: MessageActor,
-    targets: MessageActor[]
-  ) => Promise<any>;
-  type: CommandType;
 }
 export interface SaltyEmbedOptions extends MessageEmbedOptions {
   content?: string;
@@ -111,17 +107,16 @@ export interface Waifu {
   readonly image: string[];
 }
 
-export type AvailableCategories =
+export type CategoryId =
   | "config"
   | "general"
   | "image"
   | "misc"
-  | "text";
-export type Categories = { [key in AvailableCategories]: string };
+  | "text"
+  | "quick";
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
 export type CommandChannel = "all" | "guild";
-export type CommandType = "core" | "quick";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
 export type FieldsDescriptor = Dictionnary<any>;
@@ -136,5 +131,4 @@ export type Meanings = {
   remove: string[];
   set: string[];
 };
-export type MessageHandler = (msg: Message) => any;
 export type StatusInfos = { [status in PresenceStatusData]: StatusInfo };

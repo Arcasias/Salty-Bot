@@ -1,10 +1,9 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "restart",
   aliases: ["reset"],
-  category: "config",
   help: [
     {
       argument: null,
@@ -17,4 +16,6 @@ Command.register({
     await salty.info(msg, "Restarting ...");
     await salty.restart();
   },
-});
+};
+
+export default command;

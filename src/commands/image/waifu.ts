@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { waifus } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { choice } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "waifu",
   aliases: ["waifus"],
-  category: "image",
   help: [
     {
       argument: null,
@@ -22,4 +21,6 @@ Command.register({
       image: { url: choice(image) },
     });
   },
-});
+};
+
+export default command;

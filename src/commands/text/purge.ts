@@ -1,7 +1,6 @@
 import { Collection, DMChannel, Message } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { MessageAction } from "../../types";
+import { CommandDescriptor, MessageAction } from "../../types";
 import { meaning, removeMentions } from "../../utils";
 
 async function removeMessages(
@@ -52,10 +51,9 @@ async function removeMessages(
   return salty.addActions(msg.author.id, msg, { actions });
 }
 
-Command.register({
+const command: CommandDescriptor = {
   name: "purge",
   aliases: ["prune"],
-  category: "text",
   help: [
     {
       argument: null,
@@ -100,4 +98,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

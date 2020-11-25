@@ -1,17 +1,15 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "tts",
   aliases: ["speak"],
-  category: "text",
   help: [
     {
       argument: "***something to say***",
       effect: "Says something out loud",
     },
   ],
-
   async action({ args, msg }) {
     // Just sends the arguments as a TTS message
     if (!args[0]) {
@@ -20,4 +18,6 @@ Command.register({
     salty.deleteMessage(msg);
     await salty.message(msg, args.join(" "), { tts: true });
   },
-});
+};
+
+export default command;

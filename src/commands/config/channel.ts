@@ -1,13 +1,11 @@
-import { TextChannel } from "discord.js";
-import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { meaning } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "channel",
   aliases: ["chan"],
-  category: "config",
   help: [
     {
       argument: null,
@@ -27,16 +25,17 @@ Command.register({
 
   async action({ args, msg }) {
     const crew = await Crew.get(msg.guild!.id);
+    const channel = salty.getTextChannel(msg.channel.id);
     switch (meaning(args[0])) {
       case "add":
       case "set": {
         await Crew.update(crew.id, {
-          default_channel: msg.channel.id,
+          default_channel: channel.id,
         });
         return salty.success(
           msg,
           `channel **${
-            (<TextChannel>msg.channel).name
+            channel.name
           }** has been successfuly set as default bot channel for **${
             msg.guild!.name
           }**`
@@ -57,7 +56,7 @@ Command.register({
           return salty.info(msg, "no default bot channel set");
         }
         const { name } = salty.getTextChannel(crew.default_channel);
-        if (msg.channel.id === crew.default_channel) {
+        if (channel.id === crew.default_channel) {
           return salty.info(msg, "this is the current default channel", {
             description: "I'll speak right here when I need to",
           });
@@ -69,4 +68,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

@@ -7,14 +7,12 @@ const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
 export default class Model {
   public id!: number;
-  public Class!: typeof Model;
 
   public static readonly fields: FieldsDescriptor = {};
   public static readonly table: string;
 
   constructor(values: FieldsDescriptor = {}) {
-    this.Class = (<any>this).constructor;
-    const { name, fields } = this.Class;
+    const { name, fields } = this.constructor as typeof Model;
 
     if (!("id" in values)) {
       throw new Error(`Missing field "id" on stored model ${name}.`);
@@ -36,9 +34,9 @@ export default class Model {
     }
   }
 
-  //-------------------------------------------------------------------------
+  //===========================================================================
   // Static
-  //-------------------------------------------------------------------------
+  //===========================================================================
 
   public static async search<T extends Model>(
     idsOrWhere: number | number[] | Dictionnary<any> = {}
@@ -129,9 +127,9 @@ export default class Model {
     return results.map((r) => <T>new this(r));
   }
 
-  //-------------------------------------------------------------------------
+  //===========================================================================
   // Private
-  //-------------------------------------------------------------------------
+  //===========================================================================
 
   /**
    * Cache calls to a given method having the same arguments.

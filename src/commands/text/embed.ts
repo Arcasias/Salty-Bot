@@ -1,14 +1,13 @@
 import { MessageEmbed } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
 const JS_STANDARD_KEY = /\b(?<!")(\w+)(?!")\b\s*:/g;
 const JS_TRAILING_COMA = /,([\s\n]*[\}\]])/g;
 
-Command.register({
+const command: CommandDescriptor = {
   name: "embed",
   aliases: ["json", "parse"],
-  category: "text",
   help: [
     {
       argument: "***JSON data***",
@@ -36,9 +35,9 @@ Command.register({
     const embed = new MessageEmbed(parsed);
     try {
       await salty.message(msg, "", { embed });
-    } catch (err) {
-      const [property, detail] =
-        (<Error>err).message.split(/\n/).pop()?.split(/:/) || [];
+    } catch (error) {
+      const { message } = error as Error;
+      const [property, detail] = message.split(/\n/).pop()?.split(/:/) || [];
       if (property && detail) {
         return salty.error(
           msg,
@@ -55,4 +54,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

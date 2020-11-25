@@ -1,13 +1,11 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { Dictionnary } from "../../types";
+import { CommandDescriptor, Dictionnary } from "../../types";
 import { meaning } from "../../utils";
 
 const INTERVALS: Dictionnary<NodeJS.Timeout> = {};
 
-Command.register({
+const command: CommandDescriptor = {
   name: "interval",
-  category: "text",
   help: [
     {
       argument: "*delay* ***anything***",
@@ -56,4 +54,6 @@ Command.register({
       }, delay);
     }
   },
-});
+};
+
+export default command;

@@ -1,13 +1,12 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { answers as listAnswers, meaning } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { choice, clean, levenshtein } from "../../utils";
 
 const SPECIAL_CHARS = /[;,\.\?\!'"]/g;
 
-Command.register({
+const command: CommandDescriptor = {
   name: "talk",
-  category: "text",
   help: [
     {
       argument: "***anything***",
@@ -43,4 +42,6 @@ Command.register({
       await salty.message(msg, choice(random));
     }
   },
-});
+};
+
+export default command;

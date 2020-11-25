@@ -1,16 +1,19 @@
 import { Collection, MessageEmbed } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { MessageAction, PollOption, SaltyEmbedOptions } from "../../types";
+import {
+  CommandDescriptor,
+  MessageAction,
+  PollOption,
+  SaltyEmbedOptions,
+} from "../../types";
 import { getNumberReactions, possessive } from "../../utils";
 
 const VOTE_LENGTH = 20;
 const VOTE_CHARS = ["🟥", "🟩", "🟦", "🟨", "🟪", "🟫", "⬜", "🟧", " ⬛"];
 const OPTION_SEPARATOR = ";";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "poll",
-  category: "general",
   channel: "guild",
   async action({ args, msg }) {
     if (!args.length) {
@@ -102,4 +105,6 @@ Command.register({
       },
     });
   },
-});
+};
+
+export default command;

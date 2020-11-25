@@ -1,10 +1,9 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "delay",
   aliases: ["sleep", "timeout"],
-  category: "text",
   help: [
     {
       argument: "*delay* ***anything***",
@@ -26,4 +25,6 @@ Command.register({
       salty.message(msg, args.join(" "));
     }, delay);
   },
-});
+};
+
+export default command;

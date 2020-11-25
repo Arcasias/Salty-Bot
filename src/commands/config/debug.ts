@@ -1,7 +1,7 @@
-import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { debug, ellipsis } from "../../utils";
 
 const MAXDEPTH = 3;
@@ -41,9 +41,8 @@ function evalInContext(code: string): any {
   return eval(code);
 }
 
-Command.register({
+const command: CommandDescriptor = {
   name: "debug",
-  category: "config",
   help: [
     {
       argument: "***JS code***",
@@ -65,4 +64,6 @@ Command.register({
     salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
     debug(message);
   },
-});
+};
+
+export default command;

@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { clean, levenshtein, meaning } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "todo",
   aliases: ["todos"],
-  category: "general",
   help: [
     {
       argument: null,
@@ -86,4 +85,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

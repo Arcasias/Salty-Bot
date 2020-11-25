@@ -1,5 +1,5 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { generate, title } from "../../utils";
 
 const PING_MESSAGES = [
@@ -15,10 +15,9 @@ const PING_MESSAGES = [
   "get off of this world you fucking chinese",
 ];
 
-Command.register({
+const command: CommandDescriptor = {
   name: "ping",
   aliases: ["latency", "test"],
-  category: "general",
   help: [
     {
       argument: null,
@@ -45,4 +44,6 @@ Command.register({
     salty.deleteMessage(sentMsg);
     await salty.info(msg, `pong! Latency is ${latency}. ${title(message)}`);
   },
-});
+};
+
+export default command;

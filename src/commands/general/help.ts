@@ -2,15 +2,20 @@ import { Collection } from "discord.js";
 import Command from "../../classes/Command";
 import { homepage, prefix } from "../../config";
 import salty from "../../salty";
-import { MessageActionsDescriptor, SaltyEmbedOptions } from "../../types";
-import { title } from "../../utils";
+import { help } from "../../terms";
+import {
+  CategoryId,
+  CommandDescriptor,
+  MessageActionsDescriptor,
+  SaltyEmbedOptions,
+} from "../../types";
+import { sort, title } from "../../utils";
 
-const SRC_PATH = ["blob", "master", "src"];
+const GIT_SRC_PATH = ["blob", "master", "src"];
 
-Command.register({
+const command: CommandDescriptor = {
   name: "help",
-  aliases: ["info", "information", "wtf", "?", "doc", "documentation"],
-  category: "general",
+  aliases: help,
   help: [
     {
       argument: null,
@@ -35,17 +40,25 @@ Command.register({
     };
     if (args.length) {
       const arg = args[0].toLowerCase();
-      // query is a category name
-      if (Command.categories.has(arg)) {
-        const { name, description, icon } = Command.categories.get(arg)!;
-        const commands = Command.list.filter(
-          (command) => "category" in command && command.category === arg
-        );
-        // arg === category
-        options.title = `${icon} ${title(name)} commands`;
-        options.description = `${description}. To get more information about a specific command, use the command \`$help command_name\``;
 
-        for (const command of commands.values()) {
+      const category = Command.categories.get(arg as CategoryId);
+      if (category) {
+        /**
+         * Case 1: query is a category name
+         */
+        const { name, description, icon } = category;
+        const commands = sort(
+          [
+            ...Command.list
+              .filter((command) => command.category === arg)
+              .values(),
+          ],
+          "name"
+        );
+        options.title = `${icon} ${title(name)} commands`;
+        options.description = `${description}. To get more information about a specific command, refer to the "help" usage indicated below it.`;
+
+        for (const command of commands) {
           if (
             "access" in command &&
             salty.hasAccess(command.access, msg.author, msg.guild)
@@ -54,14 +67,15 @@ Command.register({
               ? ` (or ***${command.aliases.join("***, ***")}***)`
               : "";
             options.fields!.push({
-              name: `**${title(command.name)}**${aliases}`,
+              name: `**${command.name}**${aliases}`,
               value: `> \`${prefix}help ${command.name}\``,
             });
           }
         }
-        // query is a command name
       } else if (Command.aliases.has(arg)) {
-        // arg === command
+        /**
+         * Case 2: query is a command name
+         */
         const doc = Command.doc.get(Command.aliases.get(arg)!)!;
         const category = Command.categories.get(doc.category)!;
         const relativePath = __dirname
@@ -70,13 +84,15 @@ Command.register({
           .filter(Boolean) // remove path empty parts (idk why they exist)
           .slice(1, -1); // remove "dist" folder and "general" category to put command category
         options.title = `**${doc.name.toUpperCase()}**`;
-        options.url = [
-          homepage,
-          ...SRC_PATH,
-          ...relativePath,
-          doc.category,
-          doc.name.toLowerCase() + ".ts",
-        ].join("/");
+        if (doc.category !== "quick") {
+          options.url = [
+            homepage,
+            ...GIT_SRC_PATH,
+            ...relativePath,
+            doc.category,
+            doc.name.toLowerCase() + ".ts",
+          ].join("/");
+        }
         options.footer = {
           text: `${category.icon} ${title(category.name)}`,
         };
@@ -98,8 +114,10 @@ Command.register({
           "The second argument must be a command or a category."
         );
       }
-      // no query: displays all commands
     } else {
+      /**
+       * Case 3: query doesn't match => displays all categories
+       */
       options.title = "list of commands";
       options.description =
         "These are the commands categories. Type the name of a category or a specific command after `$help` to have more information about it.";
@@ -131,4 +149,6 @@ Command.register({
       salty.addActions(msg.author.id, helpEmbed, messageActions);
     }
   },
-});
+};
+
+export default command;

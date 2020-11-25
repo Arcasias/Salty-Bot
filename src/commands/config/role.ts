@@ -1,8 +1,8 @@
 import { Message, Role } from "discord.js";
-import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { apiCatch, isDev, meaning, randColor } from "../../utils";
 
 function getRole(msg: Message, roleName: string): Role | false {
@@ -13,9 +13,8 @@ function getRole(msg: Message, roleName: string): Role | false {
   );
 }
 
-Command.register({
+const command: CommandDescriptor = {
   name: "role",
-  category: "config",
   help: [
     {
       argument: null,
@@ -199,4 +198,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

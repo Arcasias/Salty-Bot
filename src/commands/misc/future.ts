@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { predictions } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { ellipsis, randInt, shuffle } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "future",
   aliases: ["predict"],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -23,4 +22,6 @@ Command.register({
     const ellipsed = ellipsis(shuffled.join(" ||||"), 1995);
     salty.message(msg, `||${ellipsed}||`);
   },
-});
+};
+
+export default command;

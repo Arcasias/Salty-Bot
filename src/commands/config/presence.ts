@@ -1,7 +1,6 @@
 import { PresenceStatusData } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { StatusInfos } from "../../types";
+import { CommandDescriptor, StatusInfos } from "../../types";
 import { meaning } from "../../utils";
 
 const STATUSINFO: StatusInfos = {
@@ -11,10 +10,9 @@ const STATUSINFO: StatusInfos = {
   invisible: { title: "invisible" },
 };
 
-Command.register({
+const command: CommandDescriptor = {
   name: "presence",
   aliases: ["activity", "status"],
-  category: "config",
   access: "dev",
 
   async action({ args, msg }) {
@@ -29,16 +27,14 @@ Command.register({
         args.shift();
       }
       case "string": {
-        const status = args[0];
+        const status = args[0] as PresenceStatusData;
         if (status in STATUSINFO) {
           // status
-          await salty.bot.user!.setStatus(<PresenceStatusData>status);
+          await salty.bot.user!.setStatus(status);
           return salty.success(
             msg,
-            `changed my status to **${
-              STATUSINFO[<keyof StatusInfos>status].title
-            }**`,
-            { color: STATUSINFO[<keyof StatusInfos>status].color }
+            `changed my status to **${STATUSINFO[status].title}**`,
+            { color: STATUSINFO[status].color }
           );
         } else {
           // game
@@ -57,4 +53,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

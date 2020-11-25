@@ -19,15 +19,21 @@ import {
   TextChannel,
   User,
 } from "discord.js";
-import { prefix } from "../config";
+import { readdir } from "fs";
+import { join } from "path";
+import { env } from "process";
+import { promisify } from "util";
+import { commandsDir, modulesDir, prefix, sourceDir } from "../config";
 import { help, intro, keywords } from "../terms";
 import {
+  CategoryId,
+  CommandDescriptor,
   Dictionnary,
   FieldsDescriptor,
   MessageAction,
   MessageActionsDescriptor,
   MessageActor,
-  MessageHandler,
+  Module,
   SaltyEmbedOptions,
   SaltyMessageOptions,
 } from "../types";
@@ -49,8 +55,10 @@ import {
 import Command from "./Command";
 import Crew from "./Crew";
 import { connect, disconnect } from "./Database";
-import QuickCommand from "./QuickCommand";
 import Sailor from "./Sailor";
+
+const readFolder = promisify(readdir);
+const SCRIPT_REGEX = /\.(ts|js)$/;
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
 
@@ -77,7 +85,7 @@ export default class Salty {
   // Private properties
   //===========================================================================
 
-  private extraHandlerRegistry: MessageHandler[] = [];
+  private modules: Module[] = [];
   private token: string | null = null;
 
   //===========================================================================
@@ -371,13 +379,6 @@ export default class Salty {
   }
 
   /**
-   * @param handler
-   */
-  public registerExtraHandler(handler: MessageHandler): void {
-    this.extraHandlerRegistry.push(handler);
-  }
-
-  /**
    * Restarts the bot instance by reloading the command files and recreate a bot
    * instance.
    */
@@ -392,6 +393,7 @@ export default class Salty {
     this.bot.destroy();
     this.bot = this.createClient();
     await disconnect();
+    Command.clearAll();
     await this.start(this.token);
   }
 
@@ -404,10 +406,11 @@ export default class Salty {
    * @param token
    */
   public async start(token: string): Promise<void> {
-    log("Initializing Salty");
+    log(`Initialising Salty (${env.MODE} environment).`);
     this.token = token;
     await connect();
-    await QuickCommand.load();
+    await this.loadCommands();
+    await this.loadModules();
     await this.bot.login(this.token);
   }
 
@@ -530,10 +533,91 @@ export default class Salty {
     return { source, targets };
   }
 
-  private anyMessageAction(msg: Message): any {
-    for (const handler of this.extraHandlerRegistry) {
-      handler(msg);
+  /**
+   * @param categoryFolder
+   * @param fileName
+   */
+  private async loadCommand(
+    categoryFolder: CategoryId,
+    fileName: string
+  ): Promise<void> {
+    if (SCRIPT_REGEX.test(fileName)) {
+      const module = await import(
+        [
+          "..",
+          commandsDir,
+          categoryFolder,
+          fileName.replace(SCRIPT_REGEX, ""),
+        ].join("/")
+      );
+      Command.registerCommand(
+        module.default as CommandDescriptor,
+        categoryFolder
+      );
     }
+  }
+
+  /**
+   * @param categoryFolder
+   */
+  private async loadCategory(categoryFolder: CategoryId): Promise<void> {
+    // Import __category__.json and all file names from category folder.
+    const [categoryDescriptor, commandFileNames] = await Promise.all([
+      import(["..", commandsDir, categoryFolder, "__category__"].join("/")),
+      readFolder(join(sourceDir, commandsDir, categoryFolder)),
+    ]);
+    Command.registerCategory(categoryFolder, categoryDescriptor);
+    // Load each command found in the given category folder.
+    await Promise.all(
+      commandFileNames.map((fileName) =>
+        this.loadCommand(categoryFolder, fileName)
+      )
+    );
+  }
+
+  private async loadCommands(): Promise<void> {
+    const categoryFolders = await readFolder(join(sourceDir, commandsDir));
+    await Promise.all(
+      // Load each category found in the "commands" folder.
+      categoryFolders.map((categoryFolder) =>
+        this.loadCategory(categoryFolder as CategoryId)
+      )
+    );
+    log(`${Command.list.size} static commands loaded.`);
+  }
+
+  /**
+   * @param fileName
+   */
+  private async loadModule(fileName: string): Promise<void> {
+    if (SCRIPT_REGEX.test(fileName)) {
+      const importedModule = await import(
+        ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
+      );
+      const module = importedModule.default as Module;
+      if (module.onLoad) {
+        await module.onLoad();
+      }
+      this.modules.push(module);
+      for (const { category, command } of module.commands) {
+        Command.registerCommand(command, category);
+      }
+    }
+  }
+
+  private async loadModules(): Promise<void> {
+    const moduleFileNames = await readFolder(join(sourceDir, modulesDir));
+    // Load each module found in the "modules" folder.
+    await Promise.all(
+      moduleFileNames.map((fileName) => this.loadModule(fileName))
+    );
+    const moduleCommands = this.modules.reduce(
+      (acc, mod) => acc + mod.commands.length,
+      0
+    );
+    log(
+      `${this.modules.length} modules loaded with ${moduleCommands} additionnal static commands.`
+    );
   }
 
   //===========================================================================
@@ -623,9 +707,6 @@ export default class Salty {
       Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
 
     log(
-      `${Command.list.size} commands loaded. ${Command.aliases.size} keys in total.`
-    );
-    log(
       `Salty loaded in ${loadingTime} second${
         loadingTime === 1 ? "" : "s"
       } and ready to salt the chat :D`
@@ -644,7 +725,12 @@ export default class Salty {
     const prefixInteraction: boolean = content.startsWith(prefix);
     const mentionInteraction: boolean = msg.mentions.users.has(this.user.id);
     if (guild && !mentionInteraction && !prefixInteraction) {
-      return this.anyMessageAction(msg);
+      for (const module of this.modules) {
+        if (module.onMessage) {
+          module.onMessage(msg);
+        }
+      }
+      return;
     }
     if (prefixInteraction) {
       // Prefix is removed

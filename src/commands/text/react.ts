@@ -1,14 +1,13 @@
 import { GuildEmoji, Message } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { apiCatch, clean, stringToReaction } from "../../utils";
 
 const messageCache: WeakMap<Message, Promise<any>> = new WeakMap();
 
-Command.register({
+const command: CommandDescriptor = {
   name: "react",
   aliases: ["reaction"],
-  category: "text",
   help: [
     {
       argument: "***emoji_name***",
@@ -55,4 +54,6 @@ Command.register({
       await salty.react(lastMessage, ...stringToReaction(reaction));
     }
   },
-});
+};
+
+export default command;

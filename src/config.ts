@@ -4,3 +4,7 @@ export const prefix = "$";
 export const debugMode = true;
 export const homepage = "https://github.com/Arcasias/Salty-Bot";
 export const separator = "//";
+// Directories
+export const commandsDir = "commands";
+export const modulesDir = "modules";
+export const sourceDir = "src";

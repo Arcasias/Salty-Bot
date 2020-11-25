@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { fault } from "../../terms";
+import { CommandDescriptor } from "../../types";
 import { choice } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "fault",
   aliases: ["overwatch", "reason"],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -22,4 +21,6 @@ Command.register({
 
     await salty.message(msg, text);
   },
-});
+};
+
+export default command;

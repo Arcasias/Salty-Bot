@@ -85,17 +85,17 @@ const expressions: ExpressionDescriptor[] = [
   },
 ];
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Utility classes
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 export class ResolvablePromise<T> extends Promise<T> {
   public resolve(): void {}
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Utility functions
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 /**
  * Meant to be wrapped around potentially failing API calls, for example:
@@ -368,6 +368,28 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 /**
+ * Returns the given array sorted by the given prop if any.
+ * @param array
+ * @param prop
+ */
+export function sort<T>(
+  array: T[],
+  prop: string | null = null,
+  asc: boolean = true
+) {
+  const sorted = array.sort((objA, objB) => {
+    let a = objA as any;
+    let b = objB as any;
+    if (prop && a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+      a = a[prop]!;
+      b = b[prop]!;
+    }
+    return a > b ? 1 : a < b ? -1 : 0;
+  });
+  return asc ? sorted : sorted.reverse();
+}
+
+/**
  * @param str
  */
 export function stringToReaction(str: string): string[] {
@@ -417,9 +439,9 @@ export function toAny(value: any): any {
   return value;
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // Log functions
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 /**
  * @param part

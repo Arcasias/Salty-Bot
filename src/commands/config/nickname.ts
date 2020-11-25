@@ -1,6 +1,6 @@
 import { GuildMember, Message } from "discord.js";
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { meaning } from "../../utils";
 
 async function changeNames(
@@ -42,10 +42,9 @@ async function changeNames(
   ]);
 }
 
-Command.register({
+const command: CommandDescriptor = {
   name: "nickname",
   aliases: ["name", "nick", "pseudo"],
-  category: "config",
   help: [
     {
       argument: "add ***particle***",
@@ -98,4 +97,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

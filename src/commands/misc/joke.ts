@@ -1,15 +1,13 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { jokes } from "../../terms";
-import { Dictionnary, Joke } from "../../types";
+import { CommandDescriptor, Dictionnary, Joke } from "../../types";
 import { randInt } from "../../utils";
 
 const cache: Dictionnary<Joke[]> = {};
 
-Command.register({
+const command: CommandDescriptor = {
   name: "joke",
   aliases: ["fun", "haha", "jest", "joker", "jokes"],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -29,4 +27,6 @@ Command.register({
     const answer = joke.answer ? `\n\n||${joke.answer}||` : "";
     await salty.message(msg, joke.text + answer);
   },
-});
+};
+
+export default command;

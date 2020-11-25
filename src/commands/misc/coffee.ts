@@ -1,11 +1,9 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { SaltyEmbedOptions } from "../../types";
+import { CommandDescriptor, SaltyEmbedOptions } from "../../types";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "coffee",
   aliases: ["cof", "covfefe"],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -41,4 +39,6 @@ Command.register({
     }
     await salty.embed(msg, options);
   },
-});
+};
+
+export default command;

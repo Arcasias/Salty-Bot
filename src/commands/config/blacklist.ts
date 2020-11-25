@@ -1,12 +1,11 @@
-import Command from "../../classes/Command";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { isDev, meaning } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "blacklist",
   aliases: ["bl"],
-  category: "config",
   help: [
     {
       argument: null,
@@ -76,12 +75,13 @@ Command.register({
         const blackListedSailors: Sailor[] = await Sailor.search({
           black_listed: true,
         });
-        const blackListedNames: string[] = blackListedSailors
-          .map(
-            (s: Sailor) =>
-              msg.guild?.members.cache.get(s.discord_id)?.displayName
-          )
-          .filter(<(x: any) => x is string>((u) => Boolean(u)));
+        const blackListedNames: string[] = [];
+        for (const { discord_id } of blackListedSailors) {
+          const name = msg.guild?.members.cache.get(discord_id)?.displayName;
+          if (name) {
+            blackListedNames.push(name);
+          }
+        }
         if (blackListedNames.length) {
           return salty.embed(msg, {
             title: "Blacklist",
@@ -95,4 +95,6 @@ Command.register({
       }
     }
   },
-});
+};
+
+export default command;

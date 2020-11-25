@@ -1,14 +1,13 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 
 /**
  * Deprecation purpose.
  */
 
-Command.register({
+const command: CommandDescriptor = {
   name: "music",
   aliases: ["play", "pause", "queue"],
-  category: "general",
   help: [
     {
       argument: null,
@@ -21,4 +20,6 @@ Command.register({
       "Unfortunately I do not provide musical features anymore. I suggest adding a specialised bot to your server like the popular Rythm or Groovy!"
     );
   },
-});
+};
+
+export default command;

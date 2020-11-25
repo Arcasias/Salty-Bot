@@ -1,31 +1,15 @@
 import axios from "axios";
 import { Message } from "discord.js";
-import Command from "../classes/Command";
 import salty from "../salty";
-import { meaning } from "../utils";
+import { CommandDescriptor, Module } from "../types";
+import { log, meaning } from "../utils";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
 const CAT_PREFIX: string = "🐱";
 
-salty.registerExtraHandler(async (msg: Message) => {
-  // Only applies to "marked" channels
-  if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
-    return;
-  }
-  salty.deleteMessage(msg);
-  const {
-    data: [firstResult],
-  } = await axios.get(CAT_API_URL);
-  await salty.message(msg, firstResult.url, {
-    format: false,
-    title: false,
-  });
-});
-
-Command.register({
+const catsCommand: CommandDescriptor = {
   name: "catify",
   aliases: ["cats"],
-  category: "misc",
   access: "admin",
   help: [
     {
@@ -75,4 +59,27 @@ Command.register({
       }
     }
   },
-});
+};
+
+const catsModule: Module = {
+  commands: [{ category: "misc", command: catsCommand }],
+  async onLoad() {
+    log("Cats module > loaded.");
+  },
+  async onMessage(msg: Message) {
+    // Only applies to "marked" channels
+    if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
+      return;
+    }
+    salty.deleteMessage(msg);
+    const {
+      data: [firstResult],
+    } = await axios.get(CAT_API_URL);
+    await salty.message(msg, firstResult.url, {
+      format: false,
+      title: false,
+    });
+  },
+};
+
+export default catsModule;

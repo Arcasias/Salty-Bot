@@ -1,11 +1,10 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { isAdmin } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "admin",
   aliases: ["administrator"],
-  category: "general",
   channel: "guild",
   help: [
     {
@@ -50,4 +49,6 @@ Command.register({
           "nope, you're not an admin"
     );
   },
-});
+};
+
+export default command;

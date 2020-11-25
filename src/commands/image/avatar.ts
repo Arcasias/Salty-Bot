@@ -1,16 +1,14 @@
 import fs from "fs";
 import path from "path";
-import Command from "../../classes/Command";
 import salty from "../../salty";
-import { SaltyEmbedOptions } from "../../types";
+import { CommandDescriptor, SaltyEmbedOptions } from "../../types";
 import { choice, isAdmin, isOwner, possessive } from "../../utils";
 
 const SALTY_IMAGES_PATH = "assets/img/salty";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "avatar",
   aliases: ["pic", "picture", "pp"],
-  category: "image",
   help: [
     {
       argument: null,
@@ -51,4 +49,6 @@ Command.register({
     }
     await salty.embed(msg, options);
   },
-});
+};
+
+export default command;

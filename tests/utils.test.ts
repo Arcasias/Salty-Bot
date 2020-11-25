@@ -25,6 +25,7 @@ import {
   randInt,
   search,
   shuffle,
+  sort,
   stringToReaction,
   title,
   toAny
@@ -222,6 +223,19 @@ test("shuffle", () => {
   expect(shuffled).toContain(1);
   expect(shuffled).toContain(2);
   expect(shuffled).toContain(3);
+});
+
+test("shuffle", () => {
+  expect(sort([3, 1, 2])).toEqual([1, 2, 3]);
+  expect(sort(["3", "1", "2"])).toEqual(["1", "2", "3"]);
+  expect(sort(["c", "a", "b"])).toEqual(["a", "b", "c"]);
+  expect(sort(["cc", "aaa", "b"], "length")).toEqual(["b", "cc", "aaa"]);
+  expect(sort([{ x: "c" }, { x: "a" }, { x: "b" }], "x")).toEqual([
+    { x: "a" },
+    { x: "b" },
+    { x: "c" },
+  ]);
+  expect(sort([3, 1, 2], null, false)).toEqual([3, 2, 1]);
 });
 
 test("stringToReaction", () => {

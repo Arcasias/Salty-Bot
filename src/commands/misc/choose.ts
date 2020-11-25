@@ -1,11 +1,10 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { choice } from "../../utils";
 
-Command.register({
+const command: CommandDescriptor = {
   name: "choose",
   aliases: ["choice", "8ball"],
-  category: "misc",
   help: [
     {
       argument: "***first choice*** / ***second choice*** / ...",
@@ -20,4 +19,6 @@ Command.register({
     }
     await salty.message(msg, `I choose ${choice(args.join(" ").split("/"))}`);
   },
-});
+};
+
+export default command;

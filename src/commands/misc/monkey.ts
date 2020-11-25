@@ -1,10 +1,10 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
+import { CommandDescriptor } from "../../types";
 import { isSorted, shuffle } from "../../utils";
 
 const MAX_LENGTH = 12; // Let's not get over ourselves shall we?
 
-Command.register({
+const command: CommandDescriptor = {
   name: "monkey",
   aliases: [
     "monke",
@@ -15,7 +15,6 @@ Command.register({
     "slowsort",
     "stupidsort",
   ],
-  category: "misc",
   help: [
     {
       argument: null,
@@ -70,4 +69,6 @@ Command.register({
       { react: "🐒" }
     );
   },
-});
+};
+
+export default command;
