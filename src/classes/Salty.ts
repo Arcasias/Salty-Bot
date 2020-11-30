@@ -560,7 +560,7 @@ export default class Salty {
   /**
    * @param categoryFolder
    */
-  private async loadCategory(categoryFolder: CategoryId): Promise<void> {
+  private async loadCommandCategory(categoryFolder: CategoryId): Promise<void> {
     // Import __category__.json and all file names from category folder.
     const [categoryDescriptor, commandFileNames] = await Promise.all([
       import(["..", commandsDir, categoryFolder, "__category__"].join("/")),
@@ -580,7 +580,7 @@ export default class Salty {
     await Promise.all(
       // Load each category found in the "commands" folder.
       categoryFolders.map((categoryFolder) =>
-        this.loadCategory(categoryFolder as CategoryId)
+        this.loadCommandCategory(categoryFolder as CategoryId)
       )
     );
     log(`${Command.list.size} static commands loaded.`);

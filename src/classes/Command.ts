@@ -72,7 +72,7 @@ export default class Command implements CommandDescriptor {
     if (this.channel === "guild" && !msg.guild) {
       return salty.warn(msg, "This is a direct message channel retard");
     }
-    const commandParams: ActionParameters = { msg, args, source, targets };
+    const commandParams: ActionParameters = { args, msg, source, targets };
     try {
       await this.action(commandParams);
     } catch (err) {
