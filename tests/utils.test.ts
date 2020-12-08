@@ -14,14 +14,15 @@ import {
   escapeRegex,
   format,
   formatDuration,
-  generate,
   getNumberReactions,
   isSorted,
   levenshtein,
   meaning,
+  percent,
   pingable,
   possessive,
   randColor,
+  randFloat,
   randInt,
   search,
   shuffle,
@@ -99,6 +100,16 @@ function createMockMessage(msgData?: any) {
   return new Message(client, messageData, channel);
 }
 
+/**
+ * The next two functions are used to patch the "Math.random" method to force
+ * the given "num" (with num ∈ [0, 1[) to be returned instead of a random one.
+ * Note that "unpatchRandom" must be called at the end of a test in which
+ * "patchRandom" was called.
+ */
+const originalRandom = Math.random.bind(Math);
+const patchRandom = (num: number) => (Math.random = () => num);
+const unpatchRandom = () => (Math.random = originalRandom);
+
 test("mockMessage", () => {
   const msg = createMockMessage();
 
@@ -122,9 +133,13 @@ test("apiCatch", async () => {
 });
 
 test("choice", () => {
-  const array = [1, 2, 3];
-
-  expect(array).toContain(choice(array));
+  patchRandom(0.1);
+  expect(choice([1, 2, 3])).toBe(1);
+  patchRandom(0.5);
+  expect(choice([1, 2, 3])).toBe(2);
+  patchRandom(0.9);
+  expect(choice([1, 2, 3])).toBe(3);
+  unpatchRandom();
 });
 
 test("clean", () => {
@@ -159,9 +174,12 @@ test("formatDuration", () => {
   expect(formatDuration(3610000)).toBe("01:00:10");
 });
 
-test("generate", () => {
-  expect(generate(100)).toBe(true);
-  expect(generate(0)).toBe(false);
+test("percent", () => {
+  patchRandom(0.1);
+  expect(percent(10)).toBe(true);
+  patchRandom(0.11);
+  expect(percent(10)).toBe(false);
+  unpatchRandom();
 });
 
 test("getNumberReactions", () => {
@@ -199,13 +217,24 @@ test("randColor", () => {
   expect(randColor()).toMatch(/#[0-9a-f]{6}/);
 });
 
-test("randInt", () => {
-  for (let i = 0; i < 100; i++) {
-    const int = randInt(3, 5);
+test("randFloat", () => {
+  patchRandom(0.1);
+  expect(randFloat(3, 5)).toBe(3.2);
+  patchRandom(0.5);
+  expect(randFloat(3, 5)).toBe(4);
+  patchRandom(0.9);
+  expect(randFloat(3, 5)).toBe(4.8);
+  unpatchRandom();
+});
 
-    expect(int).toBeLessThan(5);
-    expect(int).toBeGreaterThanOrEqual(3);
-  }
+test("randInt", () => {
+  patchRandom(0.1);
+  expect(randInt(3, 5)).toBe(3);
+  patchRandom(0.5);
+  expect(randInt(3, 5)).toBe(4);
+  patchRandom(0.9);
+  expect(randInt(3, 5)).toBe(5);
+  unpatchRandom();
 });
 
 test("search", () => {
@@ -217,12 +246,15 @@ test("search", () => {
 });
 
 test("shuffle", () => {
-  const array = [1, 2, 3];
-  const shuffled = shuffle(array);
-
-  expect(shuffled).toContain(1);
-  expect(shuffled).toContain(2);
-  expect(shuffled).toContain(3);
+  patchRandom(0.1);
+  expect(shuffle([1, 2, 3])).toEqual([2, 3, 1]);
+  patchRandom(0.4);
+  expect(shuffle([1, 2, 3])).toEqual([3, 1, 2]);
+  patchRandom(0.5);
+  expect(shuffle([1, 2, 3])).toEqual([1, 3, 2]);
+  patchRandom(0.9);
+  expect(shuffle([1, 2, 3])).toEqual([1, 2, 3]);
+  unpatchRandom();
 });
 
 test("shuffle", () => {

@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { CommandDescriptor } from "../../types";
-import { generate, title } from "../../utils";
+import { percent, title } from "../../utils";
 
 const PING_MESSAGES = [
   "nearly perfect!",
@@ -27,7 +27,7 @@ const command: CommandDescriptor = {
 
   async action({ msg }) {
     // If too much salt, skips the latency test
-    if (generate(3)) {
+    if (percent(3)) {
       return salty.info(
         msg,
         "pong, and I don't give a fuck about your latency"

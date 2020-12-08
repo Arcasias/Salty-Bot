@@ -19,7 +19,7 @@ const command: CommandDescriptor = {
     if (!(msg.author.username in cache)) {
       cache[msg.author.username] = jokes.slice();
     }
-    const jokeIndex = randInt(0, cache[msg.author.username].length);
+    const jokeIndex = randInt(0, cache[msg.author.username].length - 1);
     const [joke] = cache[msg.author.username].splice(jokeIndex, 1);
     if (!cache[msg.author.username].length) {
       delete cache[msg.author.username];

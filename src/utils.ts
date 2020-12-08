@@ -118,7 +118,7 @@ export async function apiCatch<T>(
  * @param array
  */
 export function choice<T>(array: T[]): T {
-  return array[randInt(0, array.length)];
+  return array[randInt(0, array.length - 1)];
 }
 
 /**
@@ -168,14 +168,6 @@ export function formatDuration(time: number | null = null): string {
     d.getSeconds(),
   ];
   return formatted.map((x) => x.toString().padStart(2, "0")).join(":");
-}
-
-/**
- * Returns true if a randomly generated number is below a given percentage.
- * @param percentage
- */
-export function generate(percentage: number): boolean {
-  return Math.random() * 100 <= percentage;
 }
 
 /**
@@ -285,6 +277,14 @@ export function meaning(word?: string): MeaningKeys | null {
   return "string";
 }
 
+/**
+ * Returns true if a randomly generated number is below a given percentage.
+ * @param percentage
+ */
+export function percent(percentage: number): boolean {
+  return randFloat(0, 100) <= percentage;
+}
+
 export function pingable(id: string): string {
   return `<@&${id}>`;
 }
@@ -300,20 +300,29 @@ export function possessive(text: string): string {
 /**
  * Generates a random high saturated color.
  */
-export function randColor() {
-  const primary = randInt(0, 3);
+export function randColor(): string {
+  const primary = randInt(0, 2);
   const color = [];
   for (let i = 0; i < 3; color[i] = i === primary ? 255 : randInt(0, 255), i++);
   return "#" + color.map((c) => c.toString(16).padStart(2, "0")).join("");
 }
 
 /**
- * Returns a random integer between the two given boundaries.
+ * Returns a random float between the two given boundaries (max NOT included).
+ * @param min
+ * @param max
+ */
+export function randFloat(min: number = 0, max: number = 1): number {
+  return Math.random() * (max - min) + min;
+}
+
+/**
+ * Returns a random integer between the two given boundaries (max included).
  * @param min
  * @param max
  */
 export function randInt(min: number = 0, max: number = 1): number {
-  return Math.floor(Math.random() * (max - min)) + min;
+  return Math.floor(randFloat(min, max + 1));
 }
 
 /**
@@ -359,7 +368,7 @@ export function search(array: string[], target: string, threshold?: number) {
 export function shuffle<T>(array: T[]): T[] {
   const copy = array.slice();
   for (let i = copy.length - 1; i >= 0; i--) {
-    const randId = randInt(0, i + 1);
+    const randId = randInt(0, i);
     const temp = copy[i];
     copy[i] = copy[randId];
     copy[randId] = temp;
