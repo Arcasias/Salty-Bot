@@ -30,7 +30,7 @@ const command: CommandDescriptor = {
       effect: "Removes the default role",
     },
   ],
-  access: "dev",
+  access: "admin",
   channel: "guild",
 
   async action({ args, msg }) {
@@ -119,6 +119,7 @@ const command: CommandDescriptor = {
                 name: roleName,
                 mentionable: true,
                 color: randColor(),
+                permissions: [],
               },
               reason: `Created by ${msg.author.username} via Salty`,
             });
