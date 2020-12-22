@@ -20,7 +20,7 @@ const command: CommandDescriptor = {
     const target = targets[0];
     const isRequestedUserAdmin: boolean = isAdmin(
       target ? target.user : source.user,
-      msg.guild!
+      msg.guild
     );
 
     // Fuck if/else structures, long live ternary operators

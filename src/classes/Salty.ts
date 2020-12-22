@@ -287,7 +287,7 @@ export default class Salty {
     }
     switch (access) {
       case "admin":
-        return guild ? isAdmin(user, guild) : false;
+        return isAdmin(user, guild);
       case "dev":
         return isDev(user);
       case "owner":

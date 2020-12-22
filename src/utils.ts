@@ -184,11 +184,9 @@ export function getNumberReactions(length: number) {
  * Returns true if the given user has admin level privileges or higher.
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
-export function isAdmin(user: User, guild: Guild): boolean {
+export function isAdmin(user: User, guild: Guild | null): boolean {
   return (
-    isOwner(user) ||
-    isDev(user) ||
-    guild.member(user)!.hasPermission("ADMINISTRATOR")
+    !guild || isDev(user) || guild.member(user)!.hasPermission("ADMINISTRATOR")
   );
 }
 
@@ -252,13 +250,6 @@ export function levenshtein(a: string, b: string): number {
   }
   // Minimal distance is the last element
   return matrix[a.length][b.length];
-}
-
-export function makeResolvablePromise<T>(): ResolvablePromise<T> {
-  let resolve: () => void;
-  const promise = new ResolvablePromise<T>((r) => (resolve = r));
-  promise.resolve = resolve!;
-  return promise;
 }
 
 /**
