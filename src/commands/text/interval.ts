@@ -20,7 +20,7 @@ const command: CommandDescriptor = {
       if (!INTERVALS[channel]) {
         return salty.warn(msg, "There is no interval on this channel.");
       }
-      clearInterval(INTERVALS[channel]);
+      salty.bot.clearInterval(INTERVALS[channel]);
 
       salty.success(msg, "Interval cleared");
     } else {
@@ -49,7 +49,7 @@ const command: CommandDescriptor = {
       if (INTERVALS[channel]) {
         clearInterval(INTERVALS[channel]);
       }
-      INTERVALS[channel] = setInterval(() => {
+      INTERVALS[channel] = salty.bot.setInterval(() => {
         salty.message(msg, args.join(" "));
       }, delay);
     }

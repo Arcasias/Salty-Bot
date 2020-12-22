@@ -186,7 +186,9 @@ export function getNumberReactions(length: number) {
  */
 export function isAdmin(user: User, guild: Guild | null): boolean {
   return (
-    !guild || isDev(user) || guild.member(user)!.hasPermission("ADMINISTRATOR")
+    !guild ||
+    isDev(user) ||
+    guild.members.cache.get(user.id)!.hasPermission("ADMINISTRATOR")
   );
 }
 

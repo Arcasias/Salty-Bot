@@ -643,7 +643,7 @@ export default class Salty {
   }
 
   private async onGuildDelete(guild: Guild): Promise<any> {
-    if (guild.member(this.user)) {
+    if (guild.members.cache.has(this.user.id)) {
       await Crew.remove({ discord_id: guild.id });
     }
   }
@@ -758,7 +758,7 @@ export default class Salty {
 
     if (!msgArgs.length && !attachments.size) {
       // Simple interaction if the messsage is empty
-      return this.message(msg, choice(help), { reply: msg.author });
+      return this.message(msg, choice(help), { replyTo: msg });
     }
 
     const rawArgs = msgArgs.slice();
@@ -781,7 +781,7 @@ export default class Salty {
     );
 
     if (!closest) {
-      return this.message(msg, choice(help), { reply: msg.author });
+      return this.message(msg, choice(help), { replyTo: msg });
     }
 
     const cmdName = Command.aliases.get(closest)!;

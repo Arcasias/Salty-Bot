@@ -21,7 +21,7 @@ const command: CommandDescriptor = {
         : 5000;
 
     salty.deleteMessage(msg);
-    setTimeout(() => {
+    salty.bot.setTimeout(() => {
       salty.message(msg, args.join(" "));
     }, delay);
   },
