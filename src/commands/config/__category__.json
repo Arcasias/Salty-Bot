@@ -1,5 +1,6 @@
 {
   "name": "configuration",
   "description": "Configuration commands used for administration",
-  "icon": "⚙"
+  "icon": "⚙",
+  "order": 5
 }

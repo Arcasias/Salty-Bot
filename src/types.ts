@@ -25,11 +25,13 @@ export interface BasicCommandDescriptor {
 }
 export interface Category extends CategoryDescriptor {
   commands: string[];
+  id: CategoryId;
 }
 export interface CategoryDescriptor {
   description: string;
   icon: string;
   name: string;
+  order: number;
 }
 export interface CommandDescriptor extends BasicCommandDescriptor {
   readonly action: CommandAction;
@@ -113,7 +115,8 @@ export type CategoryId =
   | "image"
   | "misc"
   | "text"
-  | "quick";
+  | "quick"
+  | "voice";
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
 export type CommandChannel = "all" | "guild";

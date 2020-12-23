@@ -81,12 +81,32 @@ export default class Command implements CommandDescriptor {
     }
   }
 
+  //===========================================================================
+  // Static methods
+  //===========================================================================
+
+  /**
+   * Resets all collections. This is typically done when starting or
+   * restarting.
+   */
+  public static clearAll() {
+    this.aliases = new Collection<string, string>();
+    this.categories = new Collection<CategoryId, Category>();
+    this.doc = new Collection<string, CommandHelpDescriptor>();
+    this.list = new Collection<string, Command>();
+  }
+
+  public static getOrderedCategories(): Category[] {
+    return [...this.categories.values()].sort((a, b) => a.order - b.order);
+  }
+
   public static registerCategory(
     id: CategoryId,
     descriptor: CategoryDescriptor
   ) {
     const category: Category = Object.assign({}, descriptor, {
       commands: [],
+      id,
     });
     this.categories.set(id, category);
   }
@@ -123,17 +143,6 @@ export default class Command implements CommandDescriptor {
       this.aliases.delete(alias);
     }
     this.list.delete(name);
-  }
-
-  /**
-   * Resets all collections. This is typically done when starting or
-   * restarting.
-   */
-  public static clearAll() {
-    this.aliases = new Collection<string, string>();
-    this.categories = new Collection<CategoryId, Category>();
-    this.doc = new Collection<string, CommandHelpDescriptor>();
-    this.list = new Collection<string, Command>();
   }
 
   /**

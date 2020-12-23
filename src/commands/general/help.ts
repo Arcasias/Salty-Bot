@@ -121,16 +121,18 @@ const command: CommandDescriptor = {
       options.title = "list of commands";
       options.description =
         "These are the commands categories. Type the name of a category or a specific command after `$help` to have more information about it.";
-      for (const [category, { name, icon }] of Command.categories.entries()) {
-        const commands = Command.list.filter(
-          (command) => "category" in command && command.category === category
-        );
+      for (const {
+        id,
+        name,
+        commands,
+        icon,
+      } of Command.getOrderedCategories()) {
         messageActions.actions.set(icon, {
           onAdd: (user, abort) => {
             if (user === msg.author) {
               abort();
               return this.action({
-                args: [category],
+                args: [id],
                 msg,
                 source,
                 targets,
@@ -139,8 +141,8 @@ const command: CommandDescriptor = {
           },
         });
         options.fields!.push({
-          name: `${icon} **${title(name)}**  (${commands.size} commands)`,
-          value: `> \`${prefix}help ${category}\``,
+          name: `${icon} **${title(name)}**  (${commands.length} commands)`,
+          value: `> \`${prefix}help ${id}\``,
         });
       }
     }

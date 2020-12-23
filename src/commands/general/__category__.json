@@ -1,5 +1,6 @@
 {
   "name": "general",
   "description": "General use commands",
-  "icon": "📁"
+  "icon": "📁",
+  "order": 0
 }

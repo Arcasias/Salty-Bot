@@ -1,5 +1,6 @@
 {
   "name": "text",
   "description": "Textual commands",
-  "icon": "🗨️"
+  "icon": "🗨️",
+  "order": 1
 }

@@ -17,6 +17,7 @@ const quickCommandDescriptor: CategoryDescriptor = {
   description:
     "Configurable quick commands. See `$command` for more information.",
   icon: "📨",
+  order: 10,
 };
 
 const quickCommandCommand: CommandDescriptor = {

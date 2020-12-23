@@ -1,5 +1,6 @@
 {
   "name": "miscellaneous",
   "description": "Various useless commands",
-  "icon": "🦀"
+  "icon": "🦀",
+  "order": 4
 }
