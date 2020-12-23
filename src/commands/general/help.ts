@@ -1,8 +1,7 @@
 import { Collection } from "discord.js";
 import Command from "../../classes/Command";
-import { homepage, prefix } from "../../config";
 import salty from "../../salty";
-import { help } from "../../terms";
+import { keywords, prefix } from "../../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -15,7 +14,7 @@ const GIT_SRC_PATH = ["blob", "master", "src"];
 
 const command: CommandDescriptor = {
   name: "help",
-  aliases: help,
+  aliases: keywords.help,
   help: [
     {
       argument: null,
@@ -86,7 +85,7 @@ const command: CommandDescriptor = {
         options.title = `**${doc.name.toUpperCase()}**`;
         if (doc.category !== "quick") {
           options.url = [
-            homepage,
+            process.env.GITHUB_PAGE!,
             ...GIT_SRC_PATH,
             ...relativePath,
             doc.category,

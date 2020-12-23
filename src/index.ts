@@ -1,9 +1,7 @@
 import { env } from "process";
-import { debugMode } from "./config";
 import salty from "./salty";
 import { debug } from "./utils";
 
-env.DEBUG = String(debugMode);
 debug(`Debug is active`);
 
 // Initialize bot

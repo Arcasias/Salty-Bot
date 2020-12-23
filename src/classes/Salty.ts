@@ -23,8 +23,7 @@ import { readdir } from "fs";
 import { join } from "path";
 import { env } from "process";
 import { promisify } from "util";
-import { commandsDir, modulesDir, prefix, sourceDir } from "../config";
-import { help, intro, keywords } from "../terms";
+import { help, intro, keywords, prefix } from "../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -61,6 +60,10 @@ const readFolder = promisify(readdir);
 const SCRIPT_REGEX = /\.(ts|js)$/;
 
 const runningCollectors: Dictionnary<ReactionCollector> = {};
+
+const commandsDir = "commands";
+const modulesDir = "modules";
+const sourceDir = "src";
 
 export default class Salty {
   //===========================================================================

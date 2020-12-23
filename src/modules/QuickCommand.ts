@@ -1,5 +1,5 @@
-import { separator } from "../config";
 import salty from "../salty";
+import { separator } from "../strings";
 import {
   ActionParameters,
   CategoryDescriptor,

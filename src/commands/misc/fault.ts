@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { fault } from "../../terms";
+import { fault } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
 

@@ -1,6 +1,6 @@
 import Command from "../../classes/Command";
-import { prefix } from "../../config";
 import salty from "../../salty";
+import { prefix } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 
 const specialActions: [RegExp, string][] = [

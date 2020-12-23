@@ -1,7 +1,7 @@
 import { Message, Role } from "discord.js";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
-import { keywords } from "../../terms";
+import { keywords } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { apiCatch, isDev, meaning, randColor } from "../../utils";
 

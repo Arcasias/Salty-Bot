@@ -1,8 +1,8 @@
 import { env } from "process";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
-import { devs, homepage } from "../../config";
 import salty from "../../salty";
+import { devIds } from "../../strings";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
@@ -23,7 +23,7 @@ const command: CommandDescriptor = {
     ]);
     const options: SaltyEmbedOptions = {
       title: `Salty Bot`,
-      url: homepage,
+      url: process.env.GITHUB_PAGE!,
       description: `Last started on ${
         salty.startTime.toString().split(" GMT")[0]
       }`,
@@ -32,7 +32,7 @@ const command: CommandDescriptor = {
           name: `Hosting`,
           value: env.MODE === "server" ? "Server" : "Local instance",
         },
-        { name: `Developers`, value: `${devs.length} contributors` },
+        { name: `Developers`, value: `${devIds.length} contributors` },
         {
           name: `Crews`,
           value: `Handling ${crewsCount} crews`,

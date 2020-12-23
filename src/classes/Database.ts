@@ -1,6 +1,6 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
 import { env } from "process";
-import { separator } from "../config";
+import { separator } from "../strings";
 import { Dictionnary, FieldsDescriptor } from "../typings";
 import { error, log } from "../utils";
 
@@ -25,11 +25,11 @@ function ensureClient(method: string, mustHaveClient: boolean = true): Client {
       );
     }
     clientInstance = new Client({
-      database: env.DATABASE_DATABASE,
-      host: env.DATABASE_HOST,
-      password: env.DATABASE_PASSWORD,
-      port: Number(env.DATABASE_PORT),
-      user: env.DATABASE_USER,
+      database: env.DB_NAME,
+      host: env.DB_HOST,
+      password: env.DB_PASSWORD,
+      port: Number(env.DB_PORT),
+      user: env.DB_USER,
       ssl: { rejectUnauthorized: false },
     });
   }

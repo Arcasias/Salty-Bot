@@ -1,4 +1,15 @@
+import { env } from "process";
 import { Dictionnary, Joke, MeaningInfo, Meanings, Waifu } from "./typings";
+
+//=============================================================================
+// Config
+//=============================================================================
+
+export const applicationUrl: string = env.APPLICATION_URL!;
+export const devIds: string[] = env.DEV_IDS!.split(",");
+export const ownerId: string = env.OWNER_ID!;
+export const prefix: string = env.PREFIX!;
+export const separator: string = env.SEPARATOR!;
 
 //=============================================================================
 // Meanings
@@ -26,6 +37,7 @@ export const keywords: Meanings = {
   remove: ["delete", "remove", "del", "rm", "erase", "unset", "unlink"],
   set: ["set", "modify", "mod", "update"],
 };
+
 export const meaning: Dictionnary<MeaningInfo> = {
   yes: {
     answers: ["ack"],
@@ -194,11 +206,13 @@ export const answers: Dictionnary<string[]> = {
     "you sure you're old enough to use that word?",
   ],
 };
+
 export const help: string[] = [
   "Hello! Try `$help` to see what I'm capable of!",
   "Hi! If you need anything try typing `$help`!",
   "Hey there! Type `$help` if you need anything!",
 ];
+
 export const intro: string[] = [
   "did you miss me?",
   "here I come to salt the day!",
@@ -212,6 +226,7 @@ export const intro: string[] = [
   "oh sweet, a whole server to fill with salt!",
   "all aboard the salt train!",
 ];
+
 export const jokes: Joke[] = [
   { text: "your life" },
   { text: "the current Bitcoin value" },
@@ -342,6 +357,7 @@ export const fault: Dictionnary<string[]> = {
     "being assraped by a gang of 8 strong N-words",
   ],
 };
+
 export const predictions: string[] = [
   "changer de sexe",
   "cuisiner avec Raph",
@@ -367,18 +383,6 @@ export const predictions: string[] = [
   "sortir avec un noir",
   "tomber en dépression",
   "tondre Madi",
-];
-export const surpriseSong: string[] = [
-  "https://www.youtube.com/watch?v=pjepDoTUvAI",
-  "https://www.youtube.com/watch?v=Q3E7L_RoyTU",
-  "https://www.youtube.com/watch?v=ShCBna7Eg1Q",
-  "https://www.youtube.com/watch?v=6ua6OahzdwQ",
-  "https://www.youtube.com/watch?v=FLdFL3TNoDo",
-];
-export const transactionSuccess: string[] = [
-  "A pleasure to make business with you",
-  "Come back anytime",
-  "Hope to see you soon",
 ];
 
 export const waifus: Waifu[] = [

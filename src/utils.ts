@@ -1,7 +1,6 @@
 import { Guild, Message, User } from "discord.js";
 import { env } from "process";
-import { devs, owner } from "./config";
-import { keywords } from "./terms";
+import { devIds, keywords, ownerId } from "./strings";
 import {
   Dictionnary,
   ExpressionDescriptor,
@@ -197,7 +196,7 @@ export function isAdmin(user: User, guild: Guild | null): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 export function isDev(user: User): boolean {
-  return isOwner(user) || devs.includes(user.id);
+  return isOwner(user) || devIds.includes(user.id);
 }
 
 /**
@@ -205,7 +204,7 @@ export function isDev(user: User): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 export function isOwner(user: User): boolean {
-  return user.id === owner;
+  return user.id === ownerId;
 }
 
 /**

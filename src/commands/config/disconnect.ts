@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { answers } from "../../terms";
+import { answers } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
 

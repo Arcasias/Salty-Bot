@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Snowflake } from "discord.js";
+import { applicationUrl } from "../strings";
 import { Module } from "../typings";
 import { log } from "../utils";
 
@@ -28,15 +29,12 @@ interface ApplicationCommand extends PartialApplicationCommand {
   application_id: Snowflake;
 }
 
-const BASE_URL = "https://discord.com/api/v8/applications";
-
 function getUrl(guildId?: string, commandId?: string): string {
-  const url: string[] = [BASE_URL, process.env.BOT_ID!];
+  let url: string = applicationUrl;
   if (guildId) {
-    url.push("guilds", guildId);
+    url += `/guilds/${guildId}`;
   }
-  url.push("commands");
-  return url.join("/") + (commandId ? `/commands/${commandId}` : "");
+  return `${url}/commands${commandId ? `/${commandId}` : ""}`;
 }
 
 /**

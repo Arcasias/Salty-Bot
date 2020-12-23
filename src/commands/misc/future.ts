@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { predictions } from "../../terms";
+import { predictions } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { ellipsis, randInt, shuffle } from "../../utils";
 
