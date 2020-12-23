@@ -9,5 +9,6 @@ local*
 *.sql
 
 # Config
+package-lock.json
 .jshintrc
 .prettierrc
