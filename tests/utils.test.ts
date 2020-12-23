@@ -19,7 +19,6 @@ import {
   levenshtein,
   meaning,
   percent,
-  pingable,
   possessive,
   randColor,
   randFloat,
@@ -202,10 +201,6 @@ test("meaning", () => {
   expect(meaning("create")).toBe("add");
   expect(meaning("delete")).toBe("remove");
   expect(meaning("")).toBe(null);
-});
-
-test("pingable", () => {
-  expect(pingable("1234")).toBe("<@&1234>");
 });
 
 test("possessive", () => {

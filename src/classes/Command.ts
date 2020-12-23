@@ -135,4 +135,25 @@ export default class Command implements CommandDescriptor {
     this.doc = new Collection<string, CommandHelpDescriptor>();
     this.list = new Collection<string, Command>();
   }
+
+  /**
+   * Shorthand to retrieve and run a command with its name.
+   * @param name
+   * @param msg
+   * @param args
+   * @param source
+   * @param targets
+   */
+  public static run(
+    name: string,
+    msg: Message,
+    args: string[],
+    source: MessageActor,
+    targets: MessageActor[]
+  ) {
+    if (!this.list.has(name)) {
+      throw new Error(`No command found with name "${name}"`);
+    }
+    return this.list.get(name)!.run(msg, args, source, targets);
+  }
 }

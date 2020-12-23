@@ -11,11 +11,27 @@ let clientInstance: Client | null = null;
 // Helpers
 //=============================================================================
 
-function ensureClient(method: string): Client {
-  if (!clientInstance) {
-    throw new Error(
-      `Could not perform action "${method}": client is not connected`
-    );
+function ensureClient(method: string, mustHaveClient: boolean = true): Client {
+  if (mustHaveClient) {
+    if (!clientInstance) {
+      throw new Error(
+        `Could not perform action "${method}": client is not connected`
+      );
+    }
+  } else {
+    if (clientInstance) {
+      throw new Error(
+        `Could not perform action "${method}": client is already connected`
+      );
+    }
+    clientInstance = new Client({
+      database: env.DATABASE_DATABASE,
+      host: env.DATABASE_HOST,
+      password: env.DATABASE_PASSWORD,
+      port: Number(env.DATABASE_PORT),
+      user: env.DATABASE_USER,
+      ssl: { rejectUnauthorized: false },
+    });
   }
   return clientInstance;
 }
@@ -52,19 +68,9 @@ function sanitizeTable(table: string): string {
 //=============================================================================
 
 export async function connect(): Promise<void> {
-  if (clientInstance) {
-    throw new Error(`Could not client: client is already connected`);
-  }
-  clientInstance = new Client({
-    database: env.DATABASE_DATABASE,
-    host: env.DATABASE_HOST,
-    password: env.DATABASE_PASSWORD,
-    port: Number(env.DATABASE_PORT),
-    user: env.DATABASE_USER,
-    ssl: { rejectUnauthorized: false },
-  });
+  const client = ensureClient("connect", false);
   try {
-    await clientInstance.connect();
+    await client.connect();
   } catch (err) {
     error(err.stack);
   }

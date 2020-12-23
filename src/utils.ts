@@ -262,9 +262,10 @@ export function meaning(word?: string): MeaningKeys | null {
   if (!word) {
     return null;
   }
+  const cleanedWord = clean(word);
   for (const key in keywords) {
-    if (keywords[<keyof Meanings>key].includes(word)) {
-      return <MeaningKeys>key;
+    if (keywords[key as keyof Meanings].includes(cleanedWord)) {
+      return key as MeaningKeys;
     }
   }
   return "string";
@@ -276,10 +277,6 @@ export function meaning(word?: string): MeaningKeys | null {
  */
 export function percent(percentage: number): boolean {
   return randFloat(0, 100) <= percentage;
-}
-
-export function pingable(id: string): string {
-  return `<@&${id}>`;
 }
 
 /**

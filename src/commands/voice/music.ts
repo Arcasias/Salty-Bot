@@ -7,7 +7,7 @@ import { CommandDescriptor } from "../../types";
 
 const command: CommandDescriptor = {
   name: "music",
-  aliases: ["play", "pause", "queue"],
+  aliases: ["play", "pause", "queue", "join", "leave"],
   help: [
     {
       argument: null,

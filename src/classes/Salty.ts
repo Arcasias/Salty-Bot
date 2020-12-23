@@ -714,15 +714,15 @@ export default class Salty {
   }
 
   private async onMessage(msg: Message): Promise<any> {
-    if (msg.author.bot) {
-      return false;
+    const { attachments, author, cleanContent, guild } = msg;
+
+    if (author.bot) {
+      // Ignores all bots
+      return;
     }
 
-    const { attachments, author, cleanContent, guild } = msg;
-    let content = cleanContent;
-
-    // Look for an interaction: DM, prefix or mention
-    const prefixInteraction: boolean = content.startsWith(prefix);
+    // Looks for an interaction: DM, prefix or mention
+    const prefixInteraction: boolean = cleanContent.startsWith(prefix);
     const mentionInteraction: boolean = msg.mentions.users.has(this.user.id);
     if (guild && !mentionInteraction && !prefixInteraction) {
       for (const module of this.modules) {
@@ -732,16 +732,16 @@ export default class Salty {
       }
       return;
     }
-    if (prefixInteraction) {
-      // Prefix is removed
-      content = content.slice(prefix.length);
-    } else if (guild && mentionInteraction) {
-      const name = guild.members.cache.get(this.user.id)!.displayName;
-      content = content.replace(new RegExp(`@.?${name}`), "");
-    }
 
     // Logs the  action
     logRequest(guild?.name || "DM", author.username, cleanContent);
+
+    // All mentions are removed
+    let content = msg.content.replace(/<@!\d+>/g, "");
+    if (prefixInteraction) {
+      // Prefix is removed
+      content = content.slice(prefix.length);
+    }
 
     // Fetches the actors of the action
     const { source, targets } = await this.getMessageActors(msg);
@@ -761,16 +761,13 @@ export default class Salty {
       return this.message(msg, choice(help), { replyTo: msg });
     }
 
-    const rawArgs = msgArgs.slice();
     const rawCommandName = msgArgs.shift() || "";
     const commandName = Command.aliases.get(clean(rawCommandName));
     if (commandName) {
       if (msgArgs.length && keywords.help.includes(clean(msgArgs[0]))) {
-        return Command.list.get("help")!.run(msg, rawArgs, source, targets);
+        return Command.run("help", msg, [rawCommandName], source, targets);
       } else {
-        return Command.list
-          .get(commandName)!
-          .run(msg, msgArgs, source, targets);
+        return Command.run(commandName, msg, msgArgs, source, targets);
       }
     }
     // If no command found, tries to find the closest matches
@@ -797,7 +794,7 @@ export default class Salty {
       onAdd: (user) => {
         if (author.id === user.id) {
           this.deleteMessage(helpMessage);
-          Command.list.get(cmdName)!.run(msg, msgArgs, source, targets);
+          Command.run(cmdName, msg, msgArgs, source, targets);
         }
       },
     });

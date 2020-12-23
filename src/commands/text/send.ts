@@ -3,19 +3,10 @@ import { prefix } from "../../config";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../types";
 
-const specialActions = [
-  {
-    keywords: ["nude", "nudes"],
-    response: "you wish",
-  },
-  {
-    keywords: ["nood", "noods", "noodle", "noodles"],
-    response: "you're so poor",
-  },
-  {
-    keywords: ["noot", "noots"],
-    response: "NOOT NOOT",
-  },
+const specialActions: [RegExp, string][] = [
+  [/nudes?/i, "You wish"],
+  [/(noods?)|(noodles?)/i, "That's quite cheap"],
+  [/noots?/i, "NOOT NOOT"],
 ];
 
 const command: CommandDescriptor = {
@@ -30,12 +21,12 @@ const command: CommandDescriptor = {
 
   async action({ args, msg, source, targets }) {
     if (!args[0]) {
-      return Command.list.get("talk")!.run(msg, args, source, targets);
+      return Command.run("talk", msg, args, source, targets);
     }
     let message;
-    for (let sa of specialActions) {
-      if (sa.keywords.includes(args[0])) {
-        message = sa.response;
+    for (const [expr, response] of specialActions) {
+      if (expr.test(args[0])) {
+        message = response;
       }
     }
     if (!message) {

@@ -115,7 +115,7 @@ class QuickCommand extends Model {
   /**
    * Creates a command descriptor from the quick command instance.
    */
-  private toDescriptor(): CommandDescriptor {
+  public toDescriptor(): CommandDescriptor {
     const stringAnswers = this.answers.map((a) => `- "${a}"`).join("\n");
     return Object.assign({}, this, {
       action: async ({ msg }: ActionParameters) => {
@@ -142,18 +142,6 @@ class QuickCommand extends Model {
   }
 
   /**
-   * Returns the list of instances fetched from the attached database table.
-   */
-  public static async load(): Promise<void> {
-    Command.registerCategory("quick", quickCommandDescriptor);
-    const commands = (await this.search({})) as any;
-    for (const cmd of commands as QuickCommand[]) {
-      Command.registerCommand(cmd.toDescriptor(), "quick");
-    }
-    log(`QuickCommand module > ${commands.length} dynamic commands loaded.`);
-  }
-
-  /**
    * @override
    */
   public static async remove<T extends Model>(
@@ -169,7 +157,14 @@ class QuickCommand extends Model {
 
 const quickCommandModule: Module = {
   commands: [{ category: "config", command: quickCommandCommand }],
-  onLoad: () => QuickCommand.load(),
+  onLoad: async () => {
+    Command.registerCategory("quick", quickCommandDescriptor);
+    const commands = (await QuickCommand.search({})) as QuickCommand[];
+    for (const cmd of commands) {
+      Command.registerCommand(cmd.toDescriptor(), "quick");
+    }
+    log(`QuickCommand module > ${commands.length} dynamic commands loaded.`);
+  },
 };
 
 export default quickCommandModule;
