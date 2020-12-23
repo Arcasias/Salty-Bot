@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Message } from "discord.js";
 import salty from "../salty";
-import { CommandDescriptor, Module } from "../types";
+import { CommandDescriptor, Module } from "../typings";
 import { log, meaning } from "../utils";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";

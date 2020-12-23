@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { jokes } from "../../terms";
-import { CommandDescriptor, Dictionnary, Joke } from "../../types";
+import { CommandDescriptor, Dictionnary, Joke } from "../../typings";
 import { randInt } from "../../utils";
 
 const cache: Dictionnary<Joke[]> = {};

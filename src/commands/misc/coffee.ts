@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { CommandDescriptor, SaltyEmbedOptions } from "../../types";
+import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
   name: "coffee",

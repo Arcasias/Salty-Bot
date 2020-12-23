@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { isSorted, shuffle } from "../../utils";
 
 const MAX_LENGTH = 12; // Let's not get over ourselves shall we?

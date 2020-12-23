@@ -12,7 +12,7 @@ import {
   CommandHelpDescriptor,
   CommandHelpSection,
   MessageActor,
-} from "../types";
+} from "../typings";
 import { error, isAdmin, isDev, isOwner } from "../utils";
 
 const permissions: {

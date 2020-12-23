@@ -1,6 +1,6 @@
 import { Collection, DMChannel, Message } from "discord.js";
 import salty from "../../salty";
-import { CommandDescriptor, MessageAction } from "../../types";
+import { CommandDescriptor, MessageAction } from "../../typings";
 import { meaning, removeMentions } from "../../utils";
 
 async function removeMessages(

@@ -1,4 +1,4 @@
-import { FieldsDescriptor } from "../types";
+import { FieldsDescriptor } from "../typings";
 import Model from "./Model";
 
 export default class Crew extends Model {

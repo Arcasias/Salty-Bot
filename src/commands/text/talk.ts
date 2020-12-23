@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { answers as listAnswers, meaning } from "../../terms";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { choice, clean, levenshtein } from "../../utils";
 
 const SPECIAL_CHARS = /[;,\.\?\!'"]/g;

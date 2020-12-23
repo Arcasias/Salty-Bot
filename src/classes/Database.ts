@@ -1,7 +1,7 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
 import { env } from "process";
 import { separator } from "../config";
-import { Dictionnary, FieldsDescriptor } from "../types";
+import { Dictionnary, FieldsDescriptor } from "../typings";
 import { error, log } from "../utils";
 
 const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);

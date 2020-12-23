@@ -1,6 +1,6 @@
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { meaning } from "../../utils";
 
 const command: CommandDescriptor = {

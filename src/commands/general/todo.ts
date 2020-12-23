@@ -1,6 +1,6 @@
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { clean, levenshtein, meaning } from "../../utils";
 
 const command: CommandDescriptor = {

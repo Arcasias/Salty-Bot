@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { predictions } from "../../terms";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { ellipsis, randInt, shuffle } from "../../utils";
 
 const command: CommandDescriptor = {

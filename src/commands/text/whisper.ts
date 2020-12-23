@@ -1,6 +1,6 @@
 import { DMChannel } from "discord.js";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 
 const command: CommandDescriptor = {
   name: "whisper",

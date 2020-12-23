@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Snowflake } from "discord.js";
-import { Module } from "../types";
+import { Module } from "../typings";
 import { log } from "../utils";
 
 interface PartialApplicationCommand {

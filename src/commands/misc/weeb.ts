@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { clean } from "../../utils";
 
 const expressions: Map<RegExp, string> = new Map<RegExp, string>([

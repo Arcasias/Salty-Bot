@@ -7,7 +7,7 @@ import {
   ExpressionDescriptor,
   MeaningKeys,
   Meanings,
-} from "./types";
+} from "./typings";
 
 const CONSOLE_RED = "\x1b[31m";
 const CONSOLE_GREEN = "\x1b[32m";

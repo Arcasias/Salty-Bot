@@ -3,7 +3,7 @@ import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import { devs, homepage } from "../../config";
 import salty from "../../salty";
-import { CommandDescriptor, SaltyEmbedOptions } from "../../types";
+import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
   name: "state",

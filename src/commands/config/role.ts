@@ -2,7 +2,7 @@ import { Message, Role } from "discord.js";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../terms";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { apiCatch, isDev, meaning, randColor } from "../../utils";
 
 function getRole(msg: Message, roleName: string): Role | false {

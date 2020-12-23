@@ -1,7 +1,7 @@
 import Command from "../../classes/Command";
 import { prefix } from "../../config";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 
 const specialActions: [RegExp, string][] = [
   [/nudes?/i, "You wish"],

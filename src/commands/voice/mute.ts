@@ -1,6 +1,6 @@
 import { Snowflake, VoiceState } from "discord.js";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { apiCatch, meaning } from "../../utils";
 
 const autoMuteMap = new Set<Snowflake>();

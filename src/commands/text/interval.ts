@@ -1,5 +1,5 @@
 import salty from "../../salty";
-import { CommandDescriptor, Dictionnary } from "../../types";
+import { CommandDescriptor, Dictionnary } from "../../typings";
 import { meaning } from "../../utils";
 
 const INTERVALS: Dictionnary<NodeJS.Timeout> = {};

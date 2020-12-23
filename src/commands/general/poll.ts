@@ -5,7 +5,7 @@ import {
   MessageAction,
   PollOption,
   SaltyEmbedOptions,
-} from "../../types";
+} from "../../typings";
 import { getNumberReactions, possessive } from "../../utils";
 
 const VOTE_LENGTH = 20;

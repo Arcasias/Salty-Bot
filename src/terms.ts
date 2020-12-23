@@ -1,4 +1,4 @@
-import { Dictionnary, Joke, MeaningInfo, Meanings, Waifu } from "./types";
+import { Dictionnary, Joke, MeaningInfo, Meanings, Waifu } from "./typings";
 
 //=============================================================================
 // Meanings

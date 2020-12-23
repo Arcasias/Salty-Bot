@@ -1,7 +1,7 @@
 import fs from "fs";
 import { promisify } from "util";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
 
 const emojiPath = "./assets/img/saltmoji";

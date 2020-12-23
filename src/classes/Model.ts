@@ -1,5 +1,5 @@
 import { QueryResultRow } from "pg";
-import { Dictionnary, FieldsDescriptor } from "../types";
+import { Dictionnary, FieldsDescriptor } from "../typings";
 import { count, create, read, remove, update } from "./Database";
 
 const CACHE_LIMIT = 1000;

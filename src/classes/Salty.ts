@@ -36,7 +36,7 @@ import {
   Module,
   SaltyEmbedOptions,
   SaltyMessageOptions,
-} from "../types";
+} from "../typings";
 import {
   apiCatch,
   choice,

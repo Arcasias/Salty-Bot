@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 
 const JS_STANDARD_KEY = /\b(?<!")(\w+)(?!")\b\s*:/g;
 const JS_TRAILING_COMA = /,([\s\n]*[\}\]])/g;

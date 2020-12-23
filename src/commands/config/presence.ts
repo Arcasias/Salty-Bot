@@ -1,6 +1,6 @@
 import { PresenceStatusData } from "discord.js";
 import salty from "../../salty";
-import { CommandDescriptor, StatusInfos } from "../../types";
+import { CommandDescriptor, StatusInfos } from "../../typings";
 import { meaning } from "../../utils";
 
 const STATUSINFO: StatusInfos = {

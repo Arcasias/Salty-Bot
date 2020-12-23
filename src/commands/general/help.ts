@@ -8,7 +8,7 @@ import {
   CommandDescriptor,
   MessageActionsDescriptor,
   SaltyEmbedOptions,
-} from "../../types";
+} from "../../typings";
 import { sort, title } from "../../utils";
 
 const GIT_SRC_PATH = ["blob", "master", "src"];

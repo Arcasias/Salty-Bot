@@ -1,7 +1,7 @@
 import { TextChannel } from "discord.js";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../types";
+import { CommandDescriptor } from "../../typings";
 
 const command: CommandDescriptor = {
   name: "announcement",

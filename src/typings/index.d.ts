@@ -9,7 +9,7 @@ import {
   Snowflake,
   User,
 } from "discord.js";
-import Sailor from "./classes/Sailor";
+import Sailor from "../classes/Sailor";
 
 export interface ActionParameters {
   readonly args: string[];

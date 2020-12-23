@@ -7,7 +7,7 @@ import {
   Dictionnary,
   FieldsDescriptor,
   Module,
-} from "../types";
+} from "../typings";
 import { choice, clean, log, meaning } from "../utils";
 import Command from "./../classes/Command";
 import Model from "./../classes/Model";
