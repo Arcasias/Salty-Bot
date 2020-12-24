@@ -4,11 +4,12 @@ import {
   Dictionnary,
   FieldDescriptor,
   FieldOptions,
-  FieldStructure
+  FieldStructure,
 } from "../typings";
-import { error, log, warn } from "../utils";
+import { error, groupBy, log, warn } from "../utils";
 
 export const separator: string = "//";
+export const config: Dictionnary<any> = {};
 
 const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
 let clientInstance: Client | null = null;
@@ -16,21 +17,24 @@ let clientInstance: Client | null = null;
 // The database parameters are extracted from the URL to minimize the amount of
 // config variables. We also cannot use `new Client(url)` since we need to give
 // the `ssl` parameter which is not in the URL.
-const [
-  ,
-  DB_USER,
-  DB_PASSWORD,
-  DB_HOST,
-  DB_PORT,
-  DB_DATABASE,
-] = process.env.DATABASE_URL!.match(
-  /^postgres:\/\/(\w+):([\w]+)@([\w\-\.]+):(\d+)\/([\w]+)$/
-)!;
+const [, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE] =
+  process.env.DATABASE_URL?.match(
+    /^postgres:\/\/(\w+):([\w]+)@([\w\-\.]+):(\d+)\/([\w]+)$/
+  ) || [];
+
+/**
+ * @todo: doc
+ */
+const registeredTables: Dictionnary<FieldDescriptor[]> = {};
 
 //=============================================================================
 // Helpers
 //=============================================================================
 
+/**
+ * Builds a field column query from the information of a field descriptor.
+ * @param field
+ */
 function buildFieldQuery({
   type,
   defaultValue,
@@ -49,7 +53,10 @@ function buildFieldQuery({
     query += " UNIQUE";
   }
   if (defaultValue !== null) {
-    query += ` DEFAULT ${defaultValue}`;
+    const defVal = ["CHAR", "VARCHAR"].includes(type)
+      ? `'${defaultValue}'`
+      : defaultValue;
+    query += ` DEFAULT ${defVal}`;
   }
   return query;
 }
@@ -263,67 +270,31 @@ export const fields = {
   varchar,
 };
 
+/**
+ * Configuration table.
+ */
+const configTableName = registerTable("config", [
+  fields.varchar("prefix", { length: 32, defaultValue: "$" }),
+  fields.snowflake("ownerId"),
+  fields.varchar("devIds", { length: 1000 }),
+]);
+
 //=============================================================================
 // Database connection
 //=============================================================================
 
-export async function connect(): Promise<void> {
-  const client = ensureClient("connect", false);
-  try {
-    await client.connect();
-  } catch (err) {
-    error(err.stack);
-  }
-}
-
-export async function disconnect(): Promise<void> {
-  const client = ensureClient("disconnect");
-  try {
-    await client.end();
-    clientInstance = null;
-  } catch (err) {
-    error(err.stack);
-  }
-}
-
-//=============================================================================
-// Database adjustments
-//=============================================================================
-
-export async function adjustDatabase(
-  tables: Dictionnary<FieldDescriptor[]>
-): Promise<void> {
-  // Check given tables
-  for (const tableName in tables) {
-    if (tableName !== sanitize(tableName)) {
-      throw new Error(`Incorrect table name: "${tableName}"`);
-    }
-    for (const column of tables[tableName]) {
-      if (column.name !== sanitize(column.name)) {
-        throw new Error(
-          `Incorrect column name: "${column.name}" in table "${tableName}"`
-        );
-      }
-    }
-  }
+async function adjustDatabase(): Promise<void> {
   const client = ensureClient("adjustDatabase");
   const dbColumns = await read("information_schema.columns", {
     tableSchema: "public",
   });
-  const dbTables: Dictionnary<QueryResultRow[]> = {};
+  const dbTables = groupBy(dbColumns, "tableName");
   const adjustments: string[] = [];
   const tasks: Promise<any>[] = [];
 
-  for (const column of dbColumns) {
-    if (!dbTables[column.tableName]) {
-      dbTables[column.tableName] = [];
-    }
-    dbTables[column.tableName].push(column);
-  }
-
   // Excess tables
   for (const tableName in dbTables) {
-    if (!(tableName in tables)) {
+    if (!(tableName in registeredTables)) {
       tasks.push(client.query(`DROP TABLE ${sanitize(tableName)}`));
       adjustments.push(`dropped table "${tableName}"`);
       delete dbTables[tableName];
@@ -331,17 +302,16 @@ export async function adjustDatabase(
   }
 
   // Missing tables
-  for (const tableName in tables) {
+  for (const tableName in registeredTables) {
     if (!(tableName in dbTables)) {
-      tasks.push(
-        client.query(
-          `CREATE TABLE ${sanitize(tableName)} (${tables[tableName]
-            .map(buildFieldQuery)
-            .join(", ")}, PRIMARY KEY(id));`
-        )
-      );
+      const columns = registeredTables[tableName];
+      const hasIdField = columns.some(({ name }) => name === "id");
+      const query = `CREATE TABLE ${sanitize(tableName)} (${columns
+        .map(buildFieldQuery)
+        .join(", ")}${hasIdField ? ", PRIMARY KEY(id)" : ""});`;
+      tasks.push(client.query(query));
       adjustments.push(
-        `created table "${tableName}" (${tables[tableName].length} columns)`
+        `created table "${tableName}" (${columns.length} columns)`
       );
     }
   }
@@ -349,7 +319,7 @@ export async function adjustDatabase(
   // Existing tables: check columns
   for (const tableName in dbTables) {
     const dbTable = dbTables[tableName];
-    const refTable = tables[tableName];
+    const refTable = registeredTables[tableName];
     const existingColumns: [any, FieldDescriptor][] = [];
 
     // Excess columns
@@ -430,6 +400,65 @@ export async function adjustDatabase(
   }
 }
 
+/**
+ * Loads and returns the configuration variables from the database.
+ */
+async function loadConfig(): Promise<Dictionnary<any>> {
+  const [dbConfig] = await read(configTableName);
+  for (const col in dbConfig) {
+    config[col] = dbConfig[col];
+  }
+  log(`Configuration loaded: prefix is "${config.prefix}"`);
+  return config;
+}
+
+export async function connect(): Promise<void> {
+  const client = ensureClient("connect", false);
+  try {
+    await client.connect();
+  } catch (err) {
+    error(err.stack);
+    return;
+  }
+  await adjustDatabase();
+  await loadConfig();
+}
+
+export async function disconnect(): Promise<void> {
+  const client = ensureClient("disconnect");
+  try {
+    await client.end();
+    clientInstance = null;
+  } catch (err) {
+    error(err.stack);
+  }
+}
+
+/**
+ * @param tableName
+ * @param columns
+ */
+export function registerTable(
+  tableName: string,
+  columns: FieldDescriptor[]
+): string {
+  if (tableName !== sanitize(tableName)) {
+    throw new Error(`Incorrect table name: "${tableName}"`);
+  }
+  if (tableName in registeredTables) {
+    throw new Error(`Table with name "${tableName}" already exists.`);
+  }
+  for (const { name } of columns) {
+    if (name !== sanitize(name)) {
+      throw new Error(
+        `Incorrect column name: "${name}" in table "${tableName}"`
+      );
+    }
+  }
+  registeredTables[tableName] = columns;
+  return tableName;
+}
+
 //=============================================================================
 // Database queries
 //=============================================================================
@@ -506,41 +535,6 @@ export async function create(
   }
 }
 
-export async function remove(
-  table: string,
-  where: Dictionnary<any>
-): Promise<QueryResultRow[]> {
-  const client = ensureClient("remove");
-  const queryArray: string[] = ["DELETE FROM", sanitize(table)];
-  const variables: number[] = [];
-  let varCount = 0;
-
-  const whereString = [];
-  for (const jsKey in where) {
-    const key = camelToSnake(jsKey);
-    const value = where[jsKey];
-    if (Array.isArray(value)) {
-      const values = value.map(() => `$${++varCount}`);
-      whereString.push(`${key} IN (${values})`);
-      variables.push(...value);
-    } else if (typeof key === "string") {
-      whereString.push(`${key} = $${++varCount}`);
-      variables.push(value);
-    }
-  }
-  queryArray.push("WHERE", whereString.join(" AND "), "RETURNING *");
-
-  const query = queryArray.join(" ") + ";";
-  try {
-    const result = await client.query(query, variables);
-    log(`${result.rows.length} record(s) of type "${table}" removed.`);
-    return parseResult(result);
-  } catch (err) {
-    error(err.stack);
-    return [];
-  }
-}
-
 export async function read(
   table: string,
   where?: Dictionnary<any>,
@@ -583,6 +577,41 @@ export async function read(
   const query = queryArray.join(" ") + ";";
   try {
     const result = await client.query(query, variables);
+    return parseResult(result);
+  } catch (err) {
+    error(err.stack);
+    return [];
+  }
+}
+
+export async function remove(
+  table: string,
+  where: Dictionnary<any>
+): Promise<QueryResultRow[]> {
+  const client = ensureClient("remove");
+  const queryArray: string[] = ["DELETE FROM", sanitize(table)];
+  const variables: number[] = [];
+  let varCount = 0;
+
+  const whereString = [];
+  for (const jsKey in where) {
+    const key = camelToSnake(jsKey);
+    const value = where[jsKey];
+    if (Array.isArray(value)) {
+      const values = value.map(() => `$${++varCount}`);
+      whereString.push(`${key} IN (${values})`);
+      variables.push(...value);
+    } else if (typeof key === "string") {
+      whereString.push(`${key} = $${++varCount}`);
+      variables.push(value);
+    }
+  }
+  queryArray.push("WHERE", whereString.join(" AND "), "RETURNING *");
+
+  const query = queryArray.join(" ") + ";";
+  try {
+    const result = await client.query(query, variables);
+    log(`${result.rows.length} record(s) of type "${table}" removed.`);
     return parseResult(result);
   } catch (err) {
     error(err.stack);

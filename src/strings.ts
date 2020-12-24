@@ -1,15 +1,6 @@
 import { Dictionnary, Joke, MeaningInfo, Meanings, Waifu } from "./typings";
 
 //=============================================================================
-// Config
-//=============================================================================
-
-export const applicationUrl: string = process.env.APPLICATION_URL!;
-export const devIds: string[] = process.env.DEV_IDS!.split(",");
-export const ownerId: string = process.env.OWNER_ID!;
-export const prefix: string = "$";
-
-//=============================================================================
 // Meanings
 //=============================================================================
 

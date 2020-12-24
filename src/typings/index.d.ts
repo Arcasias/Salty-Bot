@@ -75,7 +75,7 @@ export interface MessageActor {
   name: string;
 }
 export interface Module {
-  commands: { category: CategoryId; command: CommandDescriptor }[];
+  commands?: { category: CategoryId; command: CommandDescriptor }[];
   onLoad?: () => any;
   onMessage?: (msg: Message) => any;
 }

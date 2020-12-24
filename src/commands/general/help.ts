@@ -1,7 +1,8 @@
 import { Collection } from "discord.js";
 import Command from "../../classes/Command";
+import { config } from "../../classes/Database";
 import salty from "../../salty";
-import { keywords, prefix } from "../../strings";
+import { keywords } from "../../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -67,7 +68,7 @@ const command: CommandDescriptor = {
               : "";
             options.fields!.push({
               name: `**${command.name}**${aliases}`,
-              value: `> \`${prefix}help ${command.name}\``,
+              value: `> \`${config.prefix}help ${command.name}\``,
             });
           }
         }
@@ -103,7 +104,7 @@ const command: CommandDescriptor = {
         }
         doc.sections.forEach((usage) => {
           options.fields!.push({
-            name: `${prefix}${doc.name} ${usage.argument || ""}`,
+            name: `${config.prefix}${doc.name} ${usage.argument || ""}`,
             value: usage.effect,
           });
         });
@@ -141,7 +142,7 @@ const command: CommandDescriptor = {
         });
         options.fields!.push({
           name: `${icon} **${title(name)}**  (${commands.length} commands)`,
-          value: `> \`${prefix}help ${id}\``,
+          value: `> \`${config.prefix}help ${id}\``,
         });
       }
     }

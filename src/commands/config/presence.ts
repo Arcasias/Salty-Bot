@@ -38,9 +38,7 @@ const command: CommandDescriptor = {
           );
         } else {
           // game
-          await salty.bot.user!.setPresence({
-            activity: { name: status },
-          });
+          await salty.bot.user!.setActivity(status);
           return salty.success(msg, `changed my status to **${status}**`);
         }
       }

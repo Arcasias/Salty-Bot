@@ -1,6 +1,7 @@
 import { Guild, Message, User } from "discord.js";
 import { env } from "process";
-import { devIds, keywords, ownerId } from "./strings";
+import { config } from "./classes/Database";
+import { keywords } from "./strings";
 import {
   Dictionnary,
   ExpressionDescriptor,
@@ -130,10 +131,17 @@ export function clean(text: string): string {
   return text.trim().toLowerCase();
 }
 
+/**
+ * @param text
+ * @param limit
+ */
 export function ellipsis(text: string, limit: number = 2000): string {
   return text.length < limit ? text : `${text.slice(0, limit - 4)} ...`;
 }
 
+/**
+ * @param regex
+ */
 export function escapeRegex(regex: string): string {
   return regex.replace(/[\.\*\+\?\^\$\{\}\(\)\|\[\]\\]/g, "\\$&");
 }
@@ -180,6 +188,22 @@ export function getNumberReactions(length: number) {
 }
 
 /**
+ * @param array
+ * @param prop
+ */
+export function groupBy<T>(array: T[], prop: string): Dictionnary<T[]> {
+  const groups: Dictionnary<T[]> = {};
+  for (const el of array) {
+    const val: any = el[prop as keyof T];
+    if (!(val in groups)) {
+      groups[val] = [];
+    }
+    groups[val].push(el);
+  }
+  return groups;
+}
+
+/**
  * Returns true if the given user has admin level privileges or higher.
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
@@ -196,7 +220,7 @@ export function isAdmin(user: User, guild: Guild | null): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 export function isDev(user: User): boolean {
-  return isOwner(user) || devIds.includes(user.id);
+  return isOwner(user) || config.devIds.includes(user.id);
 }
 
 /**
@@ -204,7 +228,7 @@ export function isDev(user: User): boolean {
  * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
  */
 export function isOwner(user: User): boolean {
-  return user.id === ownerId;
+  return user.id === config.ownerId;
 }
 
 /**

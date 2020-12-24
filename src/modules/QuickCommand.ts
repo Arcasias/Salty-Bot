@@ -5,8 +5,7 @@ import {
   CategoryDescriptor,
   CommandDescriptor,
   Dictionnary,
-  FieldDescriptor,
-  Module
+  Module,
 } from "../typings";
 import { choice, clean, log, meaning } from "../utils";
 import Command from "./../classes/Command";
@@ -106,12 +105,11 @@ class QuickCommand extends Model {
   public aliases!: string[];
   public answers!: string[];
 
-  public static readonly table = "commands";
-  public static readonly fields: FieldDescriptor[] = [
+  public static readonly table = QuickCommand.createTable("commands", [
     fields.varchar("name", { length: 255 }),
     fields.varchar("aliases", { length: 1000 }),
     fields.varchar("answers", { length: 2000 }),
-  ];
+  ]);
 
   /**
    * Creates a command descriptor from the quick command instance.
@@ -125,7 +123,7 @@ class QuickCommand extends Model {
       help: [
         {
           argument: null,
-          effect: `Answers with one of the following: \n${stringAnswers}`,
+          effect: "Try it and see what happens!",
         },
       ],
     });
@@ -158,16 +156,14 @@ class QuickCommand extends Model {
 
 const quickCommandModule: Module = {
   commands: [{ category: "config", command: quickCommandCommand }],
-  onLoad: async () => {
+  async onLoad() {
     Command.registerCategory("quick", quickCommandDescriptor);
     const commands = (await QuickCommand.search({})) as QuickCommand[];
     for (const cmd of commands) {
       Command.registerCommand(cmd.toDescriptor(), "quick");
     }
-    log(`QuickCommand module > ${commands.length} dynamic commands loaded.`);
+    log(`${commands.length} dynamic commands loaded.`);
   },
 };
-
-Model.register(QuickCommand);
 
 export default quickCommandModule;

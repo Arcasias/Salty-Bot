@@ -1,6 +1,5 @@
 import Command from "../../classes/Command";
 import salty from "../../salty";
-import { prefix } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 
 const specialActions: [RegExp, string][] = [
@@ -11,7 +10,7 @@ const specialActions: [RegExp, string][] = [
 
 const command: CommandDescriptor = {
   name: "send",
-  aliases: ["say", prefix],
+  aliases: ["say"],
   help: [
     {
       argument: "***anything***",

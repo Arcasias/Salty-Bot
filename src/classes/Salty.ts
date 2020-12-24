@@ -23,7 +23,7 @@ import { readdir } from "fs";
 import { join } from "path";
 import { env } from "process";
 import { promisify } from "util";
-import { help, intro, keywords, prefix } from "../strings";
+import { help, intro, keywords } from "../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -52,8 +52,7 @@ import {
 } from "../utils";
 import Command from "./Command";
 import Crew from "./Crew";
-import { connect, disconnect } from "./Database";
-import Model from "./Model";
+import { config, connect, disconnect } from "./Database";
 import Sailor from "./Sailor";
 
 const readFolder = promisify(readdir);
@@ -397,6 +396,8 @@ export default class Salty {
     this.bot = this.createClient();
     await disconnect();
     Command.clearAll();
+    this.modules = [];
+    this.startTime = new Date();
     await this.start(this.token);
   }
 
@@ -560,13 +561,12 @@ export default class Salty {
       moduleFileNames.map((fileName) => this.loadModule(fileName))
     );
     const moduleCommands = this.modules.reduce(
-      (acc, mod) => acc + mod.commands.length,
+      (acc, mod) => acc + (mod.commands?.length || 0),
       0
     );
 
     // DATABASE
     await connect();
-    await Model.verifyDatabase();
 
     // ADDITIONAL MODULE LOADING
     await Promise.all(this.modules.map((m) => m.onLoad && m.onLoad()));
@@ -630,7 +630,7 @@ export default class Salty {
     );
     const module = importedModule.default as Module;
     this.modules.push(module);
-    for (const { category, command } of module.commands) {
+    for (const { category, command } of module.commands || []) {
       Command.registerCommand(command, category);
     }
   }
@@ -737,7 +737,7 @@ export default class Salty {
     }
 
     // Looks for an interaction: DM, prefix or mention
-    const prefixInteraction: boolean = cleanContent.startsWith(prefix);
+    const prefixInteraction: boolean = cleanContent.startsWith(config.prefix);
     const mentionInteraction: boolean = msg.mentions.users.has(this.user.id);
     if (guild && !mentionInteraction && !prefixInteraction) {
       for (const module of this.modules) {
@@ -755,7 +755,7 @@ export default class Salty {
     let content = msg.content.replace(/<@!\d+>/g, "");
     if (prefixInteraction) {
       // Prefix is removed
-      content = content.slice(prefix.length);
+      content = content.slice(config.prefix.length);
     }
 
     // Fetches the actors of the action

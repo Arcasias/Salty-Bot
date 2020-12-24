@@ -1,8 +1,8 @@
 import { env } from "process";
 import Crew from "../../classes/Crew";
+import { config } from "../../classes/Database";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
-import { devIds, prefix } from "../../strings";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
@@ -32,7 +32,7 @@ const command: CommandDescriptor = {
           name: `Hosting`,
           value: env.MODE === "server" ? "Server" : "Local instance",
         },
-        { name: `Developers`, value: `${devIds.length} contributors` },
+        { name: `Developers`, value: `${config.devIds.length} contributors` },
         {
           name: `Crews`,
           value: `Handling ${crewsCount} crews`,
@@ -43,7 +43,7 @@ const command: CommandDescriptor = {
         },
         {
           name: `Prefix`,
-          value: `${prefix}`,
+          value: `${config.prefix}`,
         },
       ],
       inline: true,

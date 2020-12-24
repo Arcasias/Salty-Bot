@@ -1,11 +1,11 @@
 import { QueryResultRow } from "pg";
 import { Dictionnary, FieldDescriptor } from "../typings";
 import {
-  adjustDatabase,
   count,
   create,
   fields,
   read,
+  registerTable,
   remove,
   update,
 } from "./Database";
@@ -35,17 +35,12 @@ export default class Model {
   public id!: number;
   public createdAt!: number;
 
-  public static readonly fields: FieldDescriptor[];
-  public static readonly table: string;
-
-  public static get allFields(): FieldDescriptor[] {
-    return [...AUTO_FILLED_COLUMNS, ...this.fields];
-  }
-  private static registeredTables: Dictionnary<FieldDescriptor[]> = {};
+  public static fields: FieldDescriptor[];
+  public static table: string;
 
   constructor(values: Dictionnary<any> = {}) {
     const constructor = this.constructor as typeof Model;
-    for (const { name, nullable, defaultValue } of constructor.allFields) {
+    for (const { name, nullable, defaultValue } of constructor.fields) {
       const key = name as keyof Model;
       if (!nullable && values[key] === null && defaultValue === null) {
         throw new Error(
@@ -97,7 +92,7 @@ export default class Model {
     this.invalidateCache();
     const allDefaultedValues: Dictionnary<any>[] = allValues.map((vals) => {
       const values: Dictionnary<any> = {};
-      for (const { name, defaultValue } of this.allFields) {
+      for (const { name, defaultValue } of this.fields) {
         if (!AUTO_FILLED_COLUMNS.some((c) => c.name === name)) {
           values[name] = name in vals ? vals[name] : defaultValue;
         }
@@ -150,12 +145,9 @@ export default class Model {
     return results.map((r) => new this(r) as T);
   }
 
-  public static async verifyDatabase(): Promise<void> {
-    await adjustDatabase(this.registeredTables);
-  }
-
-  public static register<T extends typeof Model>(Extension: T): void {
-    this.registeredTables[Extension.table] = Extension.allFields;
+  public static createTable(table: string, fields: FieldDescriptor[]): string {
+    this.fields = [...AUTO_FILLED_COLUMNS, ...fields];
+    return registerTable(table, this.fields);
   }
 
   //===========================================================================

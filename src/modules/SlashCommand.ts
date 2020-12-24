@@ -1,6 +1,5 @@
 import axios from "axios";
 import { Snowflake } from "discord.js";
-import { applicationUrl } from "../strings";
 import { Module } from "../typings";
 import { log } from "../utils";
 
@@ -30,7 +29,7 @@ interface ApplicationCommand extends PartialApplicationCommand {
 }
 
 function getUrl(guildId?: string, commandId?: string): string {
-  let url: string = applicationUrl;
+  let url: string = process.env.APPLICATION_URL!;
   if (guildId) {
     url += `/guilds/${guildId}`;
   }
@@ -84,10 +83,9 @@ async function deleteCommand(commandId: string): Promise<boolean> {
 }
 
 const slashCommandModule: Module = {
-  commands: [],
   async onLoad() {
     const commands = await getCommands();
-    log(`Slash commands module > ${commands.length} available`);
+    log(`${commands.length} slash commands available`);
   },
 };
 

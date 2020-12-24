@@ -2,7 +2,7 @@ import axios from "axios";
 import { Message } from "discord.js";
 import salty from "../salty";
 import { CommandDescriptor, Module } from "../typings";
-import { log, meaning } from "../utils";
+import { meaning } from "../utils";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
 const CAT_PREFIX: string = "🐱";
@@ -63,9 +63,6 @@ const catsCommand: CommandDescriptor = {
 
 const catsModule: Module = {
   commands: [{ category: "misc", command: catsCommand }],
-  async onLoad() {
-    log("Cats module > loaded.");
-  },
   async onMessage(msg: Message) {
     // Only applies to "marked" channels
     if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {

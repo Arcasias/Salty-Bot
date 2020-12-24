@@ -15,6 +15,7 @@ import {
   format,
   formatDuration,
   getNumberReactions,
+  groupBy,
   isSorted,
   levenshtein,
   meaning,
@@ -183,6 +184,30 @@ test("percent", () => {
 
 test("getNumberReactions", () => {
   expect(getNumberReactions(3)).toEqual(["1️⃣", "2️⃣", "3️⃣"]);
+});
+
+test("groupBy", () => {
+  expect(groupBy(["bb", "aa", "aaa", "a"], "length")).toEqual({
+    1: ["a"],
+    2: ["bb", "aa"],
+    3: ["aaa"],
+  });
+  expect(
+    groupBy(
+      [
+        { x: "a", y: "a" },
+        { x: "b", y: "a" },
+        { x: "a", y: "b" },
+      ],
+      "x"
+    )
+  ).toEqual({
+    a: [
+      { x: "a", y: "a" },
+      { x: "a", y: "b" },
+    ],
+    b: [{ x: "b", y: "a" }],
+  });
 });
 
 test("isSorted", () => {
