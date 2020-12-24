@@ -1,13 +1,12 @@
-import { fields } from "../classes/Database";
+import { fields, separator } from "../classes/Database";
 import salty from "../salty";
-import { separator } from "../strings";
 import {
   ActionParameters,
   CategoryDescriptor,
   CommandDescriptor,
   Dictionnary,
   FieldDescriptor,
-  Module,
+  Module
 } from "../typings";
 import { choice, clean, log, meaning } from "../utils";
 import Command from "./../classes/Command";

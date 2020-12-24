@@ -1,13 +1,14 @@
 import { Client, QueryResult, QueryResultRow } from "pg";
-import { separator } from "../strings";
 import {
   CharFieldOptions,
   Dictionnary,
   FieldDescriptor,
   FieldOptions,
-  FieldStructure,
+  FieldStructure
 } from "../typings";
 import { error, log, warn } from "../utils";
+
+export const separator: string = "//";
 
 const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
 let clientInstance: Client | null = null;

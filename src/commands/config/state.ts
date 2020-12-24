@@ -2,7 +2,7 @@ import { env } from "process";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
-import { devIds } from "../../strings";
+import { devIds, prefix } from "../../strings";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
@@ -40,6 +40,10 @@ const command: CommandDescriptor = {
         {
           name: `Sailors`,
           value: `Watching over ${sailorsCount} sailors`,
+        },
+        {
+          name: `Prefix`,
+          value: `${prefix}`,
         },
       ],
       inline: true,
