@@ -60,7 +60,7 @@ const command: CommandDescriptor = {
               );
             }
             await Crew.update(crew.id, {
-              default_role: role.id,
+              defaultRole: role.id,
             });
             return salty.success(
               msg,
@@ -69,20 +69,20 @@ const command: CommandDescriptor = {
             );
           }
           case "remove": {
-            if (!crew.default_channel) {
+            if (!crew.defaultChannel) {
               return salty.info(msg, "No default role set.");
             }
-            await Crew.update(crew.id, { default_role: null });
+            await Crew.update(crew.id, { defaultRole: null });
             return salty.success(
               msg,
               "default role has been successfuly removed"
             );
           }
           default: {
-            if (!crew.default_role) {
+            if (!crew.defaultRole) {
               return salty.info(msg, "No default role set");
             } else {
-              const role = guild.roles.cache.get(crew.default_role);
+              const role = guild.roles.cache.get(crew.defaultRole);
               return salty.embed(msg, {
                 title: `Default role is ${role?.name}`,
                 description: "Newcomers will automatically get this role.",

@@ -30,7 +30,7 @@ const command: CommandDescriptor = {
       case "add":
       case "set": {
         await Crew.update(crew.id, {
-          default_channel: channel.id,
+          defaultChannel: channel.id,
         });
         return salty.success(
           msg,
@@ -42,21 +42,21 @@ const command: CommandDescriptor = {
         );
       }
       case "remove": {
-        if (!crew.default_channel) {
+        if (!crew.defaultChannel) {
           return salty.info(msg, "no default bot channel set");
         }
-        await Crew.update(crew.id, { default_channel: null });
+        await Crew.update(crew.id, { defaultChannel: null });
         return salty.success(
           msg,
           "default bot channel has been successfuly removed"
         );
       }
       default: {
-        if (!crew.default_channel) {
+        if (!crew.defaultChannel) {
           return salty.info(msg, "no default bot channel set");
         }
-        const { name } = salty.getTextChannel(crew.default_channel);
-        if (channel.id === crew.default_channel) {
+        const { name } = salty.getTextChannel(crew.defaultChannel);
+        if (channel.id === crew.defaultChannel) {
           return salty.info(msg, "this is the current default channel", {
             description: "I'll speak right here when I need to",
           });

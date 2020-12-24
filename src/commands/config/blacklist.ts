@@ -38,7 +38,7 @@ const command: CommandDescriptor = {
             "Can't add a Salty dev to the blacklist: they're too nice for that!"
           );
         }
-        await Sailor.update(target.sailor.id, { black_listed: true });
+        await Sailor.update(target.sailor.id, { blackListed: true });
         return salty.success(msg, `<mention> added to the blacklist`);
       }
       case "remove": {
@@ -51,10 +51,10 @@ const command: CommandDescriptor = {
             "Well... as you might expect, I'm not in the blacklist."
           );
         }
-        if (!target.sailor.black_listed) {
+        if (!target.sailor.blackListed) {
           return salty.info(msg, `**${target.name}** is not in the blacklist.`);
         }
-        await Sailor.update(target.sailor.id, { black_listed: false });
+        await Sailor.update(target.sailor.id, { blackListed: false });
         return salty.success(msg, `<mention> removed from the blacklist`);
       }
       default: {
@@ -67,17 +67,17 @@ const command: CommandDescriptor = {
         if (target) {
           return salty.info(
             msg,
-            target.sailor?.black_listed
+            target.sailor?.blackListed
               ? "<mention> is black-listed"
               : "<mention> isn't black-listed... yet"
           );
         }
         const blackListedSailors: Sailor[] = await Sailor.search({
-          black_listed: true,
+          blackListed: true,
         });
         const blackListedNames: string[] = [];
-        for (const { discord_id } of blackListedSailors) {
-          const name = msg.guild?.members.cache.get(discord_id)?.displayName;
+        for (const { discordId } of blackListedSailors) {
+          const name = msg.guild?.members.cache.get(discordId)?.displayName;
           if (name) {
             blackListedNames.push(name);
           }

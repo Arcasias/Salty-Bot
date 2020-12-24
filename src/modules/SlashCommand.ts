@@ -87,7 +87,7 @@ const slashCommandModule: Module = {
   commands: [],
   async onLoad() {
     const commands = await getCommands();
-    log(`Slash commands module > (${commands.length} available)`);
+    log(`Slash commands module > ${commands.length} available`);
   },
 };
 

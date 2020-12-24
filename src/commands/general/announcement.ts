@@ -17,11 +17,11 @@ const command: CommandDescriptor = {
   async action({ args, msg }) {
     const crews: Crew[] = await Crew.search();
     let withDefault = 0;
-    for (const { discord_id, default_channel } of crews) {
-      if (default_channel) {
-        const guild = salty.bot.guilds.cache.get(discord_id);
+    for (const { discordId, defaultChannel } of crews) {
+      if (defaultChannel) {
+        const guild = salty.bot.guilds.cache.get(discordId);
         if (guild) {
-          const channel = guild.channels.cache.get(default_channel);
+          const channel = guild.channels.cache.get(defaultChannel);
           if (channel instanceof TextChannel) {
             withDefault += 1;
             salty.message(channel, args.join(" "));

@@ -1,36 +1,58 @@
 import { QueryResultRow } from "pg";
-import { Dictionnary, FieldsDescriptor } from "../typings";
-import { count, create, read, remove, update } from "./Database";
+import { Dictionnary, FieldDescriptor } from "../typings";
+import {
+  adjustDatabase,
+  count,
+  create,
+  fields,
+  read,
+  remove,
+  update,
+} from "./Database";
 
+const AUTO_FILLED_COLUMNS = [
+  fields.serial("id"),
+  fields.timestamp("createdAt"),
+];
 const CACHE_LIMIT = 1000;
 const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
+function ensureContent(object: any, method: string, param: string): void {
+  let hasContent: boolean;
+  if (Array.isArray(object)) {
+    hasContent = Boolean(object.length);
+  } else if (typeof object === "object" && object !== null) {
+    hasContent = Boolean(Object.keys(object).length);
+  } else {
+    hasContent = Boolean(object);
+  }
+  if (!hasContent) {
+    throw new Error(`Param "${param}" of method "${method}" is empty`);
+  }
+}
+
 export default class Model {
   public id!: number;
+  public createdAt!: number;
 
-  public static readonly fields: FieldsDescriptor = {};
+  public static readonly fields: FieldDescriptor[];
   public static readonly table: string;
 
-  constructor(values: FieldsDescriptor = {}) {
-    const { name, fields } = this.constructor as typeof Model;
+  public static get allFields(): FieldDescriptor[] {
+    return [...AUTO_FILLED_COLUMNS, ...this.fields];
+  }
+  private static registeredTables: Dictionnary<FieldDescriptor[]> = {};
 
-    if (!("id" in values)) {
-      throw new Error(`Missing field "id" on stored model ${name}.`);
-    }
-    this.id = values.id!;
-    delete values.id;
-    if (Object.keys(fields).length) {
-      const toAssign = Object.assign({}, fields);
-      for (const key in values) {
-        if (key in toAssign) {
-          this[<keyof Model>key] = values[key];
-          delete toAssign[key];
-        }
+  constructor(values: Dictionnary<any> = {}) {
+    const constructor = this.constructor as typeof Model;
+    for (const { name, nullable, defaultValue } of constructor.allFields) {
+      const key = name as keyof Model;
+      if (!nullable && values[key] === null && defaultValue === null) {
+        throw new Error(
+          `Missing field "${key}" on stored model ${constructor.name}.`
+        );
       }
-      // Apply default values to unassigned fields
-      for (const key in toAssign) {
-        this[<keyof Model>key] = toAssign[key];
-      }
+      this[key] = key in values ? values[key] : defaultValue;
     }
   }
 
@@ -41,7 +63,6 @@ export default class Model {
   public static async search<T extends Model>(
     idsOrWhere: number | number[] | Dictionnary<any> = {}
   ): Promise<T[]> {
-    this.__ensureTable();
     let where: Dictionnary<any> | undefined;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
       where = { id: idsOrWhere };
@@ -49,13 +70,12 @@ export default class Model {
       where = idsOrWhere;
     }
     const results = await this.__cache(read, this.table, where);
-    return results.map((values: FieldsDescriptor) => <T>new this(values));
+    return results.map((values: Dictionnary<any>) => new this(values) as T);
   }
 
   public static async count(
     idsOrWhere?: number | number[] | Dictionnary<any>
   ): Promise<number> {
-    this.__ensureTable();
     let where: Dictionnary<any> | undefined;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
       where = { id: idsOrWhere };
@@ -71,19 +91,24 @@ export default class Model {
    * value) and returns the list of instantiated objects.
    */
   public static async create<T extends Model>(
-    ...allValues: FieldsDescriptor[]
+    ...allValues: Dictionnary<any>[]
   ): Promise<T[]> {
-    this.__ensureTable();
-    this.__ensureContent(allValues, "create", "values");
-    this.__invalidateCache();
-    const defaultValues = allValues.map((values) =>
-      Object.assign({}, this.fields, values)
-    );
-    const results: FieldsDescriptor[] = await create(
+    ensureContent(allValues, "create", "values");
+    this.invalidateCache();
+    const allDefaultedValues: Dictionnary<any>[] = allValues.map((vals) => {
+      const values: Dictionnary<any> = {};
+      for (const { name, defaultValue } of this.allFields) {
+        if (!AUTO_FILLED_COLUMNS.some((c) => c.name === name)) {
+          values[name] = name in vals ? vals[name] : defaultValue;
+        }
+      }
+      return values;
+    });
+    const results: Dictionnary<any>[] = await create(
       this.table,
-      ...defaultValues
+      ...allDefaultedValues
     );
-    const models = results.map((values) => <T>new this(values));
+    const models = results.map((values) => new this(values) as T);
     return models;
   }
 
@@ -93,9 +118,8 @@ export default class Model {
   static async remove<T extends Model>(
     idsOrWhere: number | number[] | Dictionnary<any>
   ): Promise<T[]> {
-    this.__ensureTable();
-    this.__ensureContent(idsOrWhere, "remove", "id | ids | where");
-    this.__invalidateCache();
+    ensureContent(idsOrWhere, "remove", "id | ids | where");
+    this.invalidateCache();
     let where: Dictionnary<any>;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
       where = { id: idsOrWhere };
@@ -103,7 +127,7 @@ export default class Model {
       where = idsOrWhere;
     }
     const results = await remove(this.table, where);
-    return results.map((r) => <T>new this(r));
+    return results.map((r) => new this(r) as T);
   }
 
   /**
@@ -111,12 +135,11 @@ export default class Model {
    */
   static async update<T extends Model>(
     idsOrWhere: number | number[] | Dictionnary<any>,
-    values: FieldsDescriptor
+    values: Dictionnary<any>
   ): Promise<T[]> {
-    this.__ensureTable();
-    this.__ensureContent(idsOrWhere, "update", "id | ids | options");
-    this.__ensureContent(values, "update", "values");
-    this.__invalidateCache();
+    ensureContent(idsOrWhere, "update", "id | ids | options");
+    ensureContent(values, "update", "values");
+    this.invalidateCache();
     let where: Dictionnary<any>;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
       where = { id: idsOrWhere };
@@ -124,7 +147,15 @@ export default class Model {
       where = idsOrWhere;
     }
     const results = await update(this.table, where, values);
-    return results.map((r) => <T>new this(r));
+    return results.map((r) => new this(r) as T);
+  }
+
+  public static async verifyDatabase(): Promise<void> {
+    await adjustDatabase(this.registeredTables);
+  }
+
+  public static register<T extends typeof Model>(Extension: T): void {
+    this.registeredTables[Extension.table] = Extension.allFields;
   }
 
   //===========================================================================
@@ -159,35 +190,11 @@ export default class Model {
     return JSON.parse(JSON.stringify(cache[cacheKey]));
   }
 
-  private static __ensureTable(): void {
-    if (!this.table) {
-      throw new Error(`Model "${this.name}" is not stored in the database.`);
-    }
-  }
-
-  private static __ensureContent(
-    object: any,
-    method: string,
-    param: string
-  ): void {
-    let hasContent: boolean;
-    if (Array.isArray(object)) {
-      hasContent = Boolean(object.length);
-    } else if (typeof object === "object" && object !== null) {
-      hasContent = Boolean(Object.keys(object).length);
-    } else {
-      hasContent = Boolean(object);
-    }
-    if (!hasContent) {
-      throw new Error(`Param "${param}" of method "${method}" is empty`);
-    }
-  }
-
   /**
    * To call on an update/deletion on the model to invalidate the current
    * cache.
    */
-  private static __invalidateCache(): void {
+  private static invalidateCache(): void {
     MODEL_CACHE[this.name] = {};
   }
 }

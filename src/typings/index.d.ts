@@ -109,6 +109,28 @@ export interface Waifu {
   readonly image: string[];
 }
 
+export interface CharFieldOptions extends FieldOptions<string> {
+  length: number;
+}
+export interface FieldOptions<T> {
+  defaultValue?: T;
+  nullable?: boolean;
+}
+export interface FieldDescriptor {
+  name: string;
+  defaultValue: any;
+  nullable?: boolean;
+  structure: FieldStructure;
+  type: "CHAR" | "VARCHAR" | "BOOLEAN" | "SERIAL" | "TIMESTAMPTZ";
+}
+export interface FieldStructure {
+  columnName: string;
+  dataType: string;
+  characterMaximumLength?: number;
+  columnDefault?: any;
+  isNullable: "YES" | "NO";
+}
+
 export type CategoryId =
   | "config"
   | "general"
@@ -122,7 +144,6 @@ export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
 export type CommandChannel = "all" | "guild";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
-export type FieldsDescriptor = Dictionnary<any>;
 export type MeaningKeys = keyof Meanings | "string";
 export type Meanings = {
   add: string[];

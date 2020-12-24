@@ -1,3 +1,4 @@
+import { fields } from "../classes/Database";
 import salty from "../salty";
 import { separator } from "../strings";
 import {
@@ -5,7 +6,7 @@ import {
   CategoryDescriptor,
   CommandDescriptor,
   Dictionnary,
-  FieldsDescriptor,
+  FieldDescriptor,
   Module,
 } from "../typings";
 import { choice, clean, log, meaning } from "../utils";
@@ -106,12 +107,12 @@ class QuickCommand extends Model {
   public aliases!: string[];
   public answers!: string[];
 
-  public static readonly fields: FieldsDescriptor = {
-    name: "",
-    aliases: [],
-    answers: [],
-  };
   public static readonly table = "commands";
+  public static readonly fields: FieldDescriptor[] = [
+    fields.varchar("name", { length: 255 }),
+    fields.varchar("aliases", { length: 1000 }),
+    fields.varchar("answers", { length: 2000 }),
+  ];
 
   /**
    * Creates a command descriptor from the quick command instance.
@@ -167,5 +168,7 @@ const quickCommandModule: Module = {
     log(`QuickCommand module > ${commands.length} dynamic commands loaded.`);
   },
 };
+
+Model.register(QuickCommand);
 
 export default quickCommandModule;

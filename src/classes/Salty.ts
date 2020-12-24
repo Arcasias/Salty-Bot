@@ -28,7 +28,6 @@ import {
   CategoryId,
   CommandDescriptor,
   Dictionnary,
-  FieldsDescriptor,
   MessageAction,
   MessageActionsDescriptor,
   MessageActor,
@@ -54,6 +53,7 @@ import {
 import Command from "./Command";
 import Crew from "./Crew";
 import { connect, disconnect } from "./Database";
+import Model from "./Model";
 import Sailor from "./Sailor";
 
 const readFolder = promisify(readdir);
@@ -76,7 +76,7 @@ export default class Salty {
   public get sailor() {
     return new Sailor({
       id: false,
-      discord_id: this.user.id,
+      discordId: this.user.id,
     });
   }
 
@@ -411,9 +411,7 @@ export default class Salty {
   public async start(token: string): Promise<void> {
     log(`Initialising Salty (${env.MODE} environment).`);
     this.token = token;
-    await connect();
-    await this.loadCommands();
-    await this.loadModules();
+    await this.load();
     await this.bot.login(this.token);
   }
 
@@ -500,20 +498,20 @@ export default class Salty {
 
     // Get existing sailors
     const existingSailors: Sailor[] = await Sailor.search({
-      discord_id: idsToFetch,
+      discordId: idsToFetch,
     });
     for (const sailor of existingSailors) {
-      userSailors.set(sailor.discord_id, sailor);
+      userSailors.set(sailor.discordId, sailor);
     }
 
     // Fill with new sailors if needed
-    const idsToCreate: { discord_id: string }[] = [...userSailors]
+    const idsToCreate: { discordId: string }[] = [...userSailors]
       .filter(([id, sailor]) => !sailor)
-      .map(([id]) => ({ discord_id: id }));
+      .map(([id]) => ({ discordId: id }));
     if (idsToCreate.length) {
       const newSailors: Sailor[] = await Sailor.create(...idsToCreate);
       for (const sailor of newSailors) {
-        userSailors.set(sailor.discord_id, sailor);
+        userSailors.set(sailor.discordId, sailor);
       }
     }
 
@@ -534,6 +532,48 @@ export default class Salty {
     });
 
     return { source, targets };
+  }
+
+  /**
+   * Sequentially performs the following actions in order:
+   * 1. Loads all categories of commands and related commands
+   * 2. Loads all modules (synchronous part, i.e. class definition etc.)
+   * 3. Establishes a connection to the database
+   * 4. Ensures that the database schema matches the registered models
+   * 5. Loads all modules asynchonous actions
+   */
+  private async load(): Promise<void> {
+    // COMMANDS
+    const categoryFolders = await readFolder(join(sourceDir, commandsDir));
+    await Promise.all(
+      // Load each category found in the "commands" folder.
+      categoryFolders.map((categoryFolder) =>
+        this.loadCommandCategory(categoryFolder as CategoryId)
+      )
+    );
+    log(`${Command.list.size} static commands loaded.`);
+
+    // MODULES
+    const moduleFileNames = await readFolder(join(sourceDir, modulesDir));
+    // Load each module found in the "modules" folder.
+    await Promise.all(
+      moduleFileNames.map((fileName) => this.loadModule(fileName))
+    );
+    const moduleCommands = this.modules.reduce(
+      (acc, mod) => acc + mod.commands.length,
+      0
+    );
+
+    // DATABASE
+    await connect();
+    await Model.verifyDatabase();
+
+    // ADDITIONAL MODULE LOADING
+    await Promise.all(this.modules.map((m) => m.onLoad && m.onLoad()));
+
+    log(
+      `${this.modules.length} modules loaded with ${moduleCommands} additionnal static commands.`
+    );
   }
 
   /**
@@ -578,49 +618,21 @@ export default class Salty {
     );
   }
 
-  private async loadCommands(): Promise<void> {
-    const categoryFolders = await readFolder(join(sourceDir, commandsDir));
-    await Promise.all(
-      // Load each category found in the "commands" folder.
-      categoryFolders.map((categoryFolder) =>
-        this.loadCommandCategory(categoryFolder as CategoryId)
-      )
-    );
-    log(`${Command.list.size} static commands loaded.`);
-  }
-
   /**
    * @param fileName
    */
   private async loadModule(fileName: string): Promise<void> {
-    if (SCRIPT_REGEX.test(fileName)) {
-      const importedModule = await import(
-        ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
-      );
-      const module = importedModule.default as Module;
-      if (module.onLoad) {
-        await module.onLoad();
-      }
-      this.modules.push(module);
-      for (const { category, command } of module.commands) {
-        Command.registerCommand(command, category);
-      }
+    if (!SCRIPT_REGEX.test(fileName)) {
+      return;
     }
-  }
-
-  private async loadModules(): Promise<void> {
-    const moduleFileNames = await readFolder(join(sourceDir, modulesDir));
-    // Load each module found in the "modules" folder.
-    await Promise.all(
-      moduleFileNames.map((fileName) => this.loadModule(fileName))
+    const importedModule = await import(
+      ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
     );
-    const moduleCommands = this.modules.reduce(
-      (acc, mod) => acc + mod.commands.length,
-      0
-    );
-    log(
-      `${this.modules.length} modules loaded with ${moduleCommands} additionnal static commands.`
-    );
+    const module = importedModule.default as Module;
+    this.modules.push(module);
+    for (const { category, command } of module.commands) {
+      Command.registerCommand(command, category);
+    }
   }
 
   //===========================================================================
@@ -630,8 +642,8 @@ export default class Salty {
   private async onChannelDelete(channel: Channel): Promise<any> {
     if (channel instanceof GuildChannel) {
       await Crew.update(
-        { default_channel: channel.id },
-        { default_channel: null }
+        { defaultChannel: channel.id },
+        { defaultChannel: null }
       );
     }
   }
@@ -642,12 +654,12 @@ export default class Salty {
   }
 
   private async onGuildCreate(guild: Guild): Promise<any> {
-    Crew.create({ discord_id: guild.id });
+    Crew.create({ discordId: guild.id });
   }
 
   private async onGuildDelete(guild: Guild): Promise<any> {
     if (guild.members.cache.has(this.user.id)) {
-      await Crew.remove({ discord_id: guild.id });
+      await Crew.remove({ discordId: guild.id });
     }
   }
 
@@ -655,15 +667,15 @@ export default class Salty {
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
     const guild = await Crew.get(member.guild.id);
-    if (guild?.default_channel) {
-      const channel = this.getTextChannel(guild.default_channel);
+    if (guild?.defaultChannel) {
+      const channel = this.getTextChannel(guild.defaultChannel);
       this.message(
         channel,
         `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
       );
     }
-    if (guild?.default_role) {
-      member.roles.add(guild.default_role);
+    if (guild?.defaultRole) {
+      member.roles.add(guild.defaultRole);
     }
   }
 
@@ -671,8 +683,8 @@ export default class Salty {
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
     const guild = await Crew.get(member.guild.id);
-    if (guild?.default_channel) {
-      const channel = this.getTextChannel(guild.default_channel);
+    if (guild?.defaultChannel) {
+      const channel = this.getTextChannel(guild.defaultChannel);
       this.message(
         channel,
         `Well, looks like ${member.displayName} got bored of us :c`
@@ -688,11 +700,11 @@ export default class Salty {
     );
     const guilds: Crew[] = await Crew.search();
     const toRemove: number[] = guilds
-      .filter((g) => !activeGuilds.includes(g.discord_id))
+      .filter((g) => !activeGuilds.includes(g.discordId))
       .map((g) => g.id);
-    const toCreate: FieldsDescriptor[] = activeGuilds
-      .filter((id) => !guilds.some((g) => g.discord_id === id))
-      .map((id) => ({ discord_id: id }));
+    const toCreate: Dictionnary<any>[] = activeGuilds
+      .filter((id) => !guilds.some((g) => g.discordId === id))
+      .map((id) => ({ discordId: id }));
     if (toCreate.length) {
       await Crew.create(...toCreate);
     }
@@ -701,8 +713,8 @@ export default class Salty {
       Crew.remove(toRemove);
     }
     for (const guild of guilds) {
-      if (guild.default_channel) {
-        const channel = this.getTextChannel(guild.default_channel);
+      if (guild.defaultChannel) {
+        const channel = this.getTextChannel(guild.defaultChannel);
         this.message(channel, choice(intro));
       }
     }
@@ -748,7 +760,7 @@ export default class Salty {
 
     // Fetches the actors of the action
     const { source, targets } = await this.getMessageActors(msg);
-    if (source.sailor.black_listed) {
+    if (source.sailor.blackListed) {
       // The action is discarded if the user is black-listed
       return;
     }
