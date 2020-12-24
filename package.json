@@ -27,8 +27,7 @@
     "erlpack": "github:discordapp/erlpack",
     "pg": "^8.5.1",
     "pureimage": "^0.2.5",
-    "ts-node": "^9.1.1",
-    "ytdl-core": "^2.1.7"
+    "ts-node": "^9.1.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.19",
@@ -41,8 +40,7 @@
     "typescript": "^3.9.7"
   },
   "engines": {
-    "node": "15.x",
-    "npm": "7.x"
+    "node": "15.x"
   },
   "jest": {
     "moduleFileExtensions": [
