@@ -1,5 +1,6 @@
 import { QueryResultRow } from "pg";
 import { Dictionnary, FieldDescriptor } from "../typings";
+import { ensureContent } from "../utils";
 import {
   count,
   create,
@@ -17,37 +18,20 @@ const AUTO_FILLED_COLUMNS = [
 const CACHE_LIMIT = 1000;
 const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
-function ensureContent(object: any, method: string, param: string): void {
-  let hasContent: boolean;
-  if (Array.isArray(object)) {
-    hasContent = Boolean(object.length);
-  } else if (typeof object === "object" && object !== null) {
-    hasContent = Boolean(Object.keys(object).length);
-  } else {
-    hasContent = Boolean(object);
-  }
-  if (!hasContent) {
-    throw new Error(`Param "${param}" of method "${method}" is empty`);
-  }
-}
-
 export default class Model {
   public id!: number;
-  public createdAt!: number;
+  public createdAt!: Date;
 
   public static fields: FieldDescriptor[];
   public static table: string;
 
   constructor(values: Dictionnary<any> = {}) {
     const constructor = this.constructor as typeof Model;
-    for (const { name, nullable, defaultValue } of constructor.fields) {
-      const key = name as keyof Model;
-      if (!nullable && values[key] === null && defaultValue === null) {
-        throw new Error(
-          `Missing field "${key}" on stored model ${constructor.name}.`
-        );
+    for (const { name } of constructor.fields) {
+      if (!(name in values)) {
+        `Missing field "${name}" on model ${constructor.name}.`;
       }
-      this[key] = key in values ? values[key] : defaultValue;
+      this[name as keyof Model] = values[name];
     }
   }
 
@@ -88,7 +72,7 @@ export default class Model {
   public static async create<T extends Model>(
     ...allValues: Dictionnary<any>[]
   ): Promise<T[]> {
-    ensureContent(allValues, "create", "values");
+    ensureContent(allValues, "values");
     this.invalidateCache();
     const allDefaultedValues: Dictionnary<any>[] = allValues.map((vals) => {
       const values: Dictionnary<any> = {};
@@ -113,7 +97,7 @@ export default class Model {
   static async remove<T extends Model>(
     idsOrWhere: number | number[] | Dictionnary<any>
   ): Promise<T[]> {
-    ensureContent(idsOrWhere, "remove", "id | ids | where");
+    ensureContent(idsOrWhere, "id | ids | where");
     this.invalidateCache();
     let where: Dictionnary<any>;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
@@ -132,8 +116,8 @@ export default class Model {
     idsOrWhere: number | number[] | Dictionnary<any>,
     values: Dictionnary<any>
   ): Promise<T[]> {
-    ensureContent(idsOrWhere, "update", "id | ids | options");
-    ensureContent(values, "update", "values");
+    ensureContent(idsOrWhere, "id | ids | options");
+    ensureContent(values, "values");
     this.invalidateCache();
     let where: Dictionnary<any>;
     if (typeof idsOrWhere === "number" || Array.isArray(idsOrWhere)) {
@@ -145,6 +129,11 @@ export default class Model {
     return results.map((r) => new this(r) as T);
   }
 
+  /**
+   * Registers a table structure based on the given name and field descriptors.
+   * @param table
+   * @param fields
+   */
   public static createTable(table: string, fields: FieldDescriptor[]): string {
     this.fields = [...AUTO_FILLED_COLUMNS, ...fields];
     return registerTable(table, this.fields);
@@ -179,7 +168,7 @@ export default class Model {
       // Registers the new result at the querried key
       cache[cacheKey] = await dbFunction(table, ...args);
     }
-    return JSON.parse(JSON.stringify(cache[cacheKey]));
+    return cache[cacheKey];
   }
 
   /**

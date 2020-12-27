@@ -7,7 +7,7 @@ import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
 const command: CommandDescriptor = {
   name: "state",
-  aliases: ["git", "local", "server"],
+  aliases: ["git", "local", "server", "who", "salty"],
   help: [
     {
       argument: null,
@@ -24,9 +24,7 @@ const command: CommandDescriptor = {
     const options: SaltyEmbedOptions = {
       title: `Salty Bot`,
       url: process.env.GITHUB_PAGE!,
-      description: `Last started on ${
-        salty.startTime.toString().split(" GMT")[0]
-      }`,
+      description: `Hi! My name is Salty. Here are some useful informations about my current state:`,
       fields: [
         {
           name: `Hosting`,
@@ -48,9 +46,11 @@ const command: CommandDescriptor = {
       ],
       inline: true,
     };
-    if (env.DEBUG === "true") {
-      options.footer = { text: `Debug mode active` };
-    }
+    options.footer = {
+      text: `Last started on ${salty.startTime.toString().split(" GMT")[0]}.${
+        env.DEBUG === "true" ? " Debug mode is active." : ""
+      }`,
+    };
     await salty.embed(msg, options);
   },
 };

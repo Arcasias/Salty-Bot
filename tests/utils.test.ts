@@ -11,6 +11,7 @@ import {
   choice,
   clean,
   ellipsis,
+  ensureContent,
   escapeRegex,
   format,
   formatDuration,
@@ -28,8 +29,7 @@ import {
   shuffle,
   sort,
   stringToReaction,
-  title,
-  toAny
+  title
 } from "../src/utils";
 
 //=============================================================================
@@ -151,6 +151,20 @@ test("ellipsis", () => {
 
   expect(ellipsis(longText)).toHaveLength(2000);
   expect(ellipsis(longText, 5)).toBe("A ...");
+});
+
+test("ensureContent", () => {
+  expect(() => ensureContent(0)).toThrow();
+  expect(() => ensureContent(false)).toThrow();
+  expect(() => ensureContent("")).toThrow();
+  expect(() => ensureContent([])).toThrow();
+  expect(() => ensureContent({})).toThrow();
+
+  expect(() => ensureContent(1)).not.toThrow();
+  expect(() => ensureContent(true)).not.toThrow();
+  expect(() => ensureContent("aaa")).not.toThrow();
+  expect(() => ensureContent([false])).not.toThrow();
+  expect(() => ensureContent({ a: "x" })).not.toThrow();
 });
 
 test("escapeRegex", () => {
@@ -297,13 +311,4 @@ test("stringToReaction", () => {
 test("title", () => {
   expect(title("arcasias")).toBe("Arcasias");
   expect(title("Arcasias")).toBe("Arcasias");
-});
-
-test("toAny", () => {
-  expect(toAny("abc")).toBe("abc");
-  expect(toAny("null")).toBe(null);
-  expect(toAny("undefined")).toBe(undefined);
-  expect(toAny("true")).toBe(true);
-  expect(toAny("FALSE")).toBe(false);
-  expect(toAny("12.3")).toBe(12.3);
 });

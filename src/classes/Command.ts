@@ -13,7 +13,7 @@ import {
   CommandHelpSection,
   MessageActor,
 } from "../typings";
-import { error, isAdmin, isDev, isOwner } from "../utils";
+import { error, isAdmin, isDev, isOwner, sort } from "../utils";
 
 const permissions: {
   [key in CommandAccess]: (user: User, guild: Guild) => boolean;
@@ -97,7 +97,7 @@ export default class Command implements CommandDescriptor {
   }
 
   public static getOrderedCategories(): Category[] {
-    return [...this.categories.values()].sort((a, b) => a.order - b.order);
+    return sort([...this.categories.values()], "order");
   }
 
   public static registerCategory(

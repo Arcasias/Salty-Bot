@@ -8,10 +8,10 @@ import {
 } from "../typings";
 import { error, groupBy, log, warn } from "../utils";
 
-export const separator: string = "//";
 export const config: Dictionnary<any> = {};
 
-const SEPARATOR_REGEX = new RegExp(`^${separator}.*${separator}$`);
+const DB_SEPARATOR: string = "//";
+const SEPARATOR_REGEX = new RegExp(`^${DB_SEPARATOR}.*${DB_SEPARATOR}$`);
 let clientInstance: Client | null = null;
 
 // The database parameters are extracted from the URL to minimize the amount of
@@ -54,19 +54,30 @@ function buildFieldQuery({
   }
   if (defaultValue !== null) {
     const defVal = ["CHAR", "VARCHAR"].includes(type)
-      ? `'${defaultValue}'`
-      : defaultValue;
+      ? `'${jsToDbValue(defaultValue)}'`
+      : jsToDbValue(defaultValue);
     query += ` DEFAULT ${defVal}`;
   }
   return query;
 }
 
 /**
- * Converts a camelString to a snake_string.
- * @param camel
+ * Converts a snake_string to a camelString.
+ * @param snake
  */
-function camelToSnake(camel: string): string {
-  return camel.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`);
+function dbToJsKey(snake: string): string {
+  return snake.replace(/_(\w)/g, (_, nextChar) => nextChar.toUpperCase());
+}
+
+function dbToJsValue(dbVal: any): any {
+  if (typeof dbVal === "string" && SEPARATOR_REGEX.test(dbVal)) {
+    return dbVal
+      .slice(DB_SEPARATOR.length, -DB_SEPARATOR.length)
+      .split(DB_SEPARATOR)
+      .filter((w: string) => Boolean(w.trim()));
+  } else {
+    return dbVal;
+  }
 }
 
 /**
@@ -110,15 +121,25 @@ function ensureClient(method: string, mustHaveClient: boolean = true): Client {
 function formatValues(values: Dictionnary<any>) {
   const formattedValues: Dictionnary<any> = {};
   for (const jsKey in values) {
-    const key = camelToSnake(jsKey);
-    const value = values[jsKey];
-    if (Array.isArray(value)) {
-      formattedValues[key] = separator + value.join(separator) + separator;
-    } else {
-      formattedValues[key] = value;
-    }
+    formattedValues[jsToDbKey(jsKey)] = dbToJsValue(values[jsKey]);
   }
   return formattedValues;
+}
+
+/**
+ * Converts a camelString to a snake_string.
+ * @param camel
+ */
+function jsToDbKey(camel: string): string {
+  return camel.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`);
+}
+
+function jsToDbValue(jsVal: any): any {
+  if (Array.isArray(jsVal)) {
+    return DB_SEPARATOR + jsVal.join(DB_SEPARATOR) + DB_SEPARATOR;
+  } else {
+    return jsVal;
+  }
 }
 
 /**
@@ -126,21 +147,12 @@ function formatValues(values: Dictionnary<any>) {
  * seperator is found.
  * @param result
  */
-function parseResult({ rows }: QueryResult) {
+function parseResult({ rows }: QueryResult): Dictionnary<any>[] {
   const parsedRows: Dictionnary<any>[] = [];
   for (const row of rows) {
     const parsedRow: Dictionnary<any> = {};
     for (const dbKey in row) {
-      const key = snakeToCamel(dbKey);
-      const value = row[dbKey];
-      if (typeof value === "string" && SEPARATOR_REGEX.test(value)) {
-        parsedRow[key] = value
-          .slice(separator.length, -separator.length)
-          .split(separator)
-          .filter((w: string) => Boolean(w.trim()));
-      } else {
-        parsedRow[key] = value;
-      }
+      parsedRow[dbToJsKey(dbKey)] = dbToJsValue(row[dbKey]);
     }
     parsedRows.push(parsedRow);
   }
@@ -158,14 +170,6 @@ function sanitize(table: string): string {
   return table.replace(/[^\w\.\-]/g, "");
 }
 
-/**
- * Converts a snake_string to a camelString.
- * @param snake
- */
-function snakeToCamel(snake: string): string {
-  return snake.replace(/_(\w)/g, (_, nextChar) => nextChar.toUpperCase());
-}
-
 //=============================================================================
 // Database fields
 //=============================================================================
@@ -181,7 +185,7 @@ function boolean(
     defaultValue: defVal,
     nullable: false,
     structure: {
-      columnName: camelToSnake(name),
+      columnName: jsToDbKey(name),
       dataType: "boolean",
       isNullable: "NO",
       columnDefault: String(defVal),
@@ -200,11 +204,11 @@ function char(
     defaultValue: defVal,
     nullable,
     structure: {
-      columnName: camelToSnake(name),
+      columnName: jsToDbKey(name),
       dataType: "character",
       characterMaximumLength: length,
       isNullable: nullable ? "YES" : "NO",
-      columnDefault: defVal,
+      columnDefault: jsToDbValue(defVal),
     },
   };
 }
@@ -216,7 +220,7 @@ function serial(name: string): FieldDescriptor {
     defaultValue: null,
     nullable: false,
     structure: {
-      columnName: camelToSnake(name),
+      columnName: jsToDbKey(name),
       dataType: "integer",
       isNullable: "NO",
     },
@@ -234,7 +238,7 @@ function timestamp(name: string): FieldDescriptor {
     defaultValue: "CURRENT_TIMESTAMP",
     nullable: false,
     structure: {
-      columnName: camelToSnake(name),
+      columnName: jsToDbKey(name),
       dataType: "timestamp with time zone",
       isNullable: "NO",
     },
@@ -252,11 +256,11 @@ function varchar(
     defaultValue: defVal,
     nullable,
     structure: {
-      columnName: camelToSnake(name),
+      columnName: jsToDbKey(name),
       dataType: "character varying",
       characterMaximumLength: length,
       isNullable: nullable ? "YES" : "NO",
-      columnDefault: defVal,
+      columnDefault: defVal && `'${jsToDbValue(defVal)}'::character varying`,
     },
   };
 }
@@ -475,7 +479,7 @@ export async function count(
   if (where && Object.keys(where).length) {
     const whereString = [];
     for (const jsKey in where) {
-      const key = camelToSnake(jsKey);
+      const key = jsToDbKey(jsKey);
       const value = where[jsKey];
       if (Array.isArray(value)) {
         const values = value.map(() => `$${++varCount}`);
@@ -560,7 +564,7 @@ export async function read(
   if (where && Object.keys(where).length) {
     const whereString = [];
     for (const jsKey in where) {
-      const key = camelToSnake(jsKey);
+      const key = jsToDbKey(jsKey);
       const value = where[jsKey];
       if (Array.isArray(value)) {
         const values = value.map(() => `$${++varCount}`);
@@ -595,7 +599,7 @@ export async function remove(
 
   const whereString = [];
   for (const jsKey in where) {
-    const key = camelToSnake(jsKey);
+    const key = jsToDbKey(jsKey);
     const value = where[jsKey];
     if (Array.isArray(value)) {
       const values = value.map(() => `$${++varCount}`);
@@ -639,7 +643,7 @@ export async function update(
 
   const whereString = [];
   for (const jsKey in where) {
-    const key = camelToSnake(jsKey);
+    const key = jsToDbKey(jsKey);
     const value = where[jsKey];
     if (Array.isArray(value)) {
       const values = value.map(() => `$${++varCount}`);

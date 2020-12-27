@@ -9,7 +9,7 @@ class Sailor extends Model {
   public static table = Sailor.createTable("sailors", [
     fields.snowflake("discordId"),
     fields.boolean("blackListed"),
-    fields.varchar("todos", { length: 2000 }),
+    fields.varchar("todos", { length: 2000, defaultValue: [] }),
   ]);
 
   public static async get(discordId: string): Promise<Sailor | null> {

@@ -109,7 +109,7 @@ export interface Waifu {
   readonly image: string[];
 }
 
-export interface CharFieldOptions extends FieldOptions<string> {
+export interface CharFieldOptions extends FieldOptions<string | string[]> {
   length: number;
 }
 export interface FieldOptions<T> {

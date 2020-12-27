@@ -1,4 +1,4 @@
-import { fields, separator } from "../classes/Database";
+import { fields } from "../classes/Database";
 import salty from "../salty";
 import {
   ActionParameters,
@@ -11,6 +11,8 @@ import { choice, clean, log, meaning } from "../utils";
 import Command from "./../classes/Command";
 import Model from "./../classes/Model";
 
+const PRIMARY_SEPARATOR: string = ";";
+const SECONDARY_SEPARATOR: string = ",";
 const quickCommandDescriptor: CategoryDescriptor = {
   name: "quick",
   description:
@@ -24,10 +26,9 @@ const quickCommandCommand: CommandDescriptor = {
   aliases: ["cmd"],
   help: [
     {
-      argument:
-        "***command key 1***, ***command key 2***, ...  // ***answer 1***, ***answer 2***, ... ",
+      argument: `***alias 1***${SECONDARY_SEPARATOR} ***alias 2***${SECONDARY_SEPARATOR} ...  ${PRIMARY_SEPARATOR} ***answer 1***${SECONDARY_SEPARATOR} ***answer 2***${SECONDARY_SEPARATOR} ... `,
       effect:
-        "Creates a new command having ***command aliases*** as its triggers. ***command effect*** will then be displayed as a response",
+        "Creates commands named with given `aliases` which will all reply with a random `answer`",
     },
   ],
   access: "dev",
@@ -62,7 +63,7 @@ const quickCommandCommand: CommandDescriptor = {
       default: {
         const allArgs = args
           .join(" ")
-          .split(separator)
+          .split(PRIMARY_SEPARATOR)
           .map((arg) => arg.trim());
         if (allArgs.length < 2) {
           return salty.warn(
@@ -72,7 +73,7 @@ const quickCommandCommand: CommandDescriptor = {
         }
         const aliases: string[] = allArgs
           .shift()!
-          .split(",")
+          .split(SECONDARY_SEPARATOR)
           .map((word) => clean(word).replace(/\s+/g, ""))
           .filter(Boolean);
         const name = aliases.shift();
@@ -84,7 +85,7 @@ const quickCommandCommand: CommandDescriptor = {
         }
         const answers: string[] = allArgs
           .shift()!
-          .split(",")
+          .split(SECONDARY_SEPARATOR)
           .map((word) => word.trim())
           .filter(Boolean);
 
@@ -107,8 +108,8 @@ class QuickCommand extends Model {
 
   public static readonly table = QuickCommand.createTable("commands", [
     fields.varchar("name", { length: 255 }),
-    fields.varchar("aliases", { length: 1000 }),
-    fields.varchar("answers", { length: 2000 }),
+    fields.varchar("aliases", { length: 1000, defaultValue: [] }),
+    fields.varchar("answers", { length: 2000, defaultValue: [] }),
   ]);
 
   /**

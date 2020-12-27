@@ -9,17 +9,17 @@ import {
   Meanings,
 } from "./typings";
 
-const CONSOLE_RED = "\x1b[31m";
-const CONSOLE_GREEN = "\x1b[32m";
-const CONSOLE_YELLOW = "\x1b[33m";
-const CONSOLE_BLUE = "\x1b[34m";
-const CONSOLE_MAGENTA = "\x1b[35m";
-const CONSOLE_CYAN = "\x1b[36m";
-const CONSOLE_RESET = "\x1b[0m"; // default
+const CONSOLE_RED: string = "\x1b[31m";
+const CONSOLE_GREEN: string = "\x1b[32m";
+const CONSOLE_YELLOW: string = "\x1b[33m";
+const CONSOLE_BLUE: string = "\x1b[34m";
+const CONSOLE_MAGENTA: string = "\x1b[35m";
+const CONSOLE_CYAN: string = "\x1b[36m";
+const CONSOLE_RESET: string = "\x1b[0m"; // default
 // Weights used in the Levenshtein matrix
-const LVD_REPLACE = 1.5;
-const LVD_INSERT = 1;
-const LVD_DELETE = 1;
+const LVD_REPLACE: number = 1.5;
+const LVD_INSERT: number = 1;
+const LVD_DELETE: number = 1;
 const REACTIONS: Dictionnary<string[]> = {
   0: ["0️⃣"],
   1: ["1️⃣"],
@@ -59,7 +59,6 @@ const REACTIONS: Dictionnary<string[]> = {
   y: ["🇾"],
   z: ["🇿"],
 };
-const PARSABLE = /true|false|null/i;
 
 const expressions: ExpressionDescriptor[] = [
   {
@@ -84,14 +83,6 @@ const expressions: ExpressionDescriptor[] = [
     },
   },
 ];
-
-//=============================================================================
-// Utility classes
-//=============================================================================
-
-export class ResolvablePromise<T> extends Promise<T> {
-  public resolve(): void {}
-}
 
 //=============================================================================
 // Utility functions
@@ -140,6 +131,24 @@ export function ellipsis(text: string, limit: number = 2000): string {
 }
 
 /**
+ * @param object
+ * @param param
+ */
+export function ensureContent(object: any, param?: string): void {
+  let hasContent: boolean;
+  if (Array.isArray(object)) {
+    hasContent = Boolean(object.length);
+  } else if (typeof object === "object" && object !== null) {
+    hasContent = Boolean(Object.keys(object).length);
+  } else {
+    hasContent = Boolean(object);
+  }
+  if (!hasContent) {
+    throw new Error(`Param ${param ? ` "${param}"` : ""}is empty`);
+  }
+}
+
+/**
  * @param regex
  */
 export function escapeRegex(regex: string): string {
@@ -181,7 +190,7 @@ export function formatDuration(time: number | null = null): string {
  * Gets the queried amount of number emojis.
  * @param length
  */
-export function getNumberReactions(length: number) {
+export function getNumberReactions(length: number): string[] {
   return Object.values(REACTIONS)
     .slice(1, length + 1)
     .map(([react]) => react);
@@ -398,13 +407,11 @@ export function sort<T>(
   array: T[],
   prop: string | null = null,
   asc: boolean = true
-) {
-  const sorted = array.sort((objA, objB) => {
-    let a = objA as any;
-    let b = objB as any;
+): T[] {
+  const sorted = array.sort((a: any, b: any) => {
     if (prop && a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
-      a = a[prop]!;
-      b = b[prop]!;
+      a = a[prop];
+      b = b[prop];
     }
     return a > b ? 1 : a < b ? -1 : 0;
   });
@@ -438,27 +445,6 @@ export function title(string: string) {
     return string;
   }
   return string[0].toUpperCase() + string.slice(1);
-}
-
-/**
- * Does the inverse job of `String(...)`.
- * @param value
- */
-export function toAny(value: any): any {
-  if (typeof value !== "string") {
-    return value;
-  }
-  if (value === "undefined") {
-    return undefined;
-  }
-  if (PARSABLE.test(value)) {
-    return JSON.parse(value.toLowerCase());
-  }
-  const num = Number(value);
-  if (!isNaN(num)) {
-    return num;
-  }
-  return value;
 }
 
 //=============================================================================
