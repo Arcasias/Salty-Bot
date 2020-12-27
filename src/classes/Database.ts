@@ -121,7 +121,7 @@ function ensureClient(method: string, mustHaveClient: boolean = true): Client {
 function formatValues(values: Dictionnary<any>) {
   const formattedValues: Dictionnary<any> = {};
   for (const jsKey in values) {
-    formattedValues[jsToDbKey(jsKey)] = dbToJsValue(values[jsKey]);
+    formattedValues[jsToDbKey(jsKey)] = jsToDbValue(values[jsKey]);
   }
   return formattedValues;
 }
