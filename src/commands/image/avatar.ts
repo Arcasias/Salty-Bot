@@ -20,7 +20,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg, source, targets }) {
+  async action({ msg, send, source, targets }) {
     const { member, name, user } = targets[0] || source;
     const { guild } = msg;
     const options: SaltyEmbedOptions = {
@@ -48,7 +48,7 @@ const command: CommandDescriptor = {
         options.image = { url };
       }
     }
-    await salty.embed(msg, options);
+    await send.embed(options);
   },
 };
 

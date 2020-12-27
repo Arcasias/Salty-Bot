@@ -21,7 +21,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const files: string[] = await readDir(emojiPath);
     const pngs = files.filter((file) => file.split(".").pop() === "png");
     const emojiNames = pngs.map((name) => name.split(".").shift()!);
@@ -37,12 +37,12 @@ const command: CommandDescriptor = {
       }
       if (emoji) {
         salty.deleteMessage(msg);
-        return salty.message(msg, "", {
+        return send.message("", {
           files: [`${emojiPath}/${emoji}.png`],
         });
       }
     }
-    salty.embed(msg, {
+    return send.embed({
       title: "list of saltmojis",
       description: emojiNames.join("\n"),
     });

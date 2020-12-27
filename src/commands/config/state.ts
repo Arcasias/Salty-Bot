@@ -16,7 +16,7 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ msg }) {
+  async action({ send }) {
     const [crewsCount, sailorsCount] = await Promise.all([
       Crew.count(),
       Sailor.count(),
@@ -51,7 +51,7 @@ const command: CommandDescriptor = {
         env.DEBUG === "true" ? " Debug mode is active." : ""
       }`,
     };
-    await salty.embed(msg, options);
+    await send.embed(options);
   },
 };
 

@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
 const SPACE = [
@@ -20,8 +19,8 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg }) {
-    await salty.message(msg, SPACE);
+  async action({ send }) {
+    await send.message(SPACE);
   },
 };
 

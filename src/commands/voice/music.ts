@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
 /**
@@ -14,9 +13,8 @@ const command: CommandDescriptor = {
       effect: "DEPRECATED: these commands are not available anymore",
     },
   ],
-  async action({ msg }) {
-    salty.message(
-      msg,
+  async action({ send }) {
+    send.message(
       "Unfortunately I do not provide musical features anymore. I suggest adding a specialised bot to your server like the popular Rythm or Groovy!"
     );
   },

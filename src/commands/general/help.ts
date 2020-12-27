@@ -31,7 +31,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg, source, targets }) {
+  async action({ args, msg, run, send }) {
     const options: SaltyEmbedOptions = {
       fields: [],
     };
@@ -40,7 +40,6 @@ const command: CommandDescriptor = {
     };
     if (args.length) {
       const arg = args[0].toLowerCase();
-
       const category = Command.categories.get(arg as CategoryId);
       if (category) {
         /**
@@ -109,8 +108,7 @@ const command: CommandDescriptor = {
           });
         });
       } else {
-        return salty.warn(
-          msg,
+        return send.warn(
           "The second argument must be a command or a category."
         );
       }
@@ -131,12 +129,7 @@ const command: CommandDescriptor = {
           onAdd: (user, abort) => {
             if (user === msg.author) {
               abort();
-              return this.action({
-                args: [id],
-                msg,
-                source,
-                targets,
-              });
+              return run("help", [id]);
             }
           },
         });
@@ -146,7 +139,7 @@ const command: CommandDescriptor = {
         });
       }
     }
-    const helpEmbed = await salty.embed(msg, options);
+    const helpEmbed = await send.embed(options);
     if (helpEmbed && messageActions.actions.size) {
       salty.addActions(msg.author.id, helpEmbed, messageActions);
     }

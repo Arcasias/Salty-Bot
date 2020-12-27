@@ -19,15 +19,15 @@ const command: CommandDescriptor = {
         "Reacts with the given given letters (must not be a server emoji name).",
     },
   ],
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     if (!args.length) {
-      return salty.warn(msg, "What do you want to react with?");
+      return send.warn("What do you want to react with?");
     }
 
     const lastMessages = await msg.channel.messages.fetch({ limit: 2 });
 
     if (lastMessages.size !== 2) {
-      return salty.warn(msg, "No message to react to");
+      return send.warn("No message to react to");
     }
 
     const lastMessage = lastMessages.last()!;

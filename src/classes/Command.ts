@@ -1,7 +1,8 @@
 import { Collection, Guild, Message, User } from "discord.js";
 import salty from "../salty";
 import {
-  ActionParameters,
+  ActionContext,
+  ActionContextMessageHelpers,
   Category,
   CategoryDescriptor,
   CategoryId,
@@ -12,6 +13,7 @@ import {
   CommandHelpDescriptor,
   CommandHelpSection,
   MessageActor,
+  ParialActionContext,
 } from "../typings";
 import { error, isAdmin, isDev, isOwner, sort } from "../utils";
 
@@ -57,12 +59,8 @@ export default class Command implements CommandDescriptor {
   /**
    * Runs the command action
    */
-  public async run(
-    msg: Message,
-    args: string[],
-    source: MessageActor,
-    targets: MessageActor[]
-  ) {
+  public async run(context: ActionContext) {
+    const { msg } = context;
     if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
       return salty.warn(
         msg,
@@ -72,9 +70,8 @@ export default class Command implements CommandDescriptor {
     if (this.channel === "guild" && !msg.guild) {
       return salty.warn(msg, "This is a direct message channel retard");
     }
-    const commandParams: ActionParameters = { args, msg, source, targets };
     try {
-      await this.action(commandParams);
+      await this.action(context);
     } catch (err) {
       error(err.stack);
       await salty.error(msg, `Whoops! ${err.message}`);
@@ -145,24 +142,36 @@ export default class Command implements CommandDescriptor {
     this.list.delete(name);
   }
 
-  /**
-   * Shorthand to retrieve and run a command with its name.
-   * @param name
-   * @param msg
-   * @param args
-   * @param source
-   * @param targets
-   */
-  public static run(
-    name: string,
+  public static createContext(
     msg: Message,
-    args: string[],
+    alias: string,
     source: MessageActor,
-    targets: MessageActor[]
-  ) {
-    if (!this.list.has(name)) {
-      throw new Error(`No command found with name "${name}"`);
-    }
-    return this.list.get(name)!.run(msg, args, source, targets);
+    targets: MessageActor[],
+    ctxArgs: string[] = []
+  ): ParialActionContext {
+    const messageHelpers: ActionContextMessageHelpers = {
+      embed: (...args: any[]) => salty.embed(msg, ...args),
+      error: (...args: any[]) => salty.error(msg, ...args),
+      info: (...args: any[]) => salty.info(msg, ...args),
+      message: (...args: any[]) => salty.message(msg, ...args),
+      success: (...args: any[]) => salty.success(msg, ...args),
+      warn: (...args: any[]) => salty.warn(msg, ...args),
+    };
+    const partialContext: ParialActionContext = {
+      alias,
+      args: ctxArgs,
+      msg,
+      source,
+      targets,
+      send: messageHelpers,
+      run: (name: string, args: string[] = ctxArgs): Promise<any> => {
+        if (!this.list.has(name)) {
+          throw new Error(`No command found with name "${name}"`);
+        }
+        const actionParams = Object.assign(partialContext, { args });
+        return this.list.get(name)!.run(actionParams as ActionContext);
+      },
+    };
+    return partialContext;
   }
 }

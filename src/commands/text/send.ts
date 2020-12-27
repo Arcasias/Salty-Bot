@@ -1,4 +1,3 @@
-import Command from "../../classes/Command";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
@@ -18,21 +17,21 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg, source, targets }) {
+  async action({ args, msg, run, send }) {
     if (!args[0]) {
-      return Command.run("talk", msg, args, source, targets);
+      return run("talk");
     }
-    let message;
+    let text: string = "";
     for (const [expr, response] of specialActions) {
       if (expr.test(args[0])) {
-        message = response;
+        text = response;
       }
     }
-    if (!message) {
+    if (!text) {
       salty.deleteMessage(msg);
-      message = args.join(" ");
+      text = args.join(" ");
     }
-    await salty.message(msg, message);
+    await send.message(text);
   },
 };
 

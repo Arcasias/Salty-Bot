@@ -14,31 +14,28 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const channel = msg.guild ? msg.guild.id : msg.author.id;
     if (meaning(args[0]) === "clear") {
       if (!INTERVALS[channel]) {
-        return salty.warn(msg, "There is no interval on this channel.");
+        return send.warn("There is no interval on this channel.");
       }
       salty.bot.clearInterval(INTERVALS[channel]);
 
-      salty.success(msg, "Interval cleared");
+      return send.success("Interval cleared");
     } else {
       if (!args.length) {
-        return salty.warn(
-          msg,
+        return send.warn(
           "You need to specify the interval length in milliseconds."
         );
       }
       if (isNaN(Number(args[0]))) {
-        return salty.warn(
-          msg,
+        return send.warn(
           "You need to specify the interval length in milliseconds."
         );
       }
       if (!args[1]) {
-        return salty.warn(
-          msg,
+        return send.warn(
           "You need to tell me what to say after each interval."
         );
       }
@@ -50,7 +47,7 @@ const command: CommandDescriptor = {
         clearInterval(INTERVALS[channel]);
       }
       INTERVALS[channel] = salty.bot.setInterval(() => {
-        salty.message(msg, args.join(" "));
+        send.message(args.join(" "));
       }, delay);
     }
   },

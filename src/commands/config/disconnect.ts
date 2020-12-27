@@ -15,8 +15,8 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ msg }) {
-    await salty.info(msg, `${choice(answers.bye)} ♥`);
+  async action({ send }) {
+    await send.info(`${choice(answers.bye)} ♥`);
     await salty.destroy();
   },
 };

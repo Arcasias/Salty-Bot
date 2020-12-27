@@ -51,9 +51,9 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     if (!args[0]) {
-      return salty.warn(msg, "No code to execute.");
+      return send.warn("No code to execute.");
     }
     const evalResult = evalInContext.call(salty, args.join(" "));
     const result = `${args.join(" ")} = /*${typeof evalResult}*/ ${stringify(
@@ -61,8 +61,8 @@ const command: CommandDescriptor = {
       0
     )}`;
     const message = ellipsis(result, 1985);
-    salty.message(msg, `\`\`\`js\n${message}\n\`\`\``);
     debug(message);
+    return send.message(`\`\`\`js\n${message}\n\`\`\``);
   },
 };
 

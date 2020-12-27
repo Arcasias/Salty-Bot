@@ -23,7 +23,7 @@ const command: CommandDescriptor = {
   access: "admin",
   channel: "guild",
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const crew = await Crew.get(msg.guild!.id);
     const channel = salty.getTextChannel(msg.channel.id);
     switch (meaning(args[0])) {
@@ -32,8 +32,7 @@ const command: CommandDescriptor = {
         await Crew.update(crew.id, {
           defaultChannel: channel.id,
         });
-        return salty.success(
-          msg,
+        return send.success(
           `channel **${
             channel.name
           }** has been successfuly set as default bot channel for **${
@@ -43,25 +42,22 @@ const command: CommandDescriptor = {
       }
       case "remove": {
         if (!crew.defaultChannel) {
-          return salty.info(msg, "no default bot channel set");
+          return send.info("no default bot channel set");
         }
         await Crew.update(crew.id, { defaultChannel: null });
-        return salty.success(
-          msg,
-          "default bot channel has been successfuly removed"
-        );
+        return send.success("default bot channel has been successfuly removed");
       }
       default: {
         if (!crew.defaultChannel) {
-          return salty.info(msg, "no default bot channel set");
+          return send.info("no default bot channel set");
         }
         const { name } = salty.getTextChannel(crew.defaultChannel);
         if (channel.id === crew.defaultChannel) {
-          return salty.info(msg, "this is the current default channel", {
+          return send.info("this is the current default channel", {
             description: "I'll speak right here when I need to",
           });
         } else {
-          return salty.info(msg, `default bot channel is **${name}**`, {
+          return send.info(`default bot channel is **${name}**`, {
             description: "this is where I'll speak when I need to",
           });
         }

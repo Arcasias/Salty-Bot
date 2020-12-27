@@ -14,7 +14,7 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     const crews: Crew[] = await Crew.search();
     let withDefault = 0;
     for (const { discordId, defaultChannel } of crews) {
@@ -29,10 +29,7 @@ const command: CommandDescriptor = {
         }
       }
     }
-    await salty.success(
-      msg,
-      `Announcement sent accross ${withDefault} servers.`
-    );
+    await send.success(`Announcement sent accross ${withDefault} servers.`);
   },
 };
 

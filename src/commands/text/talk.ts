@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { answers as listAnswers, meaning } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { choice, clean, levenshtein } from "../../utils";
@@ -15,7 +14,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     const cleanedMsg = args
       .map((arg) => clean(arg).replace(SPECIAL_CHARS, ""))
       .filter((w: string) => Boolean(w))
@@ -36,10 +35,10 @@ const command: CommandDescriptor = {
           answers.push(choice(listAnswers[answerType]));
         }
       }
-      await salty.message(msg, answers.join(", "));
+      await send.message(answers.join(", "));
     } else {
       const random: string[] = listAnswers.rand;
-      await salty.message(msg, choice(random));
+      await send.message(choice(random));
     }
   },
 };

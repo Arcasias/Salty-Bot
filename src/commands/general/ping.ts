@@ -25,16 +25,13 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg }) {
+  async action({ msg, send }) {
     // If too much salt, skips the latency test
     if (percent(3)) {
-      return salty.info(
-        msg,
-        "pong, and I don't give a fuck about your latency"
-      );
+      return send.info("Pong, and I don't give a fuck about your latency");
     }
     // Sends another message and displays the difference between the first and the second
-    const sentMsg = await salty.message(msg, "Pinging...");
+    const sentMsg = await send.message("Pinging...");
     if (!sentMsg) {
       return;
     }
@@ -42,7 +39,7 @@ const command: CommandDescriptor = {
     const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
 
     salty.deleteMessage(sentMsg);
-    await salty.info(msg, `pong! Latency is ${latency}. ${title(message)}`);
+    await send.info(`Pong! Latency is ${latency}. ${title(message)}`);
   },
 };
 

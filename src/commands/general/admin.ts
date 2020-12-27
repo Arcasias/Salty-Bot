@@ -16,16 +16,15 @@ const command: CommandDescriptor = {
       effect: "Tells you wether the ***mention*** is an admin",
     },
   ],
-  async action({ msg, source, targets }) {
-    const target = targets[0];
+  async action({ msg, send, source, targets }) {
+    const [target] = targets;
     const isRequestedUserAdmin: boolean = isAdmin(
       target ? target.user : source.user,
       msg.guild
     );
 
     // Fuck if/else structures, long live ternary operators
-    salty.info(
-      msg,
+    return send.info(
       target
         ? // mention
           target.user.id === salty.bot.user!.id

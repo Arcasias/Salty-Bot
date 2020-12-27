@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
 
@@ -13,11 +12,11 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     if (args.length < 2) {
-      return salty.warn(msg, "You need to give at least 2 choices.");
+      return send.warn("You need to give at least 2 choices.");
     }
-    await salty.message(msg, `I choose ${choice(args.join(" ").split("/"))}`);
+    await send.message(`I choose ${choice(args.join(" ").split("/"))}`);
   },
 };
 

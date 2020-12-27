@@ -11,11 +11,31 @@ import {
 } from "discord.js";
 import Sailor from "../classes/Sailor";
 
-export interface ActionParameters {
-  readonly args: string[];
-  readonly msg: Message;
-  readonly source: MessageActor;
-  readonly targets: MessageActor[];
+export interface ActionContext extends ParialActionContext {
+  readonly send: ActionContextMessageHelpers;
+}
+export interface ActionContextMessageHelpers {
+  embed: (options?: SaltyEmbedOptions) => Promise<Message | false>;
+  error: (
+    text?: string,
+    options?: SaltyEmbedOptions
+  ) => Promise<Message | false>;
+  info: (
+    text?: string,
+    options?: SaltyEmbedOptions
+  ) => Promise<Message | false>;
+  message: (
+    content?: string,
+    options?: SaltyMessageOptions
+  ) => Promise<Message | false>;
+  success: (
+    text?: string,
+    options?: SaltyEmbedOptions
+  ) => Promise<Message | false>;
+  warn: (
+    text?: string,
+    options?: SaltyEmbedOptions
+  ) => Promise<Message | false>;
 }
 export interface BasicCommandDescriptor {
   readonly access?: CommandAccess;
@@ -33,6 +53,7 @@ export interface CategoryDescriptor {
   name: string;
   order: number;
 }
+export interface CommandContext {}
 export interface CommandDescriptor extends BasicCommandDescriptor {
   readonly action: CommandAction;
   readonly help?: CommandHelpSection[];
@@ -78,6 +99,15 @@ export interface Module {
   commands?: { category: CategoryId; command: CommandDescriptor }[];
   onLoad?: () => any;
   onMessage?: (msg: Message) => any;
+}
+export interface ParialActionContext {
+  readonly alias: string;
+  readonly args: string[];
+  readonly msg: Message;
+  readonly source: MessageActor;
+  readonly targets: MessageActor[];
+  readonly send: ActionContextMessageHelpers;
+  run: (name: string, args?: string[]) => Promise<any>;
 }
 export interface PollOption {
   text: string;
@@ -140,7 +170,7 @@ export type CategoryId =
   | "quick"
   | "voice";
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
-export type CommandAction = (actionparams: ActionParameters) => Promise<any>;
+export type CommandAction = (actionContext: ActionContext) => Promise<any>;
 export type CommandChannel = "all" | "guild";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;

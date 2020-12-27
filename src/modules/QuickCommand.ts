@@ -1,7 +1,7 @@
 import { fields } from "../classes/Database";
 import salty from "../salty";
 import {
-  ActionParameters,
+  ActionContext,
   CategoryDescriptor,
   CommandDescriptor,
   Dictionnary,
@@ -33,28 +33,25 @@ const quickCommandCommand: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     switch (meaning(args[0])) {
       case "remove": {
         const alias: string = args.slice(1).join("");
         if (!alias) {
-          return salty.warn(
-            msg,
-            "You need to specify which command to remove."
-          );
+          return send.warn("You need to specify which command to remove.");
         }
         const name = Command.aliases.get(alias);
         if (!name) {
-          return salty.warn(msg, "That command doesn't exist.");
+          return send.warn("That command doesn't exist.");
         }
         const command = Command.list.get(name)!;
         if (command.category !== "quick") {
-          return salty.warn(msg, `That is a core command, you can't remove it`);
+          return send.warn(`That is a core command, you can't remove it`);
         }
         await QuickCommand.remove({
           name,
         });
-        return salty.success(msg, `Command "**${name}**" deleted`);
+        return send.success(`Command "**${name}**" deleted`);
       }
       case "add":
       case "set": {
@@ -66,8 +63,7 @@ const quickCommandCommand: CommandDescriptor = {
           .split(PRIMARY_SEPARATOR)
           .map((arg) => arg.trim());
         if (allArgs.length < 2) {
-          return salty.warn(
-            msg,
+          return send.warn(
             "You need to tell me which answers will this command provide."
           );
         }
@@ -78,8 +74,7 @@ const quickCommandCommand: CommandDescriptor = {
           .filter(Boolean);
         const name = aliases.shift();
         if (!name) {
-          return salty.warn(
-            msg,
+          return send.warn(
             "You need to tell me by which aliases this command will be called."
           );
         }
@@ -91,11 +86,11 @@ const quickCommandCommand: CommandDescriptor = {
 
         for (const alias of aliases) {
           if (Command.aliases.has(alias)) {
-            return salty.warn(msg, "A command with that name already exists.");
+            return send.warn("A command with that name already exists.");
           }
         }
         await QuickCommand.create({ name, aliases, answers });
-        return salty.success(msg, `Command "**${name}**" created`);
+        return send.success(`Command "**${name}**" created`);
       }
     }
   },
@@ -118,7 +113,7 @@ class QuickCommand extends Model {
   public toDescriptor(): CommandDescriptor {
     const stringAnswers = this.answers.map((a) => `- "${a}"`).join("\n");
     return Object.assign({}, this, {
-      action: async ({ msg }: ActionParameters) => {
+      action: async ({ msg }: ActionContext) => {
         await salty.message(msg, choice(this.answers));
       },
       help: [

@@ -14,7 +14,7 @@ function autoDeafen(oldState: VoiceState, newState: VoiceState) {
 
 const command: CommandDescriptor = {
   name: "deafen",
-  aliases: ["deaf"],
+  aliases: ["deaf", "undeaf", "undeafen"],
   channel: "guild",
   help: [
     {
@@ -26,12 +26,13 @@ const command: CommandDescriptor = {
       effect: "Removes the targetted user from the autodeaf loop.",
     },
   ],
-  async action({ args, msg, source, targets }) {
+  async action({ alias, args, send, source, targets }) {
     const member = (targets[0]?.member || source.member)!;
     const option = meaning(args[0]) || "";
-    const deafen: boolean = ["clear", "remove"].includes(option)
-      ? false
-      : !autoDeafenMap.has(member.id);
+    const deafen: boolean =
+      ["clear", "remove"].includes(option) || alias.startsWith("un")
+        ? false
+        : !autoDeafenMap.has(member.id);
 
     if (deafen) {
       autoDeafenMap.add(member.id);
@@ -51,8 +52,7 @@ const command: CommandDescriptor = {
       listenerBound = true;
     }
 
-    salty.success(
-      msg,
+    return send.success(
       `${member.displayName} has been ${deafen ? "" : "un"}deafened.`
     );
   },

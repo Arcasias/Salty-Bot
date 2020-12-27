@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { fault } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
@@ -13,13 +12,13 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg }) {
-    const text = (choice(fault.start) + choice(fault.sentence))
-      .replace(/<subject>/g, choice(fault.subject))
-      .replace(/<reason>/g, choice(fault.reason))
-      .replace(/<punishment>/g, choice(fault.punishment));
-
-    await salty.message(msg, text);
+  async action({ send }) {
+    await send.message(
+      (choice(fault.start) + choice(fault.sentence))
+        .replace(/<subject>/g, choice(fault.subject))
+        .replace(/<reason>/g, choice(fault.reason))
+        .replace(/<punishment>/g, choice(fault.punishment))
+    );
   },
 };
 

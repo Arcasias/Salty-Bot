@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { jokes } from "../../strings";
 import { CommandDescriptor, Dictionnary, Joke } from "../../typings";
 import { randInt } from "../../utils";
@@ -15,7 +14,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg }) {
+  async action({ msg, send }) {
     if (!(msg.author.username in cache)) {
       cache[msg.author.username] = jokes.slice();
     }
@@ -25,7 +24,7 @@ const command: CommandDescriptor = {
       delete cache[msg.author.username];
     }
     const answer = joke.answer ? `\n\n||${joke.answer}||` : "";
-    await salty.message(msg, joke.text + answer);
+    await send.message(joke.text + answer);
   },
 };
 

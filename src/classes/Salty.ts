@@ -249,7 +249,11 @@ export default class Salty {
    * @param text
    * @param options
    */
-  public error(msg: Message, text: string = "error", options: any = {}) {
+  public error(
+    msg: Message,
+    text: string = "error",
+    options: SaltyEmbedOptions = {}
+  ): Promise<Message | false> {
     return this.embed(
       msg,
       Object.assign(
@@ -316,7 +320,7 @@ export default class Salty {
     msg: Message,
     text: string = "info",
     options: SaltyEmbedOptions = {}
-  ) {
+  ): Promise<Message | false> {
     return this.embed(
       msg,
       Object.assign(
@@ -426,7 +430,7 @@ export default class Salty {
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-  ) {
+  ): Promise<Message | false> {
     return this.embed(
       msg,
       Object.assign(
@@ -450,7 +454,7 @@ export default class Salty {
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-  ) {
+  ): Promise<Message | false> {
     return this.embed(
       msg,
       Object.assign(
@@ -776,30 +780,31 @@ export default class Salty {
       return this.message(msg, choice(help), { replyTo: msg });
     }
 
-    const rawCommandName = msgArgs.shift() || "";
-    const commandName = Command.aliases.get(clean(rawCommandName));
+    const rawCommandName = clean(msgArgs.shift() || "");
+    const commandName = Command.aliases.get(rawCommandName);
+    const commandContext = Command.createContext(
+      msg,
+      rawCommandName,
+      source,
+      targets,
+      msgArgs
+    );
     if (commandName) {
       if (msgArgs.length && keywords.help.includes(clean(msgArgs[0]))) {
-        return Command.run("help", msg, [rawCommandName], source, targets);
+        return commandContext.run("help", [rawCommandName]);
       } else {
-        return Command.run(commandName, msg, msgArgs, source, targets);
+        return commandContext.run(commandName, msgArgs);
       }
     }
     // If no command found, tries to find the closest matches
-    const [closest] = search(
-      [...Command.aliases.keys()],
-      clean(rawCommandName),
-      2
-    );
-
+    const [closest] = search([...Command.aliases.keys()], rawCommandName, 2);
     if (!closest) {
       return this.message(msg, choice(help), { replyTo: msg });
     }
-
-    const cmdName = Command.aliases.get(closest)!;
+    const closestCommand = Command.aliases.get(closest)!;
     const helpMessage = await this.message(
       msg,
-      `command "*${rawCommandName}*" doesn't exist. Did you mean "*${cmdName}*"?`
+      `command "*${rawCommandName}*" doesn't exist. Did you mean "*${closestCommand}*"?`
     );
     if (!helpMessage) {
       return;
@@ -809,7 +814,7 @@ export default class Salty {
       onAdd: (user) => {
         if (author.id === user.id) {
           this.deleteMessage(helpMessage);
-          Command.run(cmdName, msg, msgArgs, source, targets);
+          commandContext.run(closestCommand, msgArgs);
         }
       },
     });

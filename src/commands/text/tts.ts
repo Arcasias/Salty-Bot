@@ -10,13 +10,13 @@ const command: CommandDescriptor = {
       effect: "Says something out loud",
     },
   ],
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     // Just sends the arguments as a TTS message
     if (!args[0]) {
-      return salty.warn(msg, "You need to tell me what to say.");
+      return send.warn("You need to tell me what to say.");
     }
     salty.deleteMessage(msg);
-    await salty.message(msg, args.join(" "), { tts: true });
+    await send.message(args.join(" "), { tts: true });
   },
 };
 

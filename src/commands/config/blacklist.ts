@@ -18,55 +18,48 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, msg, targets }) {
+  async action({ args, send, msg, targets }) {
     const target = targets[0];
     switch (meaning(args[0])) {
       case "add":
       case "set": {
         if (!target) {
-          return salty.warn(msg, "You need to mention someone.");
+          return send.warn("You need to mention someone.");
         }
         if (target.user.id === salty.bot.user!.id) {
-          return salty.warn(
-            msg,
+          return send.warn(
             "Woa woa woa! You can't just put me in my own blacklist you punk!"
           );
         }
         if (isDev(target.user)) {
-          return salty.warn(
-            msg,
+          return send.warn(
             "Can't add a Salty dev to the blacklist: they're too nice for that!"
           );
         }
         await Sailor.update(target.sailor.id, { blackListed: true });
-        return salty.success(msg, `<mention> added to the blacklist`);
+        return send.success(`<mention> added to the blacklist`);
       }
       case "remove": {
         if (!target) {
-          return salty.warn(msg, "You need to mention someone.");
+          return send.warn("You need to mention someone.");
         }
         if (target.user.id === salty.bot.user!.id) {
-          return salty.info(
-            msg,
+          return send.info(
             "Well... as you might expect, I'm not in the blacklist."
           );
         }
         if (!target.sailor.blackListed) {
-          return salty.info(msg, `**${target.name}** is not in the blacklist.`);
+          return send.info(`**${target.name}** is not in the blacklist.`);
         }
         await Sailor.update(target.sailor.id, { blackListed: false });
-        return salty.success(msg, `<mention> removed from the blacklist`);
+        return send.success(`<mention> removed from the blacklist`);
       }
       default: {
         if (target && target.user.id === salty.bot.user!.id) {
-          return salty.info(
-            msg,
-            "Nope, I am not and will never be in the blacklist"
-          );
+          return send.info("Nope, I am not and will never be in the blacklist");
         }
         if (target) {
-          return salty.info(
-            msg,
+          return send.info(
             target.sailor?.blackListed
               ? "<mention> is black-listed"
               : "<mention> isn't black-listed... yet"
@@ -83,13 +76,12 @@ const command: CommandDescriptor = {
           }
         }
         if (blackListedNames.length) {
-          return salty.embed(msg, {
+          return send.embed({
             title: "Blacklist",
             description: blackListedNames.join("\n"),
           });
         }
-        return salty.info(
-          msg,
+        return send.info(
           "The black list is empty. You can help by *expanding it*."
         );
       }

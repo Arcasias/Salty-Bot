@@ -33,7 +33,7 @@ const command: CommandDescriptor = {
   access: "admin",
   channel: "guild",
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const guild = msg.guild!;
     const crew = await Crew.get(guild.id)!;
 
@@ -45,45 +45,37 @@ const command: CommandDescriptor = {
           case "set": {
             args.shift();
             if (!args.length) {
-              return salty.warn(
-                msg,
-                "You need to specify the name of the new role."
-              );
+              return send.warn("You need to specify the name of the new role.");
             }
             const roleName = args.slice(0).join(" ");
             const role = getRole(msg, roleName);
             if (!role) {
               const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
-              return salty.warn(
-                msg,
+              return send.warn(
                 `This role doesn't exist. You can create it with "${commandString}".`
               );
             }
             await Crew.update(crew.id, {
               defaultRole: role.id,
             });
-            return salty.success(
-              msg,
+            return send.success(
               `Role **${role.name}** has been successfuly set as default role.`,
               { color: role.color }
             );
           }
           case "remove": {
             if (!crew.defaultChannel) {
-              return salty.info(msg, "No default role set.");
+              return send.info("No default role set.");
             }
             await Crew.update(crew.id, { defaultRole: null });
-            return salty.success(
-              msg,
-              "default role has been successfuly removed"
-            );
+            return send.success("default role has been successfuly removed");
           }
           default: {
             if (!crew.defaultRole) {
-              return salty.info(msg, "No default role set");
+              return send.info("No default role set");
             } else {
               const role = guild.roles.cache.get(crew.defaultRole);
-              return salty.embed(msg, {
+              return send.embed({
                 title: `Default role is ${role?.name}`,
                 description: "Newcomers will automatically get this role.",
                 color: role?.color,
@@ -97,22 +89,18 @@ const command: CommandDescriptor = {
           // Not default
           case "add": {
             if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-              return salty.warn(
-                msg,
+              return send.warn(
                 "I'm not allowed to manage roles on this server."
               );
             }
             args.shift();
             if (!args.length) {
-              return salty.warn(
-                msg,
-                "You need to specify the name of the new role."
-              );
+              return send.warn("You need to specify the name of the new role.");
             }
             const roleName = args.slice(0).join(" ");
             const role = getRole(msg, roleName);
             if (role) {
-              return salty.warn(msg, "This role already exists.");
+              return send.warn("This role already exists.");
             }
             const newRole = await msg.guild!.roles.create({
               data: {
@@ -123,25 +111,21 @@ const command: CommandDescriptor = {
               },
               reason: `Created by ${msg.author.username} via Salty`,
             });
-            return salty.success(msg, `Role **${newRole.name}** created.`, {
+            return send.success(`Role **${newRole.name}** created.`, {
               color: newRole.color,
             });
           }
           case "set": {
             args.shift();
             if (!args.length) {
-              return salty.warn(
-                msg,
-                "You need to specify the name of the role."
-              );
+              return send.warn("You need to specify the name of the role.");
             }
             const roleName = args.slice(0).join(" ");
             let role = getRole(msg, roleName);
             if (!role) {
               if (!isDev(msg.author)) {
                 const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
-                return salty.warn(
-                  msg,
+                return send.warn(
                   `This role doesn't exist. You can create it with "${commandString}".`
                 );
               } else {
@@ -160,8 +144,7 @@ const command: CommandDescriptor = {
             if (role) {
               const ensuredRole: Role = role;
               apiCatch(() => msg.member!.roles.add(ensuredRole));
-              return salty.success(
-                msg,
+              return send.success(
                 `You have been assigned the role **${role.name}**.`,
                 { color: role.color }
               );
@@ -169,21 +152,19 @@ const command: CommandDescriptor = {
           }
           case "remove": {
             if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-              return salty.warn(
-                msg,
+              return send.warn(
                 "I'm not allowed to manage roles on this server."
               );
             }
             args.shift();
             const role = getRole(msg, args.join(" "));
             if (!role) {
-              return salty.warn(
-                msg,
+              return send.warn(
                 "You need to specify the name of the role to delete."
               );
             }
             apiCatch(() => role.delete("Deleted by Salty"));
-            return salty.success(msg, `Role **${role.name}** deleted.`, {
+            return send.success(`Role **${role.name}** deleted.`, {
               color: role.color,
             });
           }
@@ -191,7 +172,7 @@ const command: CommandDescriptor = {
             const roles = msg
               .member!.roles.cache.map((r) => r.name)
               .filter((n) => n !== "@everyone");
-            return salty.info(msg, "You have the following roles", {
+            return send.info("You have the following roles", {
               description: roles.join("\n"),
             });
           }

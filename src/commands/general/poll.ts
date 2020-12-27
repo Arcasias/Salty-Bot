@@ -15,20 +15,18 @@ const OPTION_SEPARATOR = ";";
 const command: CommandDescriptor = {
   name: "poll",
   channel: "guild",
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     if (!args.length) {
-      return salty.warn(msg, `You need to specify options to create a poll.`);
+      return send.warn(`You need to specify options to create a poll.`);
     }
     const optionTexts = args.join(" ").split(OPTION_SEPARATOR);
     if (optionTexts.length < 2) {
-      return salty.warn(
-        msg,
+      return send.warn(
         `You need to specify more than one option to create a poll.`
       );
     }
     if (optionTexts.length > VOTE_CHARS.length) {
-      return salty.warn(
-        msg,
+      return send.warn(
         `You need to specify less than ${VOTE_CHARS.length} options to create a poll.`
       );
     }
@@ -49,7 +47,7 @@ const command: CommandDescriptor = {
         value: "No votes",
       })),
     };
-    const initMessage = salty.embed(msg, embedOptions);
+    const initMessage = send.embed(embedOptions);
     const pollMessage = await initMessage;
 
     if (!pollMessage) {

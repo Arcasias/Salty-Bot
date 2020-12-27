@@ -15,12 +15,12 @@ const command: CommandDescriptor = {
   aliases: ["activity", "status"],
   access: "dev",
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     switch (meaning(args[0])) {
       case "remove":
       case "clear": {
         await salty.bot.user!.setPresence({ activity: undefined });
-        return salty.success(msg, "current status removed");
+        return send.success("current status removed");
       }
       case "add":
       case "set": {
@@ -31,15 +31,14 @@ const command: CommandDescriptor = {
         if (status in STATUSINFO) {
           // status
           await salty.bot.user!.setStatus(status);
-          return salty.success(
-            msg,
+          return send.success(
             `changed my status to **${STATUSINFO[status].title}**`,
             { color: STATUSINFO[status].color }
           );
         } else {
           // game
           await salty.bot.user!.setActivity(status);
-          return salty.success(msg, `changed my status to **${status}**`);
+          return send.success(`changed my status to **${status}**`);
         }
       }
       default: {
@@ -47,7 +46,7 @@ const command: CommandDescriptor = {
           <keyof StatusInfos>salty.bot.user!.presence.status
         ];
         const description = salty.bot.user!.presence.status;
-        salty.embed(msg, { color, title, description });
+        return send.embed({ color, title, description });
       }
     }
   },

@@ -59,12 +59,12 @@ const command: CommandDescriptor = {
   access: "admin",
   channel: "guild",
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const particle: string = args.slice(1).join(" ");
     const particleRegex = new RegExp(particle, "g");
 
     if (!salty.hasPermission(msg.guild!, "MANAGE_NICKNAMES")) {
-      return salty.warn(msg, `I don't have the permission to do that.`);
+      return send.warn(`I don't have the permission to do that.`);
     }
 
     switch (meaning(args[0])) {
@@ -84,14 +84,12 @@ const command: CommandDescriptor = {
         );
       }
       case "string": {
-        return salty.warn(
-          msg,
+        return send.warn(
           "You need to specify what nickname particle will be targeted."
         );
       }
       default: {
-        return salty.warn(
-          msg,
+        return send.warn(
           "You need to tell whether to add or delete a global nickname particle."
         );
       }

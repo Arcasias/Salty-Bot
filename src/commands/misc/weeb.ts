@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { clean } from "../../utils";
 
@@ -140,7 +139,7 @@ const command: CommandDescriptor = {
       effect: "Roughly translates the given string into japanese katakanas",
     },
   ],
-  async action({ args, msg }) {
+  async action({ args, send }) {
     let transformed: string = clean(args.join(" "));
     for (const [regex, value] of expressions) {
       transformed = transformed.replace(regex, value);
@@ -148,7 +147,7 @@ const command: CommandDescriptor = {
     if (!transformed.length) {
       transformed = "わからない";
     }
-    await salty.message(msg, transformed);
+    await send.message(transformed);
   },
 };
 

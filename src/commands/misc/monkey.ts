@@ -27,18 +27,18 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg }) {
+  async action({ args, send }) {
     if (!args[0]) {
-      return salty.warn(msg, "Missing the length of the array.");
+      return send.warn("Missing the length of the array.");
     }
 
     const length = Math.min(Number(args[0]), MAX_LENGTH);
 
     if (isNaN(length) || length < 1) {
-      return salty.warn(msg, `Array length must be a number greater than 1.`);
+      return send.warn(`Array length must be a number greater than 1.`);
     }
 
-    const runningMsg = await salty.message(msg, "monkey sorting ...");
+    const runningMsg = await send.message("monkey sorting ...");
     if (!runningMsg) {
       return;
     }
@@ -63,8 +63,7 @@ const command: CommandDescriptor = {
     });
 
     salty.deleteMessage(runningMsg);
-    await salty.info(
-      msg,
+    await send.info(
       `Monkey sort on a **${length}** element list took **${sortingTime}** seconds in **${tests}** tests`,
       { react: "🐒" }
     );

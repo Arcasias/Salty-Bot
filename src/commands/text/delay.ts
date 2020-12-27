@@ -11,7 +11,7 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     if (!args.length) {
       return salty.warn(msg, "You must tell me what to say after the delay.");
     }
@@ -22,7 +22,7 @@ const command: CommandDescriptor = {
 
     salty.deleteMessage(msg);
     salty.bot.setTimeout(() => {
-      salty.message(msg, args.join(" "));
+      send.message(args.join(" "));
     }, delay);
   },
 };

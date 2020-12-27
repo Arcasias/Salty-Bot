@@ -10,10 +10,10 @@ const command: CommandDescriptor = {
   name: "menfou",
   aliases: ["sonic"],
   help: [{ argument: null, effect: "MENFOU" }],
-  async action({ msg }) {
+  async action({ msg, send }) {
     salty.deleteMessage(msg);
     const images = await readDir(menfouPath);
-    await salty.message(msg, "", {
+    await send.message("", {
       files: images.map((i) => `${menfouPath}/${i}`),
     });
   },

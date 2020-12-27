@@ -1,6 +1,9 @@
 import salty from "../../salty";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 
+const COFFEE_URL =
+  "https://cdn.cnn.com/cnnnext/dam/assets/150929101049-black-coffee-stock-super-tease.jpg";
+
 const command: CommandDescriptor = {
   name: "coffee",
   aliases: ["cof", "covfefe"],
@@ -16,14 +19,11 @@ const command: CommandDescriptor = {
   ],
   channel: "guild",
 
-  async action({ msg, source, targets }) {
+  async action({ msg, send, source, targets }) {
     const query = targets[0] || source;
     const options: SaltyEmbedOptions = {
       title: "This is a nice coffee",
-      image: {
-        url:
-          "https://cdn.cnn.com/cnnnext/dam/assets/150929101049-black-coffee-stock-super-tease.jpg",
-      },
+      image: { url: COFFEE_URL },
       color: 0x523415,
     };
     if (targets.length) {
@@ -37,7 +37,7 @@ const command: CommandDescriptor = {
     } else {
       options.description = "Specially made for you ;)";
     }
-    await salty.embed(msg, options);
+    await send.embed(options);
   },
 };
 

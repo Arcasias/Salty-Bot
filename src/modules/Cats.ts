@@ -21,7 +21,7 @@ const catsCommand: CommandDescriptor = {
       effect: "Unsets the current channel as a cat channel",
     },
   ],
-  async action({ args, msg }) {
+  async action({ args, msg, send }) {
     const channel = salty.getTextChannel(msg.channel.id);
     const isCatified = channel.name.startsWith(CAT_PREFIX);
     const reason = `cat channel toggled by ${msg.author.username}`;
@@ -29,31 +29,30 @@ const catsCommand: CommandDescriptor = {
       case "add":
       case "set": {
         if (isCatified) {
-          return salty.warn(msg, "This is already a cat channel!");
+          return send.warn("This is already a cat channel!");
         }
         await channel.edit(
           { name: [CAT_PREFIX, channel.name].join("") },
           reason
         );
-        return salty.success(msg, "Channel set as a cat channel", {
+        return send.success("Channel set as a cat channel", {
           react: CAT_PREFIX,
         });
       }
       case "remove": {
         if (!isCatified) {
-          return salty.warn(msg, "This channel is not a cat channel!");
+          return send.warn("This channel is not a cat channel!");
         }
         await channel.edit(
           { name: channel.name.slice(CAT_PREFIX.length) },
           reason
         );
-        return salty.success(msg, "Channel unset as a cat channel", {
+        return send.success("Channel unset as a cat channel", {
           react: CAT_PREFIX,
         });
       }
       default: {
-        await salty.message(
-          msg,
+        await send.message(
           `This channel is ${isCatified ? "" : "not "}catified`
         );
       }

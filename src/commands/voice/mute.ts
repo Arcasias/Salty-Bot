@@ -14,7 +14,7 @@ function autoMute(oldState: VoiceState, newState: VoiceState) {
 
 const command: CommandDescriptor = {
   name: "mute",
-  aliases: ["stfu", "shutup"],
+  aliases: ["stfu", "shutup", "unmute"],
   channel: "guild",
   help: [
     {
@@ -26,12 +26,13 @@ const command: CommandDescriptor = {
       effect: "Removes the targetted user from the automute loop.",
     },
   ],
-  async action({ args, msg, source, targets }) {
+  async action({ alias, args, send, source, targets }) {
     const member = (targets[0]?.member || source.member)!;
     const option = meaning(args[0]) || "";
-    const mute: boolean = ["clear", "remove"].includes(option)
-      ? false
-      : !autoMuteMap.has(member.id);
+    const mute: boolean =
+      ["clear", "remove"].includes(option) || alias.startsWith("un")
+        ? false
+        : !autoMuteMap.has(member.id);
 
     if (mute) {
       autoMuteMap.add(member.id);
@@ -51,8 +52,7 @@ const command: CommandDescriptor = {
       listenerBound = true;
     }
 
-    salty.success(
-      msg,
+    return send.success(
       `${member.displayName} has been ${mute ? "" : "un"}muted.`
     );
   },

@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { waifus } from "../../strings";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils";
@@ -13,9 +12,9 @@ const command: CommandDescriptor = {
     },
   ],
 
-  async action({ msg }) {
+  async action({ send }) {
     const { name, anime, image } = choice(waifus);
-    await salty.embed(msg, {
+    await send.embed({
       title: name,
       description: `anime: ${anime}`,
       image: { url: choice(image) },
