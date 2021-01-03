@@ -3,7 +3,7 @@ import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../strings";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, isDev, meaning, randColor } from "../../utils";
+import { apiCatch, isDev, meaning, randColor } from "../../utils/generic";
 
 function getRole(msg: Message, roleName: string): Role | false {
   return (

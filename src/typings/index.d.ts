@@ -78,6 +78,10 @@ export interface Joke {
   text: string;
   answer?: string;
 }
+export interface Log {
+  type: LogType;
+  message: string;
+}
 export interface MeaningInfo {
   answers: string[];
   list: string[];
@@ -182,6 +186,7 @@ export type CommandAction = (actionContext: ActionContext) => Promise<any>;
 export type CommandChannel = "all" | "guild";
 export type Dictionnary<T> = { [key: string]: T };
 export type ExpressionReplacer = (match: string, context: any) => string;
+export type LogType = "debug" | "error" | "log" | "logRequest" | "warn";
 export type MeaningKeys = keyof Meanings | "string";
 export type Meanings = {
   add: string[];

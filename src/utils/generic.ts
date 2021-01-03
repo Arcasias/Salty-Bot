@@ -1,21 +1,13 @@
 import { Guild, Message, User } from "discord.js";
-import { env } from "process";
-import { config } from "./classes/Database";
-import { keywords } from "./strings";
+import { config } from "../database/config";
+import { keywords } from "../strings";
 import {
   Dictionnary,
   ExpressionDescriptor,
   MeaningKeys,
   Meanings,
-} from "./typings";
+} from "../typings";
 
-const CONSOLE_RED: string = "\x1b[31m";
-const CONSOLE_GREEN: string = "\x1b[32m";
-const CONSOLE_YELLOW: string = "\x1b[33m";
-const CONSOLE_BLUE: string = "\x1b[34m";
-const CONSOLE_MAGENTA: string = "\x1b[35m";
-const CONSOLE_CYAN: string = "\x1b[36m";
-const CONSOLE_RESET: string = "\x1b[0m"; // default
 // Weights used in the Levenshtein matrix
 const LVD_REPLACE: number = 1.5;
 const LVD_INSERT: number = 1;
@@ -445,73 +437,4 @@ export function title(string: string) {
     return string;
   }
   return string[0].toUpperCase() + string.slice(1);
-}
-
-//=============================================================================
-// Log functions
-//=============================================================================
-
-/**
- * @param part
- * @param color
- * @param timestamp
- */
-function consoleColor(part: string, color = CONSOLE_RESET, timestamp = true) {
-  if (env.MODE !== "local") {
-    return part;
-  }
-  const finalMessage = [];
-  if (timestamp) {
-    finalMessage.push(formatDuration());
-  }
-  finalMessage.push(color + part + CONSOLE_RESET);
-  return finalMessage.join(" ");
-}
-
-/**
- * @param message
- */
-export function debug(...message: any[]) {
-  if (env.DEBUG !== "true") {
-    return;
-  }
-  console.log(consoleColor("DEBUG", CONSOLE_MAGENTA), ...message);
-}
-
-/**
- * @param message
- */
-export function error(...message: any[]) {
-  console.error(consoleColor("ERROR", CONSOLE_RED), ...message);
-}
-
-/**
- * @param message
- */
-export function log(...message: any[]) {
-  console.log(consoleColor("INFO", CONSOLE_CYAN), ...message);
-}
-
-/**
- * @param guild
- * @param user
- * @param msg
- */
-export function logRequest(guild: string, user: string, msg: string) {
-  const content = msg
-    ? consoleColor(`"${msg}"`, CONSOLE_GREEN, false)
-    : consoleColor("[EMPTY MESSAGE]", CONSOLE_RED, false);
-  const message = `${consoleColor(
-    guild,
-    CONSOLE_YELLOW,
-    false
-  )} > ${consoleColor(user, CONSOLE_YELLOW, false)} : ${content}`;
-  console.log(consoleColor(message));
-}
-
-/**
- * @param message
- */
-export function warn(...message: any[]) {
-  console.warn(consoleColor("WARNING", CONSOLE_YELLOW), ...message);
 }

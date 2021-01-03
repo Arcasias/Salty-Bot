@@ -1,4 +1,4 @@
-import { fields } from "../classes/Database";
+import fields from "../database/fields";
 import salty from "../salty";
 import {
   ActionContext,
@@ -7,7 +7,8 @@ import {
   Dictionnary,
   Module,
 } from "../typings";
-import { choice, clean, log, meaning } from "../utils";
+import { choice, clean, meaning } from "../utils/generic";
+import { log } from "../utils/log";
 import Command from "./../classes/Command";
 import Model from "./../classes/Model";
 

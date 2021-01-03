@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Snowflake } from "discord.js";
 import { Module } from "../typings";
-import { log } from "../utils";
+import { log } from "../utils/log";
 
 interface PartialApplicationCommand {
   name: string; // 3-32 chars

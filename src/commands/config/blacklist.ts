@@ -1,7 +1,7 @@
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { isDev, meaning } from "../../utils";
+import { isDev, meaning } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "blacklist",

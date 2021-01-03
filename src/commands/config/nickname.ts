@@ -1,7 +1,7 @@
 import { GuildMember, Message } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { meaning } from "../../utils";
+import { meaning } from "../../utils/generic";
 
 async function changeNames(
   msg: Message,

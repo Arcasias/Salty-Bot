@@ -1,6 +1,6 @@
 import Sailor from "../../classes/Sailor";
 import { CommandDescriptor } from "../../typings";
-import { clean, levenshtein, meaning } from "../../utils";
+import { clean, levenshtein, meaning } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "todo",

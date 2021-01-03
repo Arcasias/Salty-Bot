@@ -1,6 +1,6 @@
 import { predictions } from "../../strings";
 import { CommandDescriptor } from "../../typings";
-import { ellipsis, randInt, shuffle } from "../../utils";
+import { ellipsis, randInt, shuffle } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "future",

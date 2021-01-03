@@ -1,7 +1,7 @@
-import { fields } from "./Database";
+import fields from "../database/fields";
 import Model from "./Model";
 
-class Crew extends Model {
+export default class Crew extends Model {
   public discordId!: string;
   public defaultChannel!: string | null;
   public defaultRole!: string | null;
@@ -17,5 +17,3 @@ class Crew extends Model {
     return results[0] || null;
   }
 }
-
-export default Crew;

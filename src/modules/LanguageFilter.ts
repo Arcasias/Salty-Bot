@@ -2,7 +2,7 @@ import { Message } from "discord.js";
 import salty from "../salty";
 import { answers, meaning } from "../strings";
 import { Module } from "../typings";
-import { choice } from "../utils";
+import { choice } from "../utils/generic";
 
 const SWEAR_WORDS = meaning.badWord.list;
 

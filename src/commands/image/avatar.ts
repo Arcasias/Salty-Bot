@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import salty from "../../salty";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
-import { choice, isAdmin, isOwner, possessive } from "../../utils";
+import { choice, isAdmin, isOwner, possessive } from "../../utils/generic";
 
 const SALTY_IMAGES_PATH = "assets/img/salty";
 

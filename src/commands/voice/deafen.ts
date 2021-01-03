@@ -1,7 +1,7 @@
 import { Snowflake, VoiceState } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, meaning } from "../../utils";
+import { apiCatch, meaning } from "../../utils/generic";
 
 const autoDeafenMap = new Set<Snowflake>();
 let listenerBound = false;

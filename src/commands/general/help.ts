@@ -1,6 +1,6 @@
 import { Collection } from "discord.js";
 import Command from "../../classes/Command";
-import { config } from "../../classes/Database";
+import { config } from "../../database/config";
 import salty from "../../salty";
 import { keywords } from "../../strings";
 import {
@@ -9,7 +9,7 @@ import {
   MessageActionsDescriptor,
   SaltyEmbedOptions,
 } from "../../typings";
-import { sort, title } from "../../utils";
+import { sort, title } from "../../utils/generic";
 
 const GIT_SRC_PATH = ["blob", "master", "src"];
 

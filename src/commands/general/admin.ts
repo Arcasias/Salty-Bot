@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { isAdmin } from "../../utils";
+import { isAdmin } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "admin",

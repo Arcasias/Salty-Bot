@@ -1,7 +1,7 @@
-import { fields } from "./Database";
+import fields from "../database/fields";
 import Model from "./Model";
 
-class Sailor extends Model {
+export default class Sailor extends Model {
   public discordId!: string;
   public blackListed!: boolean;
   public todos!: string[];
@@ -17,5 +17,3 @@ class Sailor extends Model {
     return results[0] || null;
   }
 }
-
-export default Sailor;

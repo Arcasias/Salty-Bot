@@ -14,7 +14,8 @@ import {
   MessageActor,
   ParialActionContext,
 } from "../typings";
-import { error, isAdmin, isDev, isOwner, sort } from "../utils";
+import { isAdmin, isDev, isOwner, sort } from "../utils/generic";
+import { error } from "../utils/log";
 import Salty from "./Salty";
 
 const permissions: {

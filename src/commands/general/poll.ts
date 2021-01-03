@@ -6,7 +6,7 @@ import {
   PollOption,
   SaltyEmbedOptions,
 } from "../../typings";
-import { getNumberReactions, possessive } from "../../utils";
+import { getNumberReactions, possessive } from "../../utils/generic";
 
 const VOTE_LENGTH = 20;
 const VOTE_CHARS = ["🟥", "🟩", "🟦", "🟨", "🟪", "🟫", "⬜", "🟧", " ⬛"];

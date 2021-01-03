@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { title } from "../../utils";
+import { title } from "../../utils/generic";
 
 const PING_MESSAGES = [
   "nearly perfect!",

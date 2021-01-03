@@ -2,7 +2,7 @@ import fs from "fs";
 import { promisify } from "util";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { choice } from "../../utils";
+import { choice } from "../../utils/generic";
 
 const emojiPath = "./assets/img/saltmoji";
 const readDir = promisify(fs.readdir.bind(fs));

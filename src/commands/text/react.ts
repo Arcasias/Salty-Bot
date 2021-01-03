@@ -1,7 +1,7 @@
 import { GuildEmoji, Message } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, clean, stringToReaction } from "../../utils";
+import { apiCatch, clean, stringToReaction } from "../../utils/generic";
 
 const messageCache: WeakMap<Message, Promise<any>> = new WeakMap();
 

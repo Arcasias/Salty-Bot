@@ -1,6 +1,6 @@
 import { answers as listAnswers, meaning } from "../../strings";
 import { CommandDescriptor } from "../../typings";
-import { choice, clean, levenshtein } from "../../utils";
+import { choice, clean, levenshtein } from "../../utils/generic";
 
 const SPECIAL_CHARS = /[;,\.\?\!'"]/g;
 

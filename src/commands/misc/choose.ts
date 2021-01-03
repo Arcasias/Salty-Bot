@@ -1,5 +1,5 @@
 import { CommandDescriptor } from "../../typings";
-import { choice } from "../../utils";
+import { choice } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "choose",

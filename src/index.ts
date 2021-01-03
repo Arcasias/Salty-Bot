@@ -1,6 +1,6 @@
 import { env } from "process";
 import salty from "./salty";
-import { debug } from "./utils";
+import { debug } from "./utils/log";
 
 debug(`Debug is active`);
 

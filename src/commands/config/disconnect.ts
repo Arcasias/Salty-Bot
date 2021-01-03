@@ -1,7 +1,7 @@
 import salty from "../../salty";
 import { answers } from "../../strings";
 import { CommandDescriptor } from "../../typings";
-import { choice } from "../../utils";
+import { choice } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "disconnect",

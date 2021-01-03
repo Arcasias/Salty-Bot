@@ -1,7 +1,7 @@
 import { env } from "process";
 import Crew from "../../classes/Crew";
-import { config } from "../../classes/Database";
 import Sailor from "../../classes/Sailor";
+import { config } from "../../database/config";
 import salty from "../../salty";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
 

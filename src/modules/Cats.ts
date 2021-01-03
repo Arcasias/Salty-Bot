@@ -2,7 +2,7 @@ import axios from "axios";
 import { Message } from "discord.js";
 import salty from "../salty";
 import { CommandDescriptor, Module } from "../typings";
-import { meaning } from "../utils";
+import { meaning } from "../utils/generic";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
 const CAT_PREFIX: string = "🐱";

@@ -1,5 +1,5 @@
 import { CommandDescriptor } from "../../typings";
-import { clean } from "../../utils";
+import { clean } from "../../utils/generic";
 
 const expressions: Map<RegExp, string> = new Map<RegExp, string>([
   // Compound sounds / accents

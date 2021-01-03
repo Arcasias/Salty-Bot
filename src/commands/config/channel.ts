@@ -1,7 +1,7 @@
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { meaning } from "../../utils";
+import { meaning } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "channel",

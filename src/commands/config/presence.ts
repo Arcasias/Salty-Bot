@@ -1,7 +1,7 @@
 import { PresenceStatusData } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor, StatusInfos } from "../../typings";
-import { meaning } from "../../utils";
+import { meaning } from "../../utils/generic";
 
 const STATUSINFO: StatusInfos = {
   dnd: { title: "do not disturb", color: 15746887 },

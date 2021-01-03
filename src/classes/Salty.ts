@@ -23,6 +23,8 @@ import { readdir } from "fs";
 import { join } from "path";
 import { env } from "process";
 import { promisify } from "util";
+import { config } from "../database/config";
+import { connect, disconnect } from "../database/helpers";
 import { help, intro, keywords } from "../strings";
 import {
   CategoryId,
@@ -40,19 +42,16 @@ import {
   choice,
   clean,
   ellipsis,
-  error,
   format,
   isAdmin,
   isDev,
   isOwner,
-  log,
-  logRequest,
   search,
   title,
-} from "../utils";
+} from "../utils/generic";
+import { clearHistory, error, log, logRequest } from "../utils/log";
 import Command from "./Command";
 import Crew from "./Crew";
-import { config, connect, disconnect } from "./Database";
 import Sailor from "./Sailor";
 
 const readFolder = promisify(readdir);
@@ -418,6 +417,7 @@ export default class Salty {
     this.token = token;
     await this.load();
     await this.bot.login(this.token);
+    clearHistory();
   }
 
   /**

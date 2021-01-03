@@ -2,7 +2,8 @@ import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { debug, ellipsis } from "../../utils";
+import { ellipsis } from "../../utils/generic";
+import { debug } from "../../utils/log";
 
 const MAXDEPTH = 3;
 const TAB = "    ";

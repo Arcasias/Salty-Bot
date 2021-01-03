@@ -1,20 +1,11 @@
 import { QueryResultRow } from "pg";
+import { registerTable } from "../database/autoDB";
+import { serial, timestamp } from "../database/fields";
+import { count, create, read, remove, update } from "../database/query";
 import { Dictionnary, FieldDescriptor } from "../typings";
-import { ensureContent } from "../utils";
-import {
-  count,
-  create,
-  fields,
-  read,
-  registerTable,
-  remove,
-  update,
-} from "./Database";
+import { ensureContent } from "../utils/generic";
 
-const AUTO_FILLED_COLUMNS = [
-  fields.serial("id"),
-  fields.timestamp("createdAt"),
-];
+const AUTO_FILLED_COLUMNS = [serial("id"), timestamp("createdAt")];
 const CACHE_LIMIT = 1000;
 const MODEL_CACHE: Dictionnary<Dictionnary<QueryResultRow[]>> = {};
 
