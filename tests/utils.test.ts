@@ -4,7 +4,7 @@ import {
   GuildMember,
   Message,
   TextChannel,
-  User
+  User,
 } from "discord.js";
 import {
   apiCatch,
@@ -29,8 +29,8 @@ import {
   shuffle,
   sort,
   stringToReaction,
-  title
-} from "../src/utils";
+  title,
+} from "../src/utils/generic";
 
 //=============================================================================
 // Mock environment
