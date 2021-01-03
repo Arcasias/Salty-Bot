@@ -111,11 +111,18 @@ export function logRequest(
     YELLOW,
     false
   )} : ${content}`;
+  console.log(applyColor(message));
+
+  // Push log into history
   if (!(gId in guildHistory)) {
     guildHistory[gId] = [];
   }
   guildHistory[gId].push(`${source.name}: ${msg || "[EMPTY MESSAGE]"}`);
-  console.log(applyColor(message));
+
+  // Remove excess logs
+  while (guildHistory[gId].length > LOG_LIMIT) {
+    guildHistory[gId].shift();
+  }
 }
 
 /**
