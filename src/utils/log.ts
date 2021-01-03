@@ -1,14 +1,15 @@
+import { Guild, User } from "discord.js";
 import { env } from "process";
-import { Log, LogType } from "../typings";
+import { Dictionnary, MessageActor } from "../typings";
 import { formatDuration } from "./generic";
 
-const CONSOLE_RED: string = "\x1b[31m";
-const CONSOLE_GREEN: string = "\x1b[32m";
-const CONSOLE_YELLOW: string = "\x1b[33m";
-const CONSOLE_BLUE: string = "\x1b[34m";
-const CONSOLE_MAGENTA: string = "\x1b[35m";
-const CONSOLE_CYAN: string = "\x1b[36m";
-const CONSOLE_RESET: string = "\x1b[0m"; // default
+const RED: string = "\x1b[31m";
+const GREEN: string = "\x1b[32m";
+const YELLOW: string = "\x1b[33m";
+const BLUE: string = "\x1b[34m";
+const MAGENTA: string = "\x1b[35m";
+const CYAN: string = "\x1b[36m";
+const RESET: string = "\x1b[0m"; // default
 
 const LOG_LIMIT: number = 100;
 
@@ -23,47 +24,43 @@ const LOG_LIMIT: number = 100;
  */
 function applyColor(
   part: string,
-  color = CONSOLE_RESET,
-  timestamp = true
+  color: string = RESET,
+  timestamp: boolean = true
 ): string {
   if (env.MODE !== "local") {
     return part;
   }
-  const finalMessage = [];
+  let message = color + part + RESET;
   if (timestamp) {
-    finalMessage.push(formatDuration());
+    message = `${formatDuration()} ${message}`;
   }
-  finalMessage.push(color + part + CONSOLE_RESET);
-  return finalMessage.join(" ");
+  return message;
 }
 
 //=============================================================================
 // History
 //=============================================================================
 
-let history: Log[] = [];
+const guildHistory: Dictionnary<string[]> = {};
 
-function registerLog(type: LogType, ...args: string[]): void {
-  const method =
-    type === "error"
-      ? console.error
-      : type === "warn"
-      ? console.warn
-      : console.log;
-  const argString: string = args.join(" ");
-  method(argString);
-  history.push({ type, message: argString });
-  while (history.length > LOG_LIMIT) {
-    history.shift();
+/**
+ * @param guildOrUser
+ */
+export function clearHistory(guildOrUser?: Guild | User): void {
+  if (guildOrUser) {
+    delete guildHistory[guildOrUser.id];
+  } else {
+    for (const gId in guildHistory) {
+      delete guildHistory[gId];
+    }
   }
 }
 
-export function clearHistory(): void {
-  history = [];
-}
-
-export function getHistory(): Log[] {
-  return history;
+/**
+ * @param guildOrUser
+ */
+export function getHistory({ id }: Guild | User): string[] {
+  return guildHistory[id] || [];
 }
 
 //=============================================================================
@@ -77,43 +74,53 @@ export function debug(...message: any[]) {
   if (env.DEBUG !== "true") {
     return;
   }
-  registerLog("debug", applyColor("DEBUG", CONSOLE_MAGENTA), ...message);
+  console.debug(applyColor("DEBUG", MAGENTA), ...message);
 }
 
 /**
  * @param message
  */
 export function error(...message: any[]) {
-  registerLog("error", applyColor("ERROR", CONSOLE_RED), ...message);
+  console.error(applyColor("ERROR", RED), ...message);
 }
 
 /**
  * @param message
  */
 export function log(...message: any[]) {
-  registerLog("log", applyColor("INFO", CONSOLE_CYAN), ...message);
+  console.log(applyColor("INFO", CYAN), ...message);
 }
 
 /**
  * @param guild
- * @param user
+ * @param source
  * @param msg
  */
-export function logRequest(guild: string, user: string, msg: string) {
+export function logRequest(
+  guild: Guild | null,
+  source: MessageActor,
+  msg: string
+) {
+  const gName = guild?.name || "DM";
+  const gId = guild?.id || source.user.id;
   const content = msg
-    ? applyColor(`"${msg}"`, CONSOLE_GREEN, false)
-    : applyColor("[EMPTY MESSAGE]", CONSOLE_RED, false);
-  const message = `${applyColor(guild, CONSOLE_YELLOW, false)} > ${applyColor(
-    user,
-    CONSOLE_YELLOW,
+    ? applyColor(`"${msg}"`, GREEN, false)
+    : applyColor("[EMPTY MESSAGE]", RED, false);
+  const message = `${applyColor(gName, YELLOW, false)} > ${applyColor(
+    source.user.username,
+    YELLOW,
     false
   )} : ${content}`;
-  registerLog("logRequest", applyColor(message));
+  if (!(gId in guildHistory)) {
+    guildHistory[gId] = [];
+  }
+  guildHistory[gId].push(`${source.name}: ${msg || "[EMPTY MESSAGE]"}`);
+  console.log(applyColor(message));
 }
 
 /**
  * @param message
  */
 export function warn(...message: any[]) {
-  registerLog("warn", applyColor("WARNING", CONSOLE_YELLOW), ...message);
+  console.warn(applyColor("WARNING", YELLOW), ...message);
 }

@@ -1,6 +1,6 @@
-import { log, warn } from "console";
 import { Dictionnary, FieldDescriptor, FieldStructure } from "../typings";
 import { groupBy } from "../utils/generic";
+import { log, warn } from "../utils/log";
 import { buildFieldQuery, getClient, sanitize } from "./helpers";
 import { read } from "./query";
 

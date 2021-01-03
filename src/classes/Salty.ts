@@ -752,9 +752,6 @@ export default class Salty {
       return;
     }
 
-    // Logs the  action
-    logRequest(guild?.name || "DM", author.username, cleanContent);
-
     // All mentions are removed
     let content = msg.content.replace(/<@!\d+>/g, "");
     if (prefixInteraction) {
@@ -764,6 +761,10 @@ export default class Salty {
 
     // Fetches the actors of the action
     const { source, targets } = await this.getMessageActors(msg);
+
+    // Logs the  action
+    logRequest(guild, source, cleanContent);
+
     if (source.sailor.blackListed) {
       // The action is discarded if the user is black-listed
       return;
