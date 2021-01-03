@@ -3,8 +3,8 @@ import Model from "./Model";
 
 class Crew extends Model {
   public discordId!: string;
-  public defaultChannel: string | null = null;
-  public defaultRole: string | null = null;
+  public defaultChannel!: string | null;
+  public defaultRole!: string | null;
 
   public static table: string = Crew.createTable("crews", [
     fields.snowflake("discordId"),

@@ -55,17 +55,16 @@ const command: CommandDescriptor = {
                 `This role doesn't exist. You can create it with "${commandString}".`
               );
             }
-            await Crew.update(crew.id, {
-              defaultRole: role.id,
-            });
+            await Crew.update(crew.id, { defaultRole: role.id });
             return send.success(
               `Role **${role.name}** has been successfuly set as default role.`,
               { color: role.color }
             );
           }
+          case "clear":
           case "remove": {
-            if (!crew.defaultChannel) {
-              return send.info("No default role set.");
+            if (!crew.defaultRole) {
+              return send.warn("No default role to remove.");
             }
             await Crew.update(crew.id, { defaultRole: null });
             return send.success("default role has been successfuly removed");

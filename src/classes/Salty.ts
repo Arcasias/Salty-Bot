@@ -783,6 +783,7 @@ export default class Salty {
     const rawCommandName = clean(msgArgs.shift() || "");
     const commandName = Command.aliases.get(rawCommandName);
     const commandContext = Command.createContext(
+      this,
       msg,
       rawCommandName,
       source,

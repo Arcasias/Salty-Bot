@@ -1,7 +1,7 @@
 import { Collection, DMChannel, Message } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor, MessageAction } from "../../typings";
-import { meaning, removeMentions } from "../../utils";
+import { meaning } from "../../utils";
 
 async function removeMessages(
   msg: Message,
@@ -52,8 +52,8 @@ async function removeMessages(
 }
 
 const command: CommandDescriptor = {
-  name: "purge",
-  aliases: ["prune"],
+  name: "prune",
+  aliases: ["purge"],
   help: [
     {
       argument: null,
@@ -67,15 +67,6 @@ const command: CommandDescriptor = {
       argument: "bot",
       effect: "Deletes the last 100 messages sent by a bot",
     },
-    {
-      argument: "endless",
-      effect:
-        "Recursively deletes every message one by one in the current channel. Use carefully.",
-    },
-    {
-      argument: "clear",
-      effect: "Used to stop the endless purge",
-    },
   ],
   access: "admin",
   async action({ args, msg, targets }) {
@@ -84,17 +75,13 @@ const command: CommandDescriptor = {
         const filter = ({ author }: Message): boolean => author.bot;
         return removeMessages(msg, args[1], filter);
       }
-      case "string": {
+      default: {
         let filter;
         if (targets.length) {
           const { user } = targets[0];
           filter = ({ author }: Message) => author.equals(user);
         }
-        const cleanArgs = removeMentions(msg, args);
-        return removeMessages(msg, cleanArgs[0], filter);
-      }
-      default: {
-        return removeMessages(msg, args[0]);
+        return removeMessages(msg, args[0], filter);
       }
     }
   },

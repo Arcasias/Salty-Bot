@@ -1,5 +1,4 @@
 import { Collection, Guild, Message, User } from "discord.js";
-import salty from "../salty";
 import {
   ActionContext,
   ActionContextMessageHelpers,
@@ -16,6 +15,7 @@ import {
   ParialActionContext,
 } from "../typings";
 import { error, isAdmin, isDev, isOwner, sort } from "../utils";
+import Salty from "./Salty";
 
 const permissions: {
   [key in CommandAccess]: (user: User, guild: Guild) => boolean;
@@ -62,19 +62,18 @@ export default class Command implements CommandDescriptor {
   public async run(context: ActionContext) {
     const { msg } = context;
     if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
-      return salty.warn(
-        msg,
+      return context.send.warn(
         `You need to have the ${this.access} permission to do that.`
       );
     }
     if (this.channel === "guild" && !msg.guild) {
-      return salty.warn(msg, "This is a direct message channel retard");
+      return context.send.warn("This is a direct message channel retard");
     }
     try {
       await this.action(context);
     } catch (err) {
       error(err.stack);
-      await salty.error(msg, `Whoops! ${err.message}`);
+      await context.send.error(`Whoops! ${err.message}`);
     }
   }
 
@@ -143,6 +142,7 @@ export default class Command implements CommandDescriptor {
   }
 
   public static createContext(
+    salty: Salty,
     msg: Message,
     alias: string,
     source: MessageActor,
@@ -150,12 +150,12 @@ export default class Command implements CommandDescriptor {
     ctxArgs: string[] = []
   ): ParialActionContext {
     const messageHelpers: ActionContextMessageHelpers = {
-      embed: (...args: any[]) => salty.embed(msg, ...args),
-      error: (...args: any[]) => salty.error(msg, ...args),
-      info: (...args: any[]) => salty.info(msg, ...args),
-      message: (...args: any[]) => salty.message(msg, ...args),
-      success: (...args: any[]) => salty.success(msg, ...args),
-      warn: (...args: any[]) => salty.warn(msg, ...args),
+      embed: salty.embed.bind(salty, msg),
+      error: salty.error.bind(salty, msg),
+      info: salty.info.bind(salty, msg),
+      message: salty.message.bind(salty, msg),
+      success: salty.success.bind(salty, msg),
+      warn: salty.warn.bind(salty, msg),
     };
     const partialContext: ParialActionContext = {
       alias,

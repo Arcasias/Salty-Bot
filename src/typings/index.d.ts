@@ -11,6 +11,10 @@ import {
 } from "discord.js";
 import Sailor from "../classes/Sailor";
 
+//=============================================================================
+// Interfaces
+//=============================================================================
+
 export interface ActionContext extends ParialActionContext {
   readonly send: ActionContextMessageHelpers;
 }
@@ -160,6 +164,10 @@ export interface FieldStructure {
   columnDefault?: any;
   isNullable: "YES" | "NO";
 }
+
+//=============================================================================
+// Types
+//=============================================================================
 
 export type CategoryId =
   | "config"

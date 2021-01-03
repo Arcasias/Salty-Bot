@@ -1,6 +1,6 @@
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { percent, title } from "../../utils";
+import { title } from "../../utils";
 
 const PING_MESSAGES = [
   "nearly perfect!",
@@ -21,22 +21,17 @@ const command: CommandDescriptor = {
   help: [
     {
       argument: null,
-      effect: "Tests client-server latency",
+      effect: "Checks server response time",
     },
   ],
 
   async action({ msg, send }) {
-    // If too much salt, skips the latency test
-    if (percent(3)) {
-      return send.info("Pong, and I don't give a fuck about your latency");
-    }
-    // Sends another message and displays the difference between the first and the second
     const sentMsg = await send.message("Pinging...");
     if (!sentMsg) {
       return;
     }
     const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
-    const message = PING_MESSAGES[Math.floor(latency / 100)] || "lol wat";
+    const message = PING_MESSAGES[Math.floor(latency / 200)] || "lol wat";
 
     salty.deleteMessage(sentMsg);
     await send.info(`Pong! Latency is ${latency}. ${title(message)}`);

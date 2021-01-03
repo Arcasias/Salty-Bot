@@ -48,7 +48,7 @@ export default class Model {
     } else if (typeof idsOrWhere === "object" && idsOrWhere !== null) {
       where = idsOrWhere;
     }
-    const results = await this.__cache(read, this.table, where);
+    const results = await this.cache(read, this.table, where);
     return results.map((values: Dictionnary<any>) => new this(values) as T);
   }
 
@@ -61,7 +61,7 @@ export default class Model {
     } else if (typeof idsOrWhere === "object" && idsOrWhere !== null) {
       where = idsOrWhere;
     }
-    const results = await this.__cache(count, this.table, where);
+    const results = await this.cache(count, this.table, where);
     return results[0]?.count || 0;
   }
 
@@ -149,7 +149,7 @@ export default class Model {
    * @param table
    * @param args
    */
-  private static async __cache(
+  private static async cache(
     dbFunction: (table: string, ...args: any) => Promise<QueryResultRow[]>,
     table: string,
     ...args: any[]
