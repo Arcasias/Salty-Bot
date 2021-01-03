@@ -658,28 +658,25 @@ export default class Salty {
   }
 
   private async onGuildCreate(guild: Guild): Promise<any> {
-    Crew.create({ discordId: guild.id });
+    await Crew.create({ discordId: guild.id });
   }
 
   private async onGuildDelete(guild: Guild): Promise<any> {
-    if (guild.members.cache.has(this.user.id)) {
-      await Crew.remove({ discordId: guild.id });
-    }
+    await Crew.remove({ discordId: guild.id });
   }
 
   private async onGuildMemberAdd(
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
-    const guild = await Crew.get(member.guild.id);
-    if (guild?.defaultChannel) {
-      const channel = this.getTextChannel(guild.defaultChannel);
+    const crew = await Crew.get(member.guild.id);
+    if (crew?.defaultChannel) {
       this.message(
-        channel,
-        `Hey there ${member.user}! Have a great time here (͡° ͜ʖ ͡°)`
+        this.getTextChannel(crew.defaultChannel),
+        `Hey there ${member.displayName}! Have a great time here (͡° ͜ʖ ͡°)`
       );
     }
-    if (guild?.defaultRole) {
-      member.roles.add(guild.defaultRole);
+    if (crew?.defaultRole) {
+      member.roles.add(crew.defaultRole);
     }
   }
 
@@ -688,9 +685,8 @@ export default class Salty {
   ): Promise<any> {
     const guild = await Crew.get(member.guild.id);
     if (guild?.defaultChannel) {
-      const channel = this.getTextChannel(guild.defaultChannel);
       this.message(
-        channel,
+        this.getTextChannel(guild.defaultChannel),
         `Well, looks like ${member.displayName} got bored of us :c`
       );
     }
