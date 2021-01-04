@@ -41,11 +41,6 @@ export interface ActionContextMessageHelpers {
     options?: SaltyEmbedOptions
   ) => Promise<Message | false>;
 }
-export interface Banner {
-  channelId: Snowflake;
-  messageId: Snowflake;
-  emojiRoles: [string, string][];
-}
 export interface BasicCommandDescriptor {
   readonly access?: CommandAccess;
   readonly aliases?: string[];
@@ -122,6 +117,11 @@ export interface PollOption {
   text: string;
   votes: Set<string>;
   reaction: string;
+}
+export interface RoleBox {
+  channelId: Snowflake;
+  messageId: Snowflake;
+  emojiRoles: [string, string][];
 }
 export interface SaltyEmbedOptions extends MessageEmbedOptions {
   content?: string;

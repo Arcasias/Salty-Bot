@@ -1,17 +1,20 @@
-import { Message, Role } from "discord.js";
 import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../strings";
-import { CommandDescriptor } from "../../typings";
-import { apiCatch, isDev, meaning, randColor } from "../../utils/generic";
+import { CommandDescriptor, RoleBox } from "../../typings";
+import {
+  apiCatch,
+  clean,
+  meaning,
+  parseRoleBox,
+  randColor,
+  serializeRoleBox,
+} from "../../utils/generic";
 
-function getRole(msg: Message, roleName: string): Role | false {
-  return (
-    msg.mentions.roles.first() ||
-    msg.guild!.roles.cache.find((r) => r.name === roleName) ||
-    false
-  );
-}
+const PRIMARY_SEP = /\s*,\s*/;
+const SECONDARY_SEP = /\s*=\s*/;
+
+const CUSTOM_EMOJI_REGEX = /<:(\w+):\d{18}>/;
 
 const command: CommandDescriptor = {
   name: "role",
@@ -35,6 +38,7 @@ const command: CommandDescriptor = {
 
   async action({ args, msg, send }) {
     const guild = msg.guild!;
+    const channel = msg.channel;
     const crew = await Crew.get(guild.id)!;
 
     switch (meaning(args[0])) {
@@ -48,7 +52,10 @@ const command: CommandDescriptor = {
               return send.warn("You need to specify the name of the new role.");
             }
             const roleName = args.slice(0).join(" ");
-            const role = getRole(msg, roleName);
+            const role =
+              msg.mentions.roles.first() ||
+              msg.guild!.roles.cache.find((r) => r.name === roleName) ||
+              false;
             if (!role) {
               const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
               return send.warn(
@@ -83,99 +90,89 @@ const command: CommandDescriptor = {
           }
         }
       }
-      default: {
-        switch (meaning(args[0])) {
-          // Not default
-          case "add": {
-            if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-              return send.warn(
-                "I'm not allowed to manage roles on this server."
-              );
-            }
-            args.shift();
-            if (!args.length) {
-              return send.warn("You need to specify the name of the new role.");
-            }
-            const roleName = args.slice(0).join(" ");
-            const role = getRole(msg, roleName);
-            if (role) {
-              return send.warn("This role already exists.");
-            }
-            const newRole = await msg.guild!.roles.create({
-              data: {
-                name: roleName,
-                mentionable: true,
-                color: randColor(),
-                permissions: [],
-              },
-              reason: `Created by ${msg.author.username} via Salty`,
-            });
-            return send.success(`Role **${newRole.name}** created.`, {
-              color: newRole.color,
-            });
-          }
-          case "set": {
-            args.shift();
-            if (!args.length) {
-              return send.warn("You need to specify the name of the role.");
-            }
-            const roleName = args.slice(0).join(" ");
-            let role = getRole(msg, roleName);
-            if (!role) {
-              if (!isDev(msg.author)) {
-                const commandString = `\`$${this.name} ${keywords.add[0]} ${roleName}\``;
-                return send.warn(
-                  `This role doesn't exist. You can create it with "${commandString}".`
-                );
-              } else {
-                role = await apiCatch(() =>
-                  msg.guild!.roles.create({
-                    data: {
-                      name: roleName,
-                      mentionable: true,
-                      color: randColor(),
-                    },
-                    reason: `Created by ${msg.author.username} via Salty`,
-                  })
-                );
-              }
-            }
-            if (role) {
-              const ensuredRole: Role = role;
-              apiCatch(() => msg.member!.roles.add(ensuredRole));
-              return send.success(
-                `You have been assigned the role **${role.name}**.`,
-                { color: role.color }
-              );
-            }
-          }
-          case "remove": {
-            if (!salty.hasPermission(msg.guild!, "MANAGE_ROLES")) {
-              return send.warn(
-                "I'm not allowed to manage roles on this server."
-              );
-            }
-            args.shift();
-            const role = getRole(msg, args.join(" "));
-            if (!role) {
-              return send.warn(
-                "You need to specify the name of the role to delete."
-              );
-            }
-            apiCatch(() => role.delete("Deleted by Salty"));
-            return send.success(`Role **${role.name}** deleted.`, {
-              color: role.color,
-            });
-          }
-          default: {
-            const roles = msg
-              .member!.roles.cache.map((r) => r.name)
-              .filter((n) => n !== "@everyone");
-            return send.info("You have the following roles", {
-              description: roles.join("\n"),
-            });
+      case "clear": {
+        const toKeep: string[] = [];
+        const toRemove: string[] = [];
+        for (const roleBox of crew.roleBoxes) {
+          const parsed = parseRoleBox(roleBox);
+          if (parsed.channelId === channel.id) {
+            toRemove.push(roleBox);
+            salty.removeRoleBox(parsed);
+          } else {
+            toKeep.push(roleBox);
           }
         }
+        Crew.update(crew.id, { roleBoxes: toKeep });
+        return send.success("All role boxes have been removed on this channel");
+      }
+      case "remove": {
+        const lastRoleBox = crew.roleBoxes.pop();
+        if (!lastRoleBox) {
+          return send.warn("No role box on this server");
+        }
+        const roleBox = parseRoleBox(lastRoleBox);
+        salty.removeRoleBox(roleBox);
+        Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
+        const boxChannel = guild.channels.cache.get(roleBox.channelId)!;
+        return send.success(
+          `Last role box has been removed. (In channel ${boxChannel.name})`
+        );
+      }
+      default: {
+        const rawEmojiRoles = args
+          .join(" ")
+          .split(PRIMARY_SEP)
+          .map((x) => x.split(SECONDARY_SEP));
+        const emojiRoles: [string, string][] = [];
+        for (const [emojiName, roleName] of rawEmojiRoles) {
+          const cleanedRoleName = clean(roleName);
+          let role = msg.guild!.roles.cache.find(
+            (r) => clean(r.name) === cleanedRoleName
+          );
+          if (!role) {
+            role = await msg.guild!.roles.create({
+              name: roleName,
+              mentionable: true,
+              color: randColor(),
+              permissions: [],
+              reason: `Created by ${msg.author.username} via Salty`,
+            });
+          }
+          let emoji = emojiName;
+          const customEmojiMatch = emojiName.match(CUSTOM_EMOJI_REGEX);
+          if (customEmojiMatch) {
+            emoji = customEmojiMatch[1];
+          }
+          emojiRoles.push([emoji, role.id]);
+        }
+
+        await salty.deleteMessage(msg);
+
+        const lastMessages = await channel.messages.fetch({ limit: 1 });
+        const targetMessage = lastMessages.last();
+        if (!targetMessage) {
+          return send.warn("No message to react to");
+        }
+        await apiCatch(() => targetMessage.reactions.removeAll());
+
+        const newBox: RoleBox = {
+          channelId: channel.id,
+          messageId: targetMessage.id,
+          emojiRoles,
+        };
+
+        const boxIndex = crew.roleBoxes.findIndex(
+          (r) => parseRoleBox(r).messageId === targetMessage.id
+        );
+        if (boxIndex < 0) {
+          crew.roleBoxes.push(serializeRoleBox(newBox));
+        } else {
+          crew.roleBoxes[boxIndex] = serializeRoleBox(newBox);
+        }
+
+        Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
+
+        salty.addRoleBox(targetMessage, newBox);
       }
     }
   },

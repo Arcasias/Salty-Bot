@@ -12,11 +12,13 @@ import {
   Message,
   MessageEditOptions,
   MessageEmbed,
+  MessageReaction,
   NewsChannel,
   PartialGuildMember,
+  PartialMessage,
+  PartialUser,
   PermissionString,
   ReactionCollector,
-  ReactionCollectorOptions,
   TextChannel,
   User,
 } from "discord.js";
@@ -35,6 +37,7 @@ import {
   MessageActionsDescriptor,
   MessageActor,
   Module,
+  RoleBox,
   SaltyEmbedOptions,
   SaltyMessageOptions,
 } from "../typings";
@@ -44,11 +47,10 @@ import {
   clean,
   ellipsis,
   format,
-  getBannerActions,
   isAdmin,
   isDev,
   isOwner,
-  parseBanner,
+  parseRoleBox,
   search,
   title,
 } from "../utils/generic";
@@ -65,6 +67,8 @@ const runningCollectors: Dictionnary<ReactionCollector> = {};
 const commandsDir = "commands";
 const modulesDir = "modules";
 const sourceDir = "src";
+
+const TEXT_REGEX = /\w+/;
 
 export default class Salty {
   //===========================================================================
@@ -90,6 +94,7 @@ export default class Salty {
   //===========================================================================
 
   private modules: Module[] = [];
+  private roleBoxes: RoleBox[] = [];
   private token: string | null = null;
 
   //===========================================================================
@@ -110,13 +115,9 @@ export default class Salty {
     if (msg.deleted) {
       return;
     }
-    const collectorOptions: ReactionCollectorOptions = {};
-    if (time > 0) {
-      collectorOptions.time = time;
-    }
     const collector = msg.createReactionCollector(
       ({ emoji }, { bot }) => !bot && actions.has(emoji.name),
-      collectorOptions
+      { dispose: true, time }
     );
 
     if (userId) {
@@ -153,6 +154,15 @@ export default class Salty {
     });
   }
 
+  /**
+   * @param roleBox
+   */
+  public async addRoleBox(message: Message, roleBox: RoleBox): Promise<void> {
+    this.roleBoxes.push(roleBox);
+    const emojis = roleBox.emojiRoles.map((e) => e[0]);
+    await this.react(message, ...emojis);
+  }
+
   public createClient() {
     // Creates new client
     const bot = new Client();
@@ -164,6 +174,9 @@ export default class Salty {
     bot.on("guildMemberAdd", this.onGuildMemberAdd.bind(this));
     bot.on("guildMemberRemove", this.onGuildMemberRemove.bind(this));
     bot.on("message", this.onMessage.bind(this));
+    bot.on("messageDelete", this.onMessageDelete.bind(this));
+    bot.on("messageReactionAdd", this.onMessageReactionAdd.bind(this));
+    bot.on("messageReactionRemove", this.onMessageReactionRemove.bind(this));
     bot.on("ready", this.onReady.bind(this));
     return bot;
   }
@@ -180,6 +193,7 @@ export default class Salty {
    */
   public async destroy(): Promise<void> {
     log("Disconnecting ...");
+    this.user.setStatus("invisible");
     this.bot.destroy();
     await disconnect();
     process.exit();
@@ -387,11 +401,25 @@ export default class Salty {
     ...reactions: (string | GuildEmoji)[]
   ): Promise<void> {
     for (const react of reactions) {
-      const result = await apiCatch(() => msg.react(react));
+      const emoji =
+        react instanceof GuildEmoji || !TEXT_REGEX.test(react)
+          ? react
+          : this.bot.emojis.cache.find((e) => clean(e.name) === clean(react));
+      if (!emoji) {
+        continue;
+      }
+      const result = await apiCatch(() => msg.react(emoji));
       if (!result) {
         return;
       }
     }
+  }
+
+  /**
+   * @param roleBox
+   */
+  public removeRoleBox(roleBox: RoleBox): void {
+    this.roleBoxes = this.roleBoxes.filter((b) => b !== roleBox);
   }
 
   /**
@@ -407,6 +435,7 @@ export default class Salty {
     this.bot = this.createClient();
     await disconnect();
     Command.clearAll();
+    this.roleBoxes = [];
     this.modules = [];
     this.startTime = new Date();
     await this.start(this.token);
@@ -700,84 +729,6 @@ export default class Salty {
     }
   }
 
-  private async onReady(): Promise<any> {
-    this.user.setStatus("online");
-    // Fetch all guilds
-    const activeGuilds: string[] = this.bot.guilds.cache.map(
-      (guild) => guild.id
-    );
-    let crews: Crew[] = await Crew.search();
-    const toRemove: number[] = crews
-      .filter((g) => !activeGuilds.includes(g.discordId))
-      .map((g) => g.id);
-    const toCreate: Dictionnary<any>[] = activeGuilds
-      .filter((id) => !crews.some((g) => g.discordId === id))
-      .map((id) => ({ discordId: id }));
-    if (toCreate.length) {
-      await Crew.create(...toCreate);
-    }
-    if (toRemove.length) {
-      // No need to wait for this one
-      Crew.remove(toRemove);
-      crews = crews.filter((c) => !toRemove.includes(c.id));
-    }
-
-    for (const crew of crews) {
-      const guild = this.bot.guilds.cache.get(crew.discordId)!;
-      const toUpdate: Dictionnary<any> = {};
-
-      // Default channel
-      if (crew.defaultChannel) {
-        const channel = guild.channels.cache.get(crew.defaultChannel);
-        if (channel instanceof TextChannel) {
-          this.message(channel, choice(intro));
-        } else {
-          toUpdate.defaultChannel = null;
-        }
-      }
-
-      // Active banners
-      const bannersToRemove: string[] = [];
-      bannersLoop: for (const rawBanner of crew.banners) {
-        const banner = parseBanner(rawBanner);
-        const { channelId, messageId } = banner;
-        const channel = guild.channels.cache.get(channelId);
-        if (!channel || !(channel instanceof TextChannel)) {
-          bannersToRemove.push(rawBanner);
-          continue bannersLoop;
-        }
-        const message =
-          channel.messages.cache.get(messageId) ||
-          (await apiCatch(() => channel.messages.fetch(messageId)));
-        if (!message) {
-          bannersToRemove.push(rawBanner);
-          continue bannersLoop;
-        }
-        const actions = getBannerActions(banner, guild);
-        this.addActions(message, { actions }, null, 0);
-      }
-      if (bannersToRemove.length) {
-        toUpdate.banners = crew.banners.filter(
-          (b) => !bannersToRemove.includes(b)
-        );
-      }
-
-      // Update any necessary information
-      if (Object.keys(toUpdate).length) {
-        Crew.update(crew.id, toUpdate);
-      }
-    }
-
-    const loadingTime: number =
-      Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
-
-    log(
-      `Salty loaded in ${loadingTime} second${
-        loadingTime === 1 ? "" : "s"
-      } and ready to salt the chat :D`
-    );
-  }
-
   private async onMessage(msg: Message): Promise<any> {
     const { attachments, author, cleanContent, guild } = msg;
 
@@ -874,5 +825,147 @@ export default class Salty {
       },
     });
     return this.addActions(helpMessage, { actions }, author.id);
+  }
+
+  private async onMessageDelete(
+    message: Message | PartialMessage
+  ): Promise<any> {
+    if (!message.guild) {
+      return;
+    }
+    const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
+    if (!roleBox) {
+      return;
+    }
+    this.removeRoleBox(roleBox);
+  }
+
+  private async onMessageReactionAdd(
+    { emoji, message }: MessageReaction,
+    user: User | PartialUser
+  ): Promise<any> {
+    if (!message.guild || user.bot) {
+      return;
+    }
+    const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
+    if (!roleBox) {
+      return;
+    }
+    const emojiRole = roleBox.emojiRoles.find((e) => e[0] === emoji.name);
+    if (!emojiRole) {
+      return;
+    }
+    const member = message.guild.members.cache.get(user.id)!;
+    apiCatch(() => member.roles.add(emojiRole[1]));
+  }
+
+  private async onMessageReactionRemove(
+    { emoji, message }: MessageReaction,
+    user: User | PartialUser
+  ): Promise<any> {
+    if (!message.guild || user.bot) {
+      return;
+    }
+    const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
+    if (!roleBox) {
+      return;
+    }
+    const emojiRole = roleBox.emojiRoles.find((e) => e[0] === emoji.name);
+    if (!emojiRole) {
+      return;
+    }
+    const member = message.guild.members.cache.get(user.id)!;
+    apiCatch(() => member.roles.remove(emojiRole[1]));
+  }
+
+  private async onReady(): Promise<any> {
+    this.user.setStatus("online");
+
+    // Fetch all guilds
+    const activeGuilds: string[] = this.bot.guilds.cache.map(
+      (guild) => guild.id
+    );
+    let crews: Crew[] = await Crew.search();
+    const toRemove: number[] = crews
+      .filter((g) => !activeGuilds.includes(g.discordId))
+      .map((g) => g.id);
+    const toCreate: Dictionnary<any>[] = activeGuilds
+      .filter((id) => !crews.some((g) => g.discordId === id))
+      .map((id) => ({ discordId: id }));
+    if (toCreate.length) {
+      await Crew.create(...toCreate);
+    }
+    if (toRemove.length) {
+      // No need to wait for this one
+      Crew.remove(toRemove);
+      crews = crews.filter((c) => !toRemove.includes(c.id));
+    }
+
+    for (const crew of crews) {
+      const guild = this.bot.guilds.cache.get(crew.discordId)!;
+      const toUpdate: Dictionnary<any> = {};
+
+      // Default channel
+      if (crew.defaultChannel) {
+        const channel = guild.channels.cache.get(crew.defaultChannel);
+        if (channel instanceof TextChannel) {
+          this.message(channel, choice(intro));
+        } else {
+          toUpdate.defaultChannel = null;
+        }
+      }
+
+      // Active roleBoxes
+      const roleBoxesToRemove: string[] = [];
+      roleBoxesLoop: for (const rawRoleBox of crew.roleBoxes) {
+        const roleBox = parseRoleBox(rawRoleBox);
+        const { channelId, messageId, emojiRoles } = roleBox;
+        const channel = guild.channels.cache.get(channelId);
+
+        // If the channel doesn't exist anymore => remove the role box
+        if (!channel || !(channel instanceof TextChannel)) {
+          roleBoxesToRemove.push(rawRoleBox);
+          continue roleBoxesLoop;
+        }
+
+        // If one of the roles is missing => remove the role box
+        if (emojiRoles.find((e) => !guild.roles.cache.has(e[1]))) {
+          roleBoxesToRemove.push(rawRoleBox);
+          continue roleBoxesLoop;
+        }
+        const message =
+          channel.messages.cache.get(messageId) ||
+          (await apiCatch(() => channel.messages.fetch(messageId)));
+
+        // If the message doesn't exist anymore => remove the role box
+        if (!message) {
+          roleBoxesToRemove.push(rawRoleBox);
+          continue roleBoxesLoop;
+        }
+
+        // Role box is clear => add it
+        this.addRoleBox(message, roleBox);
+      }
+
+      if (roleBoxesToRemove.length) {
+        toUpdate.roleBoxes = crew.roleBoxes.filter(
+          (b) => !roleBoxesToRemove.includes(b)
+        );
+      }
+
+      // Update any necessary information
+      if (Object.keys(toUpdate).length) {
+        Crew.update(crew.id, toUpdate);
+      }
+    }
+
+    const loadingTime: number =
+      Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
+
+    log(
+      `Salty loaded in ${loadingTime} second${
+        loadingTime === 1 ? "" : "s"
+      } and ready to salt the chat :D`
+    );
   }
 }

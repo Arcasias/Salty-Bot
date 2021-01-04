@@ -2,12 +2,12 @@ import { Collection, Guild, Message, User } from "discord.js";
 import { config } from "../database/config";
 import { keywords } from "../strings";
 import {
-  Banner,
   Dictionnary,
   ExpressionDescriptor,
   MeaningKeys,
   Meanings,
   MessageAction,
+  RoleBox,
 } from "../typings";
 
 // Weights used in the Levenshtein matrix
@@ -250,7 +250,7 @@ export function isSorted(array: string[] | number[]): boolean {
 }
 
 /**
- * Returns the edit distance between 2 given strings
+ * Returns the edit distance between 2 given strings.
  * @param a
  * @param b
  */
@@ -258,6 +258,9 @@ export function levenshtein(a: string, b: string): number {
   // One of the strings is empty => requires otherstring.length mutations
   if (!a.length || !b.length) {
     return (b || a).length;
+  }
+  if (a === b) {
+    return 0;
   }
   const matrix: number[][] = [];
   // Assign first row and column
@@ -295,6 +298,14 @@ export function meaning(word?: string): MeaningKeys | null {
     }
   }
   return "string";
+}
+
+export function parseJSON(raw: string): any {
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return false;
+  }
 }
 
 /**
@@ -442,15 +453,15 @@ export function title(string: string) {
 }
 
 //=============================================================================
-// Banner functions
+// RoleBox functions
 //=============================================================================
 
 /**
- * @param banner
+ * @param roleBox
  * @param guild
  */
-export function getBannerActions(
-  { emojiRoles }: Banner,
+export function getRoleBoxActions(
+  { emojiRoles }: RoleBox,
   guild: Guild
 ): Collection<string, MessageAction> {
   const actions = new Collection<string, MessageAction>();
@@ -470,27 +481,20 @@ export function getBannerActions(
 }
 
 /**
- * @param banner
+ * @param roleBox
  */
-export function parseBanner(banner: string): Banner {
-  const [channelId, messageId, ...rawEmojiRoles] = banner.split(";");
-  const emojiRoles = rawEmojiRoles.map(
-    (re) => re.split(":") as [string, string]
-  );
+export function parseRoleBox(roleBox: string): RoleBox {
+  const [channelId, messageId, ...emojiRoles] = JSON.parse(roleBox);
   return { channelId, messageId, emojiRoles };
 }
 
 /**
- * @param banner
+ * @param roleBox
  */
-export function serializeBanner({
+export function serializeRoleBox({
   channelId,
   messageId,
   emojiRoles,
-}: Banner): string {
-  return [
-    channelId,
-    messageId,
-    ...emojiRoles.map(([emoji, roleId]) => `${emoji}:${roleId}`),
-  ].join(";");
+}: RoleBox): string {
+  return JSON.stringify([channelId, messageId, ...emojiRoles]);
 }

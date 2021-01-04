@@ -1,8 +1,7 @@
 import { MessageEmbed } from "discord.js";
+import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-
-const JS_STANDARD_KEY = /\b(?<!")(\w+)(?!")\b\s*:/g;
-const JS_TRAILING_COMA = /,([\s\n]*[\}\]])/g;
+import { meaning, parseJSON } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "embed",
@@ -15,24 +14,30 @@ const command: CommandDescriptor = {
   ],
 
   async action({ args, msg, send }) {
-    const raw = args
-      .join(" ")
-      .replace(JS_STANDARD_KEY, (_, match) => `"${match}":`)
-      .replace(JS_TRAILING_COMA, (_, match) => match);
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (error) {
-      return send.warn(
-        "Given data must be formatted as a JSON string or a JavaScript object."
-      );
+    let attempt = (parsed: any) => send.embed(parsed);
+
+    await salty.deleteMessage(msg);
+
+    if (meaning(args[0]) === "set") {
+      args.shift();
+      const lastMessages = await msg.channel.messages.fetch();
+      const lastMessage = lastMessages
+        .filter((m) => m.author.equals(salty.user))
+        .last();
+      if (!lastMessage) {
+        return send.warn("No message to edit");
+      }
+      attempt = (parsed: any) =>
+        lastMessage.edit({ embed: new MessageEmbed(parsed) });
     }
-    if (!Object.keys(parsed).length) {
-      return send.warn("You must give me some data to parse.");
+
+    const parsed = parseJSON(args.join(" "));
+    if (!parsed || !Object.keys(parsed).length) {
+      return send.warn("Invalid data.");
     }
-    const embed = new MessageEmbed(parsed);
+
     try {
-      await send.message("", { embed });
+      await attempt(parsed);
     } catch (error) {
       const { message } = error as Error;
       const [property, detail] = message.split(/\n/).pop()?.split(/:/) || [];
@@ -44,7 +49,7 @@ const command: CommandDescriptor = {
           )} (${detail.trim()})`
         );
       } else {
-        return send.error(`Uuuuuh something went wrong, check your spelling ?`);
+        return send.error(`Uuuuuh something went wrong, check your spelling?`);
       }
     }
   },

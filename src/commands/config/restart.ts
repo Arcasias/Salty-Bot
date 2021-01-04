@@ -12,7 +12,7 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ msg, send }) {
+  async action({ send }) {
     await send.info("Restarting ...");
     await salty.restart();
   },

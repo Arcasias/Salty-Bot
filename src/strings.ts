@@ -24,7 +24,7 @@ export const keywords: Meanings = {
   ],
   list: ["list", "ls", "l"],
   remove: ["delete", "remove", "del", "rm", "erase", "unset", "unlink"],
-  set: ["set", "modify", "mod", "update"],
+  set: ["set", "edit", "modify", "mod", "update"],
 };
 
 export const meaning: Dictionnary<MeaningInfo> = {
