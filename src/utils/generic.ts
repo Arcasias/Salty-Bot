@@ -1,11 +1,13 @@
-import { Guild, Message, User } from "discord.js";
+import { Collection, Guild, Message, User } from "discord.js";
 import { config } from "../database/config";
 import { keywords } from "../strings";
 import {
+  Banner,
   Dictionnary,
   ExpressionDescriptor,
   MeaningKeys,
   Meanings,
+  MessageAction,
 } from "../typings";
 
 // Weights used in the Levenshtein matrix
@@ -77,7 +79,7 @@ const expressions: ExpressionDescriptor[] = [
 ];
 
 //=============================================================================
-// Utility functions
+// Generic functions
 //=============================================================================
 
 /**
@@ -437,4 +439,58 @@ export function title(string: string) {
     return string;
   }
   return string[0].toUpperCase() + string.slice(1);
+}
+
+//=============================================================================
+// Banner functions
+//=============================================================================
+
+/**
+ * @param banner
+ * @param guild
+ */
+export function getBannerActions(
+  { emojiRoles }: Banner,
+  guild: Guild
+): Collection<string, MessageAction> {
+  const actions = new Collection<string, MessageAction>();
+  for (const [emoji, roleId] of emojiRoles) {
+    actions.set(emoji, {
+      async onAdd(user) {
+        const member = guild.members.cache.get(user.id)!;
+        apiCatch(() => member.roles.add(roleId));
+      },
+      async onRemove(user) {
+        const member = guild.members.cache.get(user.id)!;
+        apiCatch(() => member.roles.remove(roleId));
+      },
+    });
+  }
+  return actions;
+}
+
+/**
+ * @param banner
+ */
+export function parseBanner(banner: string): Banner {
+  const [channelId, messageId, ...rawEmojiRoles] = banner.split(";");
+  const emojiRoles = rawEmojiRoles.map(
+    (re) => re.split(":") as [string, string]
+  );
+  return { channelId, messageId, emojiRoles };
+}
+
+/**
+ * @param banner
+ */
+export function serializeBanner({
+  channelId,
+  messageId,
+  emojiRoles,
+}: Banner): string {
+  return [
+    channelId,
+    messageId,
+    ...emojiRoles.map(([emoji, roleId]) => `${emoji}:${roleId}`),
+  ].join(";");
 }

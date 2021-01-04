@@ -48,7 +48,7 @@ async function removeMessages(
     },
   });
 
-  return salty.addActions(msg.author.id, msg, { actions });
+  return salty.addActions(msg, { actions }, msg.author.id);
 }
 
 const command: CommandDescriptor = {

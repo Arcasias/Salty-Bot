@@ -16,6 +16,7 @@ import {
   PartialGuildMember,
   PermissionString,
   ReactionCollector,
+  ReactionCollectorOptions,
   TextChannel,
   User,
 } from "discord.js";
@@ -43,9 +44,11 @@ import {
   clean,
   ellipsis,
   format,
+  getBannerActions,
   isAdmin,
   isDev,
   isOwner,
+  parseBanner,
   search,
   title,
 } from "../utils/generic";
@@ -99,22 +102,30 @@ export default class Salty {
    * @param actions
    */
   public addActions(
-    userId: string,
     msg: Message,
-    { actions, onEnd }: MessageActionsDescriptor
+    { actions, onEnd }: MessageActionsDescriptor,
+    userId: string | null = null,
+    time: number = 3 * 60 * 1000
   ) {
     if (msg.deleted) {
       return;
     }
-    if (userId in runningCollectors) {
-      runningCollectors[userId].stop("NEW_COLLECTOR");
+    const collectorOptions: ReactionCollectorOptions = {};
+    if (time > 0) {
+      collectorOptions.time = time;
     }
     const collector = msg.createReactionCollector(
       ({ emoji }, { bot }) => !bot && actions.has(emoji.name),
-      { time: 3 * 60 * 1000 }
+      collectorOptions
     );
 
-    runningCollectors[userId] = collector;
+    if (userId) {
+      if (userId in runningCollectors) {
+        runningCollectors[userId].stop("NEW_COLLECTOR");
+      }
+      runningCollectors[userId] = collector;
+    }
+
     const abort = () => collector.stop("OPTION_SELECTED");
     this.react(msg, ...actions.keys());
 
@@ -131,8 +142,10 @@ export default class Salty {
       }
     });
     collector.on("end", async (collected, reason) => {
-      delete runningCollectors[userId];
-      apiCatch(() => msg.reactions.removeAll());
+      if (userId) {
+        delete runningCollectors[userId];
+        apiCatch(() => msg.reactions.removeAll());
+      }
       collector.empty();
       if (onEnd) {
         onEnd(collected, reason);
@@ -167,9 +180,6 @@ export default class Salty {
    */
   public async destroy(): Promise<void> {
     log("Disconnecting ...");
-    for (const collector of Object.values(runningCollectors)) {
-      collector.stop("DISCONNECTED");
-    }
     this.bot.destroy();
     await disconnect();
     process.exit();
@@ -375,10 +385,11 @@ export default class Salty {
   public async react(
     msg: Message,
     ...reactions: (string | GuildEmoji)[]
-  ): Promise<any> {
+  ): Promise<void> {
     for (const react of reactions) {
-      const result = apiCatch(() => msg.react(react));
+      const result = await apiCatch(() => msg.react(react));
       if (!result) {
+        return;
       }
     }
   }
@@ -392,9 +403,6 @@ export default class Salty {
       throw new Error("Could not restart Salty: missing token");
     }
     log("Restarting ...");
-    for (const collector of Object.values(runningCollectors)) {
-      collector.stop("RESTARTED");
-    }
     this.bot.destroy();
     this.bot = this.createClient();
     await disconnect();
@@ -698,12 +706,12 @@ export default class Salty {
     const activeGuilds: string[] = this.bot.guilds.cache.map(
       (guild) => guild.id
     );
-    const guilds: Crew[] = await Crew.search();
-    const toRemove: number[] = guilds
+    let crews: Crew[] = await Crew.search();
+    const toRemove: number[] = crews
       .filter((g) => !activeGuilds.includes(g.discordId))
       .map((g) => g.id);
     const toCreate: Dictionnary<any>[] = activeGuilds
-      .filter((id) => !guilds.some((g) => g.discordId === id))
+      .filter((id) => !crews.some((g) => g.discordId === id))
       .map((id) => ({ discordId: id }));
     if (toCreate.length) {
       await Crew.create(...toCreate);
@@ -711,13 +719,55 @@ export default class Salty {
     if (toRemove.length) {
       // No need to wait for this one
       Crew.remove(toRemove);
+      crews = crews.filter((c) => !toRemove.includes(c.id));
     }
-    for (const guild of guilds) {
-      if (guild.defaultChannel) {
-        const channel = this.getTextChannel(guild.defaultChannel);
-        this.message(channel, choice(intro));
+
+    for (const crew of crews) {
+      const guild = this.bot.guilds.cache.get(crew.discordId)!;
+      const toUpdate: Dictionnary<any> = {};
+
+      // Default channel
+      if (crew.defaultChannel) {
+        const channel = guild.channels.cache.get(crew.defaultChannel);
+        if (channel instanceof TextChannel) {
+          this.message(channel, choice(intro));
+        } else {
+          toUpdate.defaultChannel = null;
+        }
+      }
+
+      // Active banners
+      const bannersToRemove: string[] = [];
+      bannersLoop: for (const rawBanner of crew.banners) {
+        const banner = parseBanner(rawBanner);
+        const { channelId, messageId } = banner;
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel || !(channel instanceof TextChannel)) {
+          bannersToRemove.push(rawBanner);
+          continue bannersLoop;
+        }
+        const message =
+          channel.messages.cache.get(messageId) ||
+          (await apiCatch(() => channel.messages.fetch(messageId)));
+        if (!message) {
+          bannersToRemove.push(rawBanner);
+          continue bannersLoop;
+        }
+        const actions = getBannerActions(banner, guild);
+        this.addActions(message, { actions }, null, 0);
+      }
+      if (bannersToRemove.length) {
+        toUpdate.banners = crew.banners.filter(
+          (b) => !bannersToRemove.includes(b)
+        );
+      }
+
+      // Update any necessary information
+      if (Object.keys(toUpdate).length) {
+        Crew.update(crew.id, toUpdate);
       }
     }
+
     const loadingTime: number =
       Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
 
@@ -823,8 +873,6 @@ export default class Salty {
         }
       },
     });
-    return this.addActions(author.id, helpMessage, {
-      actions,
-    });
+    return this.addActions(helpMessage, { actions }, author.id);
   }
 }

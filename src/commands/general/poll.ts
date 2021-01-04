@@ -95,13 +95,17 @@ const command: CommandDescriptor = {
         },
       });
     }
-    salty.addActions(msg.author.id, pollMessage, {
-      actions,
-      async onEnd() {
-        await initMessage;
-        await salty.editMessage(pollMessage, getEmbed(true));
+    salty.addActions(
+      pollMessage,
+      {
+        actions,
+        async onEnd() {
+          await initMessage;
+          await salty.editMessage(pollMessage, getEmbed(true));
+        },
       },
-    });
+      msg.author.id
+    );
   },
 };
 

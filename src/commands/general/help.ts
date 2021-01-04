@@ -141,7 +141,7 @@ const command: CommandDescriptor = {
     }
     const helpEmbed = await send.embed(options);
     if (helpEmbed && messageActions.actions.size) {
-      salty.addActions(msg.author.id, helpEmbed, messageActions);
+      salty.addActions(helpEmbed, messageActions, msg.author.id);
     }
   },
 };
