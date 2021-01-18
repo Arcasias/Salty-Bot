@@ -1,7 +1,8 @@
 import { MessageEmbed } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { meaning, parseJSON } from "../../utils/generic";
+import { getTargetMessage } from "../../utils/command";
+import { apiCatch, parseJSON } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "embed",
@@ -14,22 +15,9 @@ const command: CommandDescriptor = {
   ],
 
   async action({ args, msg, send }) {
-    let attempt = (parsed: any) => send.embed(parsed);
+    const message = await getTargetMessage(args, msg.channel.id);
 
     await salty.deleteMessage(msg);
-
-    if (meaning(args[0]) === "set") {
-      args.shift();
-      const lastMessages = await msg.channel.messages.fetch();
-      const lastMessage = lastMessages
-        .filter((m) => m.author.equals(salty.user))
-        .last();
-      if (!lastMessage) {
-        return send.warn("No message to edit");
-      }
-      attempt = (parsed: any) =>
-        lastMessage.edit({ embed: new MessageEmbed(parsed) });
-    }
 
     const parsed = parseJSON(args.join(" "));
     if (!parsed || !Object.keys(parsed).length) {
@@ -37,7 +25,11 @@ const command: CommandDescriptor = {
     }
 
     try {
-      await attempt(parsed);
+      if (message) {
+        await apiCatch(() => message.edit({ embed: new MessageEmbed(parsed) }));
+      } else {
+        await send.embed(parsed);
+      }
     } catch (error) {
       const { message } = error as Error;
       const [property, detail] = message.split(/\n/).pop()?.split(/:/) || [];

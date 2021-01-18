@@ -841,9 +841,10 @@ export default class Salty {
   }
 
   private async onMessageReactionAdd(
-    { emoji, message }: MessageReaction,
+    react: MessageReaction,
     user: User | PartialUser
   ): Promise<any> {
+    const { emoji, message } = react;
     if (!message.guild || user.bot) {
       return;
     }
@@ -853,7 +854,7 @@ export default class Salty {
     }
     const emojiRole = roleBox.emojiRoles.find((e) => e[0] === emoji.name);
     if (!emojiRole) {
-      return;
+      return react.remove();
     }
     const member = message.guild.members.cache.get(user.id)!;
     apiCatch(() => member.roles.add(emojiRole[1]));

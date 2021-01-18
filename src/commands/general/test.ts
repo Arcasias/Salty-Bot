@@ -41,6 +41,7 @@ const command: CommandDescriptor = {
       case "info": {
         return send.info(text || "test info");
       }
+      case "string":
       case "message": {
         return send.message(text || "test message");
       }

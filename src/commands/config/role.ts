@@ -2,8 +2,8 @@ import Crew from "../../classes/Crew";
 import salty from "../../salty";
 import { keywords } from "../../strings";
 import { CommandDescriptor, RoleBox } from "../../typings";
+import { getTargetMessage } from "../../utils/command";
 import {
-  apiCatch,
   clean,
   meaning,
   parseRoleBox,
@@ -119,11 +119,19 @@ const command: CommandDescriptor = {
         );
       }
       default: {
+        await salty.deleteMessage(msg);
+
+        const targetMessage = await getTargetMessage(args, msg.channel.id);
+        if (!targetMessage) {
+          return send.warn("No message to react to");
+        }
+
         const rawEmojiRoles = args
           .join(" ")
           .split(PRIMARY_SEP)
           .map((x) => x.split(SECONDARY_SEP));
         const emojiRoles: [string, string][] = [];
+
         for (const [emojiName, roleName] of rawEmojiRoles) {
           const cleanedRoleName = clean(roleName);
           let role = msg.guild!.roles.cache.find(
@@ -146,17 +154,8 @@ const command: CommandDescriptor = {
           emojiRoles.push([emoji, role.id]);
         }
 
-        await salty.deleteMessage(msg);
-
-        const lastMessages = await channel.messages.fetch({ limit: 1 });
-        const targetMessage = lastMessages.last();
-        if (!targetMessage) {
-          return send.warn("No message to react to");
-        }
-        await apiCatch(() => targetMessage.reactions.removeAll());
-
         const newBox: RoleBox = {
-          channelId: channel.id,
+          channelId: targetMessage.channel.id,
           messageId: targetMessage.id,
           emojiRoles,
         };
@@ -167,6 +166,7 @@ const command: CommandDescriptor = {
         if (boxIndex < 0) {
           crew.roleBoxes.push(serializeRoleBox(newBox));
         } else {
+          salty.removeRoleBox(parseRoleBox(crew.roleBoxes[boxIndex]));
           crew.roleBoxes[boxIndex] = serializeRoleBox(newBox);
         }
 

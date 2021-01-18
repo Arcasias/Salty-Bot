@@ -53,6 +53,7 @@ const REACTIONS: Dictionnary<string[]> = {
   y: ["🇾"],
   z: ["🇿"],
 };
+const SNOWFLAKE_REGEX = /^\d{18}$/;
 
 const expressions: ExpressionDescriptor[] = [
   {
@@ -232,6 +233,14 @@ export function isDev(user: User): boolean {
  */
 export function isOwner(user: User): boolean {
   return user.id === config.ownerId;
+}
+
+/**
+ * Returns true if the given argument is a snowflake.
+ * @param string
+ */
+export function isSnowflake(string: any) {
+  return SNOWFLAKE_REGEX.test(String(string));
 }
 
 /**
