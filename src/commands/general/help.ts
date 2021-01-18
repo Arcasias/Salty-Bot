@@ -101,6 +101,13 @@ const command: CommandDescriptor = {
             : doc.aliases;
           options.description = `Alternative usage: **${aliases}**`;
         }
+        if (!doc.sections.length) {
+          doc.sections.push({
+            argument: null,
+            effect: `No help is available for this command, but you can open an issue on the following link to ask for it to be done: <${process
+              .env.GITHUB_PAGE!}/issues>`,
+          });
+        }
         doc.sections.forEach((usage) => {
           options.fields!.push({
             name: `${config.prefix}${doc.name} ${usage.argument || ""}`,

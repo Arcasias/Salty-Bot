@@ -74,7 +74,12 @@ export default class Command implements CommandDescriptor {
       await this.action(context);
     } catch (err) {
       error(err.stack);
-      await context.send.error(`Whoops! ${err.message}`);
+      await context.send.error(
+        `Oh no! "${
+          err.message
+        }"! If you have the time I'd appreciate if you could fill in an issue on the following link describing what you've been doing to get me in this state! <${process
+          .env.GITHUB_PAGE!}/issues>`
+      );
     }
   }
 

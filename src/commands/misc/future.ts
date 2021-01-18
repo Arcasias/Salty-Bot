@@ -5,12 +5,6 @@ import { ellipsis, randInt, shuffle } from "../../utils/generic";
 const command: CommandDescriptor = {
   name: "future",
   aliases: ["predict"],
-  help: [
-    {
-      argument: null,
-      effect: "TODO: documentation",
-    },
-  ],
 
   async action({ send }) {
     const pred = [];
