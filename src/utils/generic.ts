@@ -130,15 +130,7 @@ export function ellipsis(text: string, limit: number = 2000): string {
  * @param param
  */
 export function ensureContent(object: any, param?: string): void {
-  let hasContent: boolean;
-  if (Array.isArray(object)) {
-    hasContent = Boolean(object.length);
-  } else if (typeof object === "object" && object !== null) {
-    hasContent = Boolean(Object.keys(object).length);
-  } else {
-    hasContent = Boolean(object);
-  }
-  if (!hasContent) {
+  if (isEmpty(object)) {
     throw new Error(`Param ${param ? ` "${param}"` : ""}is empty`);
   }
 }
@@ -225,6 +217,23 @@ export function isAdmin(user: User, guild: Guild | null): boolean {
  */
 export function isDev(user: User): boolean {
   return isOwner(user) || config.devIds.includes(user.id);
+}
+
+/**
+ * Returns whether or not the given object is considered empty:
+ * - for an object: no owned key-values
+ * - for an array: no items
+ * - for anything else: falsy
+ * @param object
+ */
+export function isEmpty(object: any): boolean {
+  if (Array.isArray(object)) {
+    return !object.length;
+  } else if (typeof object === "object" && object !== null) {
+    return !Object.keys(object).length;
+  } else {
+    return !object;
+  }
 }
 
 /**

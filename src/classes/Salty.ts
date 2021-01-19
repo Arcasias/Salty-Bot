@@ -19,6 +19,7 @@ import {
   PartialUser,
   PermissionString,
   ReactionCollector,
+  Snowflake,
   TextChannel,
   User,
 } from "discord.js";
@@ -418,8 +419,13 @@ export default class Salty {
   /**
    * @param roleBox
    */
-  public removeRoleBox(roleBox: RoleBox): void {
-    this.roleBoxes = this.roleBoxes.filter((b) => b !== roleBox);
+  public removeRoleBox(channelId: Snowflake, messageId: Snowflake): number {
+    const newRoleBoxes = this.roleBoxes.filter(
+      (b) => b.channelId !== channelId || b.messageId !== messageId
+    );
+    const removeCount = this.roleBoxes.length - newRoleBoxes.length;
+    this.roleBoxes = newRoleBoxes;
+    return removeCount;
   }
 
   /**
@@ -833,11 +839,7 @@ export default class Salty {
     if (!message.guild) {
       return;
     }
-    const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
-    if (!roleBox) {
-      return;
-    }
-    this.removeRoleBox(roleBox);
+    this.removeRoleBox(message.channel.id, message.id);
   }
 
   private async onMessageReactionAdd(

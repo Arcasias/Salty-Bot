@@ -1,7 +1,7 @@
-import { GuildEmoji, Message } from "discord.js";
+import { Message } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, clean, stringToReaction } from "../../utils/generic";
+import { clean, stringToReaction } from "../../utils/generic";
 
 const messageCache: WeakMap<Message, Promise<any>> = new WeakMap();
 
@@ -41,7 +41,6 @@ const command: CommandDescriptor = {
 
     async function applyReactions() {
       const reaction: string = args.map(clean).join(" ");
-      const reacts: (string | GuildEmoji)[] = [];
       const guildEmoji = msg.guild?.emojis.cache.find(
         (emoji) => emoji.name === reaction
       );
@@ -49,8 +48,16 @@ const command: CommandDescriptor = {
       if (guildEmoji) {
         return salty.react(lastMessage, guildEmoji);
       }
-      // Remove previous reactions
-      await apiCatch(() => lastMessage.reactions.removeAll());
+      // Remove previous reactions created by Salty
+      const toRemove = lastMessage.reactions.cache.filter((r) => r.me);
+      if (toRemove.size === lastMessage.reactions.cache.size) {
+        // Optimisation: it will be a lot faster if all emojis are from Salty
+        await lastMessage.reactions.removeAll();
+      } else {
+        await Promise.allSettled(
+          lastMessage.reactions.cache.map((r) => r.me && r.remove())
+        );
+      }
       await salty.react(lastMessage, ...stringToReaction(reaction));
     }
   },

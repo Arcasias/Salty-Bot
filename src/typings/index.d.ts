@@ -69,6 +69,7 @@ export interface CommandHelpDescriptor extends BasicCommandDescriptor {
 export interface CommandHelpSection {
   argument: string | null;
   effect: string | null;
+  example?: { command: string; result: string };
 }
 export interface ExpressionDescriptor {
   expr: RegExp;

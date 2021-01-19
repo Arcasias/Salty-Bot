@@ -24,13 +24,31 @@ const command: CommandDescriptor = {
       effect: "Shows the current default role",
     },
     {
-      argument: "set ***new role***",
+      argument: "default set ***role name***",
       effect:
-        "Sets the ***new role*** as the default one. If no existing role matches the name you provided, a new role will be created",
+        "Sets the ***role name*** as the default one. This means that all newcomers will be assigned to that role automatically",
     },
     {
-      argument: "unset",
-      effect: "Removes the default role",
+      argument: "default unset",
+      effect:
+        "Stops the automatic assignation of a default role on this server.",
+    },
+    {
+      argument:
+        "***channel id (optional)*** ***message id*** ***emoji_1*** = ***role name 1***, ***emoji_2*** = ***role name 2***, etc.",
+      effect:
+        `Creates a **role box** on a target message. A role box is a subscription system bound to a message.` +
+        `I will first react to the target message with each of the emojis you mentioned.` +
+        `All users will then be able to assign/unassign themselves with the roles linked to each emoji`,
+      example: {
+        command: `111111111111111111 222222222222222222 :flag_be: = Belgian`,
+        result: `A :flag_be: emoji will be added on the message "222..." in the channel "111..." and each user clicking on this reaction will be assigned the role "Belgian" (provided it exists!)`,
+      },
+    },
+    {
+      argument: "remove ***channel id (optional)*** ***message id***",
+      effect:
+        "Removes the role box on the target message (if any). This will not remove the reactions",
     },
   ],
   access: "admin",
@@ -38,7 +56,6 @@ const command: CommandDescriptor = {
 
   async action({ args, msg, send }) {
     const guild = msg.guild!;
-    const channel = msg.channel;
     const crew = await Crew.get(guild.id)!;
 
     switch (meaning(args[0])) {
@@ -90,40 +107,32 @@ const command: CommandDescriptor = {
           }
         }
       }
-      case "clear": {
-        const toKeep: string[] = [];
-        const toRemove: string[] = [];
-        for (const roleBox of crew.roleBoxes) {
-          const parsed = parseRoleBox(roleBox);
-          if (parsed.channelId === channel.id) {
-            toRemove.push(roleBox);
-            salty.removeRoleBox(parsed);
-          } else {
-            toKeep.push(roleBox);
-          }
-        }
-        Crew.update(crew.id, { roleBoxes: toKeep });
-        return send.success("All role boxes have been removed on this channel");
-      }
       case "remove": {
-        const lastRoleBox = crew.roleBoxes.pop();
-        if (!lastRoleBox) {
-          return send.warn("No role box on this server");
+        args.shift();
+        const targetMessage = await getTargetMessage(args, msg.channel.id);
+        if (!targetMessage) {
+          return send.warn(
+            "Message not found: you have to give me the channel id and the message id for me to find it"
+          );
         }
-        const roleBox = parseRoleBox(lastRoleBox);
-        salty.removeRoleBox(roleBox);
-        Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
-        const boxChannel = guild.channels.cache.get(roleBox.channelId)!;
-        return send.success(
-          `Last role box has been removed. (In channel ${boxChannel.name})`
+        const roleBox = crew.roleBoxes.find(
+          (r) => parseRoleBox(r).messageId === targetMessage.id
         );
+        if (!roleBox) {
+          return send.warn("No role box on that message");
+        }
+        salty.removeRoleBox(targetMessage.channel.id, targetMessage.id);
+        Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
+        return send.success(`Role box removed`);
       }
       default: {
         await salty.deleteMessage(msg);
 
         const targetMessage = await getTargetMessage(args, msg.channel.id);
         if (!targetMessage) {
-          return send.warn("No message to react to");
+          return send.warn(
+            "Message not found: you have to give me the channel id and the message id for me to find it"
+          );
         }
 
         const rawEmojiRoles = args
@@ -159,15 +168,16 @@ const command: CommandDescriptor = {
           messageId: targetMessage.id,
           emojiRoles,
         };
-
-        const boxIndex = crew.roleBoxes.findIndex(
-          (r) => parseRoleBox(r).messageId === targetMessage.id
+        const serializedBox = serializeRoleBox(newBox);
+        const parsedBoxes = crew.roleBoxes.map(parseRoleBox);
+        const boxIndex = parsedBoxes.findIndex(
+          (roleBox) => roleBox.messageId === targetMessage.id
         );
         if (boxIndex < 0) {
-          crew.roleBoxes.push(serializeRoleBox(newBox));
+          crew.roleBoxes.push(serializedBox);
         } else {
-          salty.removeRoleBox(parseRoleBox(crew.roleBoxes[boxIndex]));
-          crew.roleBoxes[boxIndex] = serializeRoleBox(newBox);
+          salty.removeRoleBox(newBox.channelId, newBox.messageId);
+          crew.roleBoxes[boxIndex] = serializedBox;
         }
 
         Crew.update(crew.id, { roleBoxes: crew.roleBoxes });

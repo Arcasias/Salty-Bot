@@ -15,15 +15,22 @@ const cummand: CommandDescriptor = {
       effect: `Cover yourself in ${ROLE_NAME}`,
     },
     {
+      argument: "clear",
+      effect: `Cleanse yourself of all the ${ROLE_NAME}`,
+    },
+    {
       argument: "remove",
-      effect: `Remove all the ${ROLE_NAME} off of you`,
+      effect: `Remove all the ${ROLE_NAME} roles from the server`,
     },
   ],
   channel: "guild",
   async action({ args, msg, send, source }) {
+    const guild = msg.guild!;
+    const existing = guild.roles.cache.filter(
+      (r) => clean(r.name) === clean(ROLE_NAME)
+    );
     switch (meaning(args[0])) {
-      case "clear":
-      case "remove": {
+      case "clear": {
         const roles = source.member!.roles.cache.filter(
           (r) => clean(r.name) === clean(ROLE_NAME)
         );
@@ -37,11 +44,21 @@ const cummand: CommandDescriptor = {
 
         return send.success(`You are now empty of ${ROLE_NAME}!`);
       }
-      default: {
-        const guild = msg.guild!;
-        const existing = guild.roles.cache.filter(
-          (r) => clean(r.name) === clean(ROLE_NAME)
+      case "remove": {
+        const deleteMsg = await send.info(
+          `Removing ${existing.size} ${ROLE_NAME}...`
         );
+        await Promise.allSettled(
+          existing.map((r) =>
+            r.delete(`Deleted by ${msg.author.username} via Salty`)
+          )
+        );
+        if (deleteMsg) {
+          await salty.deleteMessage(deleteMsg);
+        }
+        return send.success(`All ${ROLE_NAME} roles have been removed.`);
+      }
+      default: {
         const toCreate: number = Math.max(MAX_AMOUNT - existing.size, 0);
         const roles: Role[] = toCreate ? [] : [...existing.values()];
 

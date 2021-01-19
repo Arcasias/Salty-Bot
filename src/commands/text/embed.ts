@@ -2,7 +2,7 @@ import { MessageEmbed } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { getTargetMessage } from "../../utils/command";
-import { apiCatch, parseJSON } from "../../utils/generic";
+import { apiCatch, isEmpty, parseJSON } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "embed",
@@ -17,12 +17,12 @@ const command: CommandDescriptor = {
   async action({ args, msg, send }) {
     const message = await getTargetMessage(args, msg.channel.id);
 
-    await salty.deleteMessage(msg);
-
     const parsed = parseJSON(args.join(" "));
-    if (!parsed || !Object.keys(parsed).length) {
+    if (isEmpty(parsed)) {
       return send.warn("Invalid data.");
     }
+
+    await salty.deleteMessage(msg);
 
     try {
       if (message) {

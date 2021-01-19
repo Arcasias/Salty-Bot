@@ -17,6 +17,7 @@ import {
   formatDuration,
   getNumberReactions,
   groupBy,
+  isEmpty,
   isSorted,
   levenshtein,
   meaning,
@@ -222,6 +223,20 @@ test("groupBy", () => {
     ],
     b: [{ x: "b", y: "a" }],
   });
+});
+
+test("isEmpty", () => {
+  expect(isEmpty(0)).toBe(true);
+  expect(isEmpty("")).toBe(true);
+  expect(isEmpty(false)).toBe(true);
+  expect(isEmpty([])).toBe(true);
+  expect(isEmpty({})).toBe(true);
+
+  expect(isEmpty(1)).toBe(false);
+  expect(isEmpty("a")).toBe(false);
+  expect(isEmpty(true)).toBe(false);
+  expect(isEmpty([0])).toBe(false);
+  expect(isEmpty({ a: 0 })).toBe(false);
 });
 
 test("isSorted", () => {
