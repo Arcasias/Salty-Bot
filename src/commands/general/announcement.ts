@@ -8,7 +8,7 @@ const command: CommandDescriptor = {
   aliases: ["announce", "broadcast"],
   help: [
     {
-      argument: "***text***",
+      argument: "`text`",
       effect: "Announce something on all guilds supporting Salty",
     },
   ],

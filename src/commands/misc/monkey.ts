@@ -21,7 +21,7 @@ const command: CommandDescriptor = {
       effect: "Monkey sorts a 10 elements array",
     },
     {
-      argument: "***array length***",
+      argument: "`array length`",
       effect:
         "Monkey sorts an array of the provided length (lowered to maximum 10, let's not make me explode shall we?)",
     },

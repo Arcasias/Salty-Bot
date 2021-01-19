@@ -9,7 +9,7 @@ const command: CommandDescriptor = {
   aliases: ["json", "parse"],
   help: [
     {
-      argument: "***JSON data***",
+      argument: "`JSON data`",
       effect: "Parses the provided JSON as a Discord embed",
     },
   ],

@@ -12,7 +12,7 @@ const command: CommandDescriptor = {
   aliases: ["say"],
   help: [
     {
-      argument: "***anything***",
+      argument: "`anything`",
       effect: "Sends something. Who knows what?",
     },
   ],

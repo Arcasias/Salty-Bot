@@ -8,7 +8,7 @@ const command: CommandDescriptor = {
   name: "interval",
   help: [
     {
-      argument: "*delay* ***anything***",
+      argument: "*delay* `anything`",
       effect: "I'll tell what you want after a every **delay** seconds",
     },
   ],

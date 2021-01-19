@@ -60,8 +60,8 @@ const command: CommandDescriptor = {
       effect: "Deletes the last 100 messages",
     },
     {
-      argument: "***amount***",
-      effect: "Deletes the last ***amount*** messages",
+      argument: "`amount`",
+      effect: "Deletes the last `amount` messages",
     },
     {
       argument: "bot",

@@ -6,7 +6,7 @@ const command: CommandDescriptor = {
   aliases: ["speak"],
   help: [
     {
-      argument: "***something to say***",
+      argument: "`something to say`",
       effect: "Says something out loud",
     },
   ],

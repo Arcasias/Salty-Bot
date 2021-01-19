@@ -27,7 +27,7 @@ const quickCommandCommand: CommandDescriptor = {
   aliases: ["cmd"],
   help: [
     {
-      argument: `***alias 1***${SECONDARY_SEPARATOR} ***alias 2***${SECONDARY_SEPARATOR} ...  ${PRIMARY_SEPARATOR} ***answer 1***${SECONDARY_SEPARATOR} ***answer 2***${SECONDARY_SEPARATOR} ... `,
+      argument: `\`alias 1\`${SECONDARY_SEPARATOR} \`alias 2\`${SECONDARY_SEPARATOR} etc.  ${PRIMARY_SEPARATOR} \`answer 1\`${SECONDARY_SEPARATOR} \`answer 2\`${SECONDARY_SEPARATOR} etc. `,
       effect:
         "Creates commands named with given `aliases` which will all reply with a random `answer`",
     },

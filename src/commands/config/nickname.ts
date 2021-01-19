@@ -47,13 +47,13 @@ const command: CommandDescriptor = {
   aliases: ["name", "nick", "pseudo"],
   help: [
     {
-      argument: "add ***particle***",
+      argument: "add `particle`",
       effect:
-        "Appends the ***particle*** to every possible nickname in the server. Careful to not exceed 32 characters!",
+        "Appends the `particle` to every possible nickname in the server. Careful to not exceed 32 characters!",
     },
     {
-      argument: "remove ***particle***",
-      effect: "Removes the ***particle*** from each matching nickname",
+      argument: "remove `particle`",
+      effect: "Removes the `particle` from each matching nickname",
     },
   ],
   access: "admin",

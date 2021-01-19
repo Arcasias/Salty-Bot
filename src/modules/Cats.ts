@@ -13,11 +13,11 @@ const catsCommand: CommandDescriptor = {
   access: "admin",
   help: [
     {
-      argument: "***set***",
+      argument: "`set`",
       effect: "Sets the current channel as a cat channel",
     },
     {
-      argument: "***unset***",
+      argument: "`unset`",
       effect: "Unsets the current channel as a cat channel",
     },
   ],

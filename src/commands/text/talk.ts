@@ -8,7 +8,7 @@ const command: CommandDescriptor = {
   name: "talk",
   help: [
     {
-      argument: "***anything***",
+      argument: "`anything`",
       effect:
         'I\'ll answer to what you said. As I\'m not a really advanced AI, you may want to try simple things such as "Hello" or "How are you"',
     },

@@ -13,8 +13,8 @@ const command: CommandDescriptor = {
       effect: "Gets you a nice hot coffee",
     },
     {
-      argument: "***mention***",
-      effect: "Gets the ***mention*** a nice hot coffee",
+      argument: "`mention`",
+      effect: "Gets the `mention` a nice hot coffee",
     },
   ],
   channel: "guild",

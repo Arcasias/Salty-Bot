@@ -22,12 +22,12 @@ const command: CommandDescriptor = {
       effect: "Shows all of the available commands categories",
     },
     {
-      argument: "***category***",
-      effect: "Shows all of the available commands for a ***category***",
+      argument: "`category`",
+      effect: "Shows all of the available commands for a `category`",
     },
     {
-      argument: "***command***",
-      effect: "Shows a detailed usage of a specific ***command***",
+      argument: "`command`",
+      effect: "Shows a detailed usage of a specific `command`",
     },
   ],
 
@@ -109,9 +109,14 @@ const command: CommandDescriptor = {
           });
         }
         doc.sections.forEach((usage) => {
+          const cmdSyntax = config.prefix + doc.name;
+          let value = usage.effect;
+          if (usage.example) {
+            value += `\n\nExample:\n\`${cmdSyntax} ${usage.example.command}\`\n> ${usage.example.result}`;
+          }
           options.fields!.push({
-            name: `${config.prefix}${doc.name} ${usage.argument || ""}`,
-            value: usage.effect,
+            name: `${cmdSyntax} ${usage.argument || ""}`,
+            value,
           });
         });
       } else {

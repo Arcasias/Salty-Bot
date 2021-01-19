@@ -46,8 +46,8 @@ const command: CommandDescriptor = {
   name: "debug",
   help: [
     {
-      argument: "***JS code***",
-      effect: "Executes a ***JS code*** within Salty context",
+      argument: "`JS code`",
+      effect: "Executes a `JS code` within Salty context",
     },
   ],
   access: "dev",

@@ -16,7 +16,7 @@ const command: CommandDescriptor = {
       effect: "Shows my emojis list",
     },
     {
-      argument: "***emoji name***",
+      argument: "`emoji name`",
       effect: "Sends the indicated emoji",
     },
   ],

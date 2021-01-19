@@ -6,7 +6,7 @@ const command: CommandDescriptor = {
   aliases: ["sleep", "timeout"],
   help: [
     {
-      argument: "*delay* ***anything***",
+      argument: "*delay* `anything`",
       effect: "I'll tell what you want after a provided delay",
     },
   ],

@@ -10,11 +10,11 @@ const command: CommandDescriptor = {
   aliases: ["reaction"],
   help: [
     {
-      argument: "***emoji_name***",
+      argument: "`emoji_name`",
       effect: "Reacts with the given emoji name.",
     },
     {
-      argument: "***anything else***",
+      argument: "`anything else`",
       effect:
         "Reacts with the given given letters (must not be a server emoji name).",
     },

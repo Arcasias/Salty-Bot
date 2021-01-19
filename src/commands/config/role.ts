@@ -4,10 +4,10 @@ import { keywords } from "../../strings";
 import { CommandDescriptor, RoleBox } from "../../typings";
 import { getTargetMessage } from "../../utils/command";
 import {
-  clean,
+  apiCatch,
+  isSnowflake,
   meaning,
   parseRoleBox,
-  randColor,
   serializeRoleBox,
 } from "../../utils/generic";
 
@@ -24,9 +24,9 @@ const command: CommandDescriptor = {
       effect: "Shows the current default role",
     },
     {
-      argument: "default set ***role name***",
+      argument: "default set `role name`",
       effect:
-        "Sets the ***role name*** as the default one. This means that all newcomers will be assigned to that role automatically",
+        "Sets the `role name` as the default one. This means that all newcomers will be assigned to that role automatically",
     },
     {
       argument: "default unset",
@@ -35,20 +35,20 @@ const command: CommandDescriptor = {
     },
     {
       argument:
-        "***channel id (optional)*** ***message id*** ***emoji_1*** = ***role name 1***, ***emoji_2*** = ***role name 2***, etc.",
+        "`channel id (optional)` `message id` `emoji` = `role id`, `emoji` = `role id`, etc.",
       effect:
         `Creates a **role box** on a target message. A role box is a subscription system bound to a message.` +
         `I will first react to the target message with each of the emojis you mentioned.` +
         `All users will then be able to assign/unassign themselves with the roles linked to each emoji`,
       example: {
-        command: `111111111111111111 222222222222222222 :flag_be: = Belgian`,
-        result: `A :flag_be: emoji will be added on the message "222..." in the channel "111..." and each user clicking on this reaction will be assigned the role "Belgian" (provided it exists!)`,
+        command: `111111111111111111 222222222222222222 :flag_be: = 333333333333333333`,
+        result: `A :flag_be: emoji will be added on the message "222..." in the channel "111..." and each user clicking on this reaction will be assigned the role having the id "333..." (provided it exists!)`,
       },
     },
     {
-      argument: "remove ***channel id (optional)*** ***message id***",
+      argument: "remove `channel id (optional)` `message id`",
       effect:
-        "Removes the role box on the target message (if any). This will not remove the reactions",
+        "Removes the role box on the target message (if any). This will also remove ALL reactions on that message",
     },
   ],
   access: "admin",
@@ -121,6 +121,7 @@ const command: CommandDescriptor = {
         if (!roleBox) {
           return send.warn("No role box on that message");
         }
+        apiCatch(() => targetMessage.reactions.removeAll());
         salty.removeRoleBox(targetMessage.channel.id, targetMessage.id);
         Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
         return send.success(`Role box removed`);
@@ -141,27 +142,19 @@ const command: CommandDescriptor = {
           .map((x) => x.split(SECONDARY_SEP));
         const emojiRoles: [string, string][] = [];
 
-        for (const [emojiName, roleName] of rawEmojiRoles) {
-          const cleanedRoleName = clean(roleName);
-          let role = msg.guild!.roles.cache.find(
-            (r) => clean(r.name) === cleanedRoleName
-          );
-          if (!role) {
-            role = await msg.guild!.roles.create({
-              name: roleName,
-              mentionable: true,
-              color: randColor(),
-              permissions: [],
-              reason: `Created by ${msg.author.username} via Salty`,
-            });
+        for (const [emojiName, roleId] of rawEmojiRoles) {
+          if (!isSnowflake(roleId)) {
+            return send.warn(`Invalid role id: ${roleId}`);
           }
           let emoji = emojiName;
           const customEmojiMatch = emojiName.match(CUSTOM_EMOJI_REGEX);
           if (customEmojiMatch) {
             emoji = customEmojiMatch[1];
           }
-          emojiRoles.push([emoji, role.id]);
+          emojiRoles.push([emoji, roleId]);
         }
+
+        await apiCatch(() => targetMessage.reactions.removeAll());
 
         const newBox: RoleBox = {
           channelId: targetMessage.channel.id,

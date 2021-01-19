@@ -11,7 +11,7 @@ const command: CommandDescriptor = {
       effect: "Shows your todo list",
     },
     {
-      argument: "***something to do***",
+      argument: "`something to do`",
       effect: "Adds something to your todo list",
     },
   ],

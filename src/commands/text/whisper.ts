@@ -7,7 +7,7 @@ const command: CommandDescriptor = {
   aliases: ["dm"],
   help: [
     {
-      argument: "***anything***",
+      argument: "`anything`",
       effect:
         "I will DM you what you said. If you whisper when in DM I will refrain to respond to you",
     },

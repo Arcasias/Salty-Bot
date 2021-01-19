@@ -12,8 +12,8 @@ const command: CommandDescriptor = {
       effect: "Tells you wether you're an admin",
     },
     {
-      argument: "***mention***",
-      effect: "Tells you wether the ***mention*** is an admin",
+      argument: "`mention`",
+      effect: "Tells you wether the `mention` is an admin",
     },
   ],
   access: "dev",

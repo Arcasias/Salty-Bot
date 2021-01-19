@@ -15,8 +15,8 @@ const command: CommandDescriptor = {
       effect: "Shows a bigger version of your profile picture",
     },
     {
-      argument: "***mention***",
-      effect: "Shows a bigger version of ***mention***'s profile picture",
+      argument: "`mention`",
+      effect: "Shows a bigger version of `mention`'s profile picture",
     },
   ],
 

@@ -6,7 +6,7 @@ const command: CommandDescriptor = {
   aliases: ["choice", "8ball"],
   help: [
     {
-      argument: "***first choice*** / ***second choice*** / ...",
+      argument: "`first choice` / `second choice` / ...",
       effect:
         "Chooses randomly from all provided choices. They must be separated with \"/\". Please don't use this to decide important life choices, it's purely random ok?",
     },
