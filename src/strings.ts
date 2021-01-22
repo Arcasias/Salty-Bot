@@ -203,17 +203,17 @@ export const help: string[] = [
 ];
 
 export const intro: string[] = [
-  "did you miss me?",
-  "here I come to salt the day!",
-  "surprise, I'm back!",
-  "your favorite bot is back online!",
-  "powered up and ready to salt!",
+  "Did you miss me?",
+  "Here I come to salt the day!",
+  "Surprise, I'm back!",
+  "Your favorite bot is back online!",
+  "Powered up and ready to salt!",
   "IT'S ME BOIIIIS",
-  "mmmmh... looks like there's a serious lack of salt here!",
+  "Mmmmh... looks like there's a serious lack of salt here!",
   "I have been reborn!",
-  "looks like you're getting bored without me ;)",
-  "oh sweet, a whole server to fill with salt!",
-  "all aboard the salt train!",
+  "Looks like you're getting bored without me ;)",
+  "Oh sweet, a whole server to fill with salt!",
+  "All aboard the salt train!",
 ];
 
 export const jokes: Joke[] = [

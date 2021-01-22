@@ -25,7 +25,7 @@ import { env } from "process";
 import { promisify } from "util";
 import { config } from "../database/config";
 import { connect, disconnect } from "../database/helpers";
-import { help, intro, keywords } from "../strings";
+import { answers, help, intro, keywords } from "../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -85,6 +85,7 @@ export default class Salty {
   // Private properties
   //===========================================================================
 
+  private destroyed: boolean = false;
   private modules: Module[] = [];
   private roleBoxes: RoleBox[] = [];
   private token: string | null = null;
@@ -178,10 +179,28 @@ export default class Salty {
    * Terminates the bot instance.
    */
   public async destroy(): Promise<void> {
+    // Has been previously destroyed already
+    if (this.destroyed) return;
+
     log("Disconnecting ...");
-    this.user.setStatus("invisible");
+    this.destroyed = true;
+
+    if (this.bot.user) {
+      const crews: Crew[] = await Crew.search();
+      await Promise.all(
+        crews.map(async (crew) => {
+          const guild = this.bot.guilds.cache.get(crew.discordId)!;
+          const channel = crew.getDefaultChannel(guild);
+          if (channel) {
+            await this.message(channel, `${choice(answers.bye)} ♥`);
+          }
+        })
+      );
+      await disconnect();
+      this.user.setStatus("invisible");
+    }
+
     this.bot.destroy();
-    await disconnect();
     process.exit();
   }
 
@@ -642,9 +661,10 @@ export default class Salty {
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
     const crew = await Crew.get(member.guild.id);
-    if (crew?.defaultChannel) {
+    const channel = crew?.getDefaultChannel(member.guild);
+    if (channel) {
       this.message(
-        this.getTextChannel(crew.defaultChannel),
+        channel,
         `Hey there ${member.displayName}! Have a great time here (͡° ͜ʖ ͡°)`
       );
     }
@@ -656,10 +676,11 @@ export default class Salty {
   private async onGuildMemberRemove(
     member: GuildMember | PartialGuildMember
   ): Promise<any> {
-    const guild = await Crew.get(member.guild.id);
-    if (guild?.defaultChannel) {
+    const crew = await Crew.get(member.guild.id);
+    const channel = crew?.getDefaultChannel(member.guild);
+    if (channel) {
       this.message(
-        this.getTextChannel(guild.defaultChannel),
+        channel,
         `Well, looks like ${member.displayName} got bored of us :c`
       );
     }

@@ -1,7 +1,5 @@
 import salty from "../../salty";
-import { answers } from "../../strings";
 import { CommandDescriptor } from "../../typings";
-import { choice } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "disconnect",
@@ -15,8 +13,8 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ send }) {
-    await send.info(`${choice(answers.bye)} ♥`);
+  async action({ msg }) {
+    await salty.react(msg, "👋").catch();
     await salty.destroy();
   },
 };
