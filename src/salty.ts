@@ -9,6 +9,7 @@ const EXIT_EVENTS: string[] = [
   // On pid killed
   "SIGUSR1",
   "SIGUSR2",
+  "SIGTERM",
   // On uncaught error
   "uncaughtException",
   "unhandledRejection",
