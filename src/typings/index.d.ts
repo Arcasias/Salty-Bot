@@ -33,6 +33,7 @@ export interface BasicCommandDescriptor {
   readonly access?: CommandAccess;
   readonly aliases?: string[];
   readonly channel?: CommandChannel;
+  readonly guilds?: Snowflake[] | null;
   readonly name: string;
 }
 export interface Category extends CategoryDescriptor {
@@ -58,10 +59,6 @@ export interface CommandHelpSection {
   argument: string | null;
   effect: string | null;
   example?: { command: string; result: string };
-}
-export interface ExpressionDescriptor {
-  expr: RegExp;
-  replacer: ExpressionReplacer;
 }
 export interface Joke {
   text: string;
@@ -118,7 +115,6 @@ export interface SaltyEmbedOptions extends MessageEmbedOptions {
   react?: string;
 }
 export interface SaltyMessageOptions extends MessageOptions {
-  format?: boolean;
   title?: boolean;
 }
 export interface Song {
@@ -173,9 +169,8 @@ export type CategoryId =
   | "voice";
 export type CommandAccess = "public" | "admin" | "dev" | "owner";
 export type CommandAction = (actionContext: ActionContext) => Promise<any>;
-export type CommandChannel = "all" | "guild";
+export type CommandChannel = "all" | "guild" | "dm";
 export type Dictionnary<T> = { [key: string]: T };
-export type ExpressionReplacer = (match: string, context: any) => string;
 export type LogType = "debug" | "error" | "log" | "request" | "warn";
 export type MeaningKeys = keyof Meanings | "string";
 export type Meanings = {

@@ -4,7 +4,7 @@ import { clean } from "../../utils/generic";
 const PING_MESSAGES = [
   "Nearly perfect!",
   "That's pretty good",
-  "That's ok, i guess",
+  "That's ok, I guess",
   "That's a bit laggy",
   "That's quite laggy",
   "Ok that's laggy as fuck",

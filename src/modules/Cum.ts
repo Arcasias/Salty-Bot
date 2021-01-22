@@ -1,11 +1,11 @@
 import { Role } from "discord.js";
-import { CommandDescriptor } from "../../typings";
-import { clean, meaning } from "../../utils/generic";
+import { CommandDescriptor, Module } from "../typings";
+import { clean, meaning } from "../utils/generic";
 
 const MAX_AMOUNT = 100;
 const ROLE_NAME = "cum";
 
-const cummand: CommandDescriptor = {
+const command: CommandDescriptor = {
   name: ROLE_NAME,
   aliases: ["cover", "shower"],
   help: [
@@ -94,4 +94,8 @@ const cummand: CommandDescriptor = {
   },
 };
 
-export default cummand;
+const cumModule: Module = {
+  commands: [{ category: "misc", command }],
+};
+
+export default cumModule;

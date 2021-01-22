@@ -43,10 +43,6 @@ import {
   choice,
   clean,
   ellipsis,
-  format,
-  isAdmin,
-  isDev,
-  isOwner,
   parseRoleBox,
   search,
   title,
@@ -208,24 +204,20 @@ export default class Salty {
     const { content, inline, react } = defaultedOptions;
 
     if (defaultedOptions.title) {
-      defaultedOptions.title = title(format(defaultedOptions.title, msg));
+      defaultedOptions.title = title(defaultedOptions.title);
     }
     if (defaultedOptions.description) {
-      defaultedOptions.description = title(
-        format(defaultedOptions.description, msg)
-      );
+      defaultedOptions.description = title(defaultedOptions.description);
     }
     if (defaultedOptions.footer?.text) {
-      defaultedOptions.footer.text = title(
-        format(defaultedOptions.footer.text, msg)
-      );
+      defaultedOptions.footer.text = title(defaultedOptions.footer.text);
     }
     if (defaultedOptions.fields) {
       defaultedOptions.fields = defaultedOptions.fields.map(
-        ({ name, value }) => ({
-          name: title(format(name, msg)),
-          value: title(format(value, msg)),
-          inline,
+        ({ name, value, inline: fieldInline }) => ({
+          name: title(name),
+          value: title(value),
+          inline: fieldInline ?? inline,
         })
       );
     }
@@ -277,30 +269,6 @@ export default class Salty {
   }
 
   /**
-   * @param access
-   * @param user
-   * @param guild
-   */
-  public hasAccess(
-    access: string,
-    user: User,
-    guild: Guild | null = null
-  ): boolean {
-    if (access === "public") {
-      return true;
-    }
-    switch (access) {
-      case "admin":
-        return isAdmin(user, guild);
-      case "dev":
-        return isDev(user);
-      case "owner":
-        return isOwner(user);
-    }
-    return false;
-  }
-
-  /**
    * @param guild
    * @param permissions
    */
@@ -342,7 +310,6 @@ export default class Salty {
   ): Promise<Message> {
     const defaultedOptions = Object.assign(
       {
-        format: true,
         title: true,
       },
       options
@@ -354,9 +321,6 @@ export default class Salty {
       channel = msg.channel;
     } else {
       channel = target;
-    }
-    if (msg && defaultedOptions.format) {
-      content = format(content, msg);
     }
     if (defaultedOptions.title) {
       content = title(content);

@@ -15,7 +15,7 @@ const GIT_SRC_PATH = ["blob", "master", "src"];
 
 const command: CommandDescriptor = {
   name: "help",
-  aliases: keywords.help,
+  aliases: keywords.help.slice(1),
   help: [
     {
       argument: null,
@@ -58,10 +58,7 @@ const command: CommandDescriptor = {
         options.description = `${description}. To get more information about a specific command, refer to the "help" usage indicated below it.`;
 
         for (const command of commands) {
-          if (
-            "access" in command &&
-            salty.hasAccess(command.access, msg.author, msg.guild)
-          ) {
+          if (!command.isRestricted(msg)) {
             const aliases = command.aliases.length
               ? ` (or ***${command.aliases.join("***, ***")}***)`
               : "";

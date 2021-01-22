@@ -71,10 +71,7 @@ const catsModule: Module = {
     const {
       data: [firstResult],
     } = await axios.get(CAT_API_URL);
-    await salty.message(msg, firstResult.url, {
-      format: false,
-      title: false,
-    });
+    await salty.message(msg, firstResult.url, { title: false });
   },
 };
 

@@ -1,6 +1,6 @@
 import Sailor from "../../classes/Sailor";
 import { CommandDescriptor } from "../../typings";
-import { clean, levenshtein, meaning } from "../../utils/generic";
+import { clean, levenshtein, meaning, possessive } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "todo",
@@ -64,7 +64,7 @@ const command: CommandDescriptor = {
           return send.info("Your todo list is empty.");
         }
         return send.embed({
-          title: "<authors> todo list",
+          title: `${possessive(source.name)} todo list`,
           description: todos.map((todo: string) => `• ${todo}`).join("\n"),
         });
       }

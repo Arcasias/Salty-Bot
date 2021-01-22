@@ -19,7 +19,7 @@ const command: CommandDescriptor = {
   access: "dev",
 
   async action({ args, send, msg, targets }) {
-    const target = targets[0];
+    const [target] = targets;
     switch (meaning(args[0])) {
       case "add":
       case "set": {
@@ -37,7 +37,7 @@ const command: CommandDescriptor = {
           );
         }
         await Sailor.update(target.sailor.id, { blackListed: true });
-        return send.success(`<mention> added to the blacklist`);
+        return send.success(`${target.name} added to the blacklist`);
       }
       case "remove": {
         if (!target) {
@@ -52,7 +52,7 @@ const command: CommandDescriptor = {
           return send.info(`**${target.name}** is not in the blacklist.`);
         }
         await Sailor.update(target.sailor.id, { blackListed: false });
-        return send.success(`<mention> removed from the blacklist`);
+        return send.success(`${target.name} removed from the blacklist`);
       }
       default: {
         if (target && target.user.id === salty.bot.user!.id) {
@@ -61,8 +61,8 @@ const command: CommandDescriptor = {
         if (target) {
           return send.info(
             target.sailor?.blackListed
-              ? "<mention> is black-listed"
-              : "<mention> isn't black-listed... yet"
+              ? `${target.name} is black-listed`
+              : `${target.name} isn't black-listed... yet`
           );
         }
         const blackListedSailors: Sailor[] = await Sailor.search({

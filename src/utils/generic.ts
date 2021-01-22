@@ -3,7 +3,6 @@ import { config } from "../database/config";
 import { keywords } from "../strings";
 import {
   Dictionnary,
-  ExpressionDescriptor,
   MeaningKeys,
   Meanings,
   MessageAction,
@@ -55,30 +54,6 @@ const REACTIONS: Dictionnary<string[]> = {
 };
 const SNOWFLAKE_REGEX = /^\d{18}$/;
 
-const expressions: ExpressionDescriptor[] = [
-  {
-    expr: /authors?/,
-    replacer: (match, ctx) => {
-      const { displayName } = ctx.member;
-      return match.endsWith("s") ? possessive(displayName) : displayName;
-    },
-  },
-  {
-    expr: /mentions?/,
-    replacer: (match, ctx) => {
-      const { displayName } = ctx.mentions.members.first();
-      return match.endsWith("s") ? possessive(displayName) : displayName;
-    },
-  },
-  {
-    expr: /targets?/,
-    replacer: (match, ctx) => {
-      const { displayName } = ctx.mentions.members.first() || ctx.member;
-      return match.endsWith("s") ? possessive(displayName) : displayName;
-    },
-  },
-];
-
 //=============================================================================
 // Generic functions
 //=============================================================================
@@ -124,22 +99,6 @@ export function ensureContent(object: any, param?: string): void {
  */
 export function escapeRegex(regex: string): string {
   return regex.replace(/[\.\*\+\?\^\$\{\}\(\)\|\[\]\\]/g, "\\$&");
-}
-
-/**
- * @param raw
- * @param context
- */
-export function format(raw: string, context: any): string {
-  return raw.replace(/<\w+>/g, (match) => {
-    const matchExpr = match.slice(1, -1);
-    const { replacer } =
-      expressions.find(({ expr }) => expr.test(matchExpr)) || {};
-    if (replacer) {
-      return replacer(matchExpr, context);
-    }
-    return match;
-  });
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Collection, Guild, Message, User } from "discord.js";
+import { Collection, Guild, Message, Snowflake, User } from "discord.js";
 import {
   ActionContext,
   ActionContextMessageHelpers,
@@ -38,6 +38,7 @@ export default class Command implements CommandDescriptor {
   // Restrictions
   public access: CommandAccess;
   public channel: CommandChannel;
+  public guilds: Snowflake[] | null = null;
 
   public static aliases = new Collection<string, string>();
   public static categories = new Collection<CategoryId, Category>();
@@ -45,7 +46,7 @@ export default class Command implements CommandDescriptor {
   public static list = new Collection<string, Command>();
 
   constructor(
-    { action, help, aliases, name, access, channel }: CommandDescriptor,
+    { action, help, aliases, name, access, channel, guilds }: CommandDescriptor,
     category: CategoryId
   ) {
     this.action = action;
@@ -54,7 +55,34 @@ export default class Command implements CommandDescriptor {
     this.category = category;
     this.help = help || [];
     this.access = access || "public";
-    this.channel = channel || "all";
+    if (guilds) {
+      this.guilds = guilds;
+      this.channel = "guild";
+    } else {
+      this.channel = channel || "all";
+    }
+  }
+
+  /**
+   * Returns a relevant error message if the command cannot be executed in the
+   * given message context, or false if it can.
+   * @param message
+   */
+  public isRestricted({ author, guild }: Message): string | false {
+    // Right channel
+    if (this.channel === "guild") {
+      if (!guild) {
+        return "This is a direct message channel retard";
+      }
+      if (this.guilds && !this.guilds.includes(guild.id)) {
+        return `You can't use "${this.name}" in this server`;
+      }
+    }
+    // Right permissions
+    if (guild && !permissions[this.access](author, guild)) {
+      return `You need to have the ${this.access} permission to do that.`;
+    }
+    return false;
   }
 
   /**
@@ -62,13 +90,9 @@ export default class Command implements CommandDescriptor {
    */
   public async run(context: ActionContext) {
     const { msg } = context;
-    if (msg.guild && !permissions[this.access](msg.author, msg.guild)) {
-      return context.send.warn(
-        `You need to have the ${this.access} permission to do that.`
-      );
-    }
-    if (this.channel === "guild" && !msg.guild) {
-      return context.send.warn("This is a direct message channel retard");
+    const restricted = this.isRestricted(msg);
+    if (restricted) {
+      return context.send.warn(restricted);
     }
     try {
       await this.action(context);
@@ -122,7 +146,7 @@ export default class Command implements CommandDescriptor {
     this.list.set(name, command);
     for (const key of [name, ...aliases]) {
       if (this.aliases.has(key)) {
-        // throw new Error(`Duplicate key "${key}" in command "${name}".`);
+        throw new Error(`Duplicate key "${key}" in command "${name}".`);
       }
       this.aliases.set(key, name);
     }

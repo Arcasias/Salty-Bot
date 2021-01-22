@@ -37,9 +37,9 @@ const command: CommandDescriptor = {
           : // mention is not Salty
           isRequestedUserAdmin
           ? // mention is not Salty and is admin
-            "<mention> is a wise and powerful admin"
+            `${target.name} is a wise and powerful admin`
           : // mention is not Salty and is not admin
-            "<mention> is not an admin"
+            `${target.name} is not an admin`
         : // author
         isRequestedUserAdmin
         ? // author is admin

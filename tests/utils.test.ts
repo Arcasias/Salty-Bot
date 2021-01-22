@@ -12,7 +12,6 @@ import {
   ellipsis,
   ensureContent,
   escapeRegex,
-  format,
   formatDuration,
   getNumberReactions,
   groupBy,
@@ -161,19 +160,6 @@ test("ensureContent", () => {
 
 test("escapeRegex", () => {
   expect(escapeRegex("$()")).toBe("\\$\\(\\)");
-});
-
-test("format", () => {
-  const msg = createMockMessage();
-
-  expect(format("<authors> test", msg)).toBe("Author's test");
-  expect(format("The test of <author>", msg)).toBe("The test of Author");
-  expect(format("<mentions> test", msg)).toBe("Mention's test");
-  expect(format("<targets> test", msg)).toBe("Mention's test");
-
-  msg.mentions.members!.delete("222222222222222222");
-
-  expect(format("<targets> test", msg)).toBe("Author's test");
 });
 
 test("formatDuration", () => {
