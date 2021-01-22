@@ -5,6 +5,7 @@ import {
   MessageEmbedOptions,
   MessageOptions,
   MessageReaction,
+  PermissionString,
   PresenceStatusData,
   Snowflake,
   User,
@@ -19,7 +20,7 @@ export interface ActionContext extends ParialActionContext {
   readonly send: ActionContextMessageHelpers;
 }
 export interface ActionContextMessageHelpers {
-  embed: (options?: SaltyEmbedOptions) => Promise<Message | false>;
+  embed: (options?: SaltyEmbedOptions) => Promise<Message>;
   error: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
   info: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
   message: (
@@ -34,6 +35,7 @@ export interface BasicCommandDescriptor {
   readonly aliases?: string[];
   readonly channel?: CommandChannel;
   readonly guilds?: Snowflake[] | null;
+  readonly permissions?: PermissionString[] | null;
   readonly name: string;
 }
 export interface Category extends CategoryDescriptor {

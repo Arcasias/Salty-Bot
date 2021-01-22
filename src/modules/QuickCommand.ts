@@ -112,7 +112,6 @@ class QuickCommand extends Model {
    * Creates a command descriptor from the quick command instance.
    */
   public toDescriptor(): CommandDescriptor {
-    const stringAnswers = this.answers.map((a) => `- "${a}"`).join("\n");
     return Object.assign({}, this, {
       action: async ({ msg }: ActionContext) => {
         await salty.message(msg, choice(this.answers));

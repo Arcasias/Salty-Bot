@@ -51,8 +51,7 @@ export async function connect(): Promise<void> {
   try {
     await client.connect();
   } catch (err) {
-    error(err.stack);
-    return;
+    return error(err.stack);
   }
   await adjustDatabase();
   await loadConfig();

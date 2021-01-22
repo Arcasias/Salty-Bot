@@ -14,7 +14,6 @@ import {
   PartialGuildMember,
   PartialMessage,
   PartialUser,
-  PermissionString,
   ReactionCollector,
   Snowflake,
   TextChannel,
@@ -105,9 +104,8 @@ export default class Salty {
     userId: string | null = null,
     time: number = 3 * 60 * 1000
   ) {
-    if (msg.deleted) {
-      return;
-    }
+    if (msg.deleted) return;
+
     const collector = msg.createReactionCollector(
       ({ emoji }, { bot }) => !bot && actions.has(emoji.name),
       { dispose: true, time }
@@ -136,6 +134,8 @@ export default class Salty {
       }
     });
     collector.on("end", async (collected, reason) => {
+      if (msg.deleted) return;
+
       if (userId) {
         delete runningCollectors[userId];
         msg.reactions.removeAll().catch();
@@ -269,15 +269,6 @@ export default class Salty {
   }
 
   /**
-   * @param guild
-   * @param permissions
-   */
-  public hasPermission(guild: Guild, ...permissions: PermissionString[]) {
-    const member = guild.members.cache.get(this.user.id);
-    return permissions.every((perm) => member?.permissions.has(perm));
-  }
-
-  /**
    * @param msg
    * @param text
    * @param options
@@ -338,6 +329,8 @@ export default class Salty {
     ...reactions: (string | GuildEmoji)[]
   ): Promise<void> {
     for (const react of reactions) {
+      if (msg.deleted) return;
+
       const emoji =
         react instanceof GuildEmoji || !TEXT_REGEX.test(react)
           ? react
@@ -345,9 +338,10 @@ export default class Salty {
       if (!emoji) {
         continue;
       }
-      let error = false;
-      await msg.react(emoji).catch(() => (error = true));
-      if (error) {
+
+      try {
+        await msg.react(emoji);
+      } catch (err) {
         return;
       }
     }
@@ -606,9 +600,8 @@ export default class Salty {
    * @param fileName
    */
   private async loadModule(fileName: string): Promise<void> {
-    if (!SCRIPT_REGEX.test(fileName)) {
-      return;
-    }
+    if (!SCRIPT_REGEX.test(fileName)) return;
+
     const importedModule = await import(
       ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
     );
@@ -675,10 +668,8 @@ export default class Salty {
   private async onMessage(msg: Message): Promise<any> {
     const { attachments, author, cleanContent, guild } = msg;
 
-    if (author.bot) {
-      // Ignores all bots
-      return;
-    }
+    // Ignores all bots
+    if (author.bot) return;
 
     // Looks for an interaction: DM, prefix or mention
     const prefixInteraction: boolean = cleanContent.startsWith(config.prefix);
@@ -705,10 +696,8 @@ export default class Salty {
     // Logs the  action
     logRequest(guild, source, cleanContent);
 
-    if (source.sailor.blackListed) {
-      // The action is discarded if the user is black-listed
-      return;
-    }
+    // The action is discarded if the user is black-listed
+    if (source.sailor.blackListed) return;
 
     // Handles the actual command if found
     const msgArgs = content
@@ -770,9 +759,8 @@ export default class Salty {
   private async onMessageDelete(
     message: Message | PartialMessage
   ): Promise<any> {
-    if (!message.guild) {
-      return;
-    }
+    if (!message.guild) return;
+
     this.removeRoleBox(message.channel.id, message.id);
   }
 
@@ -781,16 +769,14 @@ export default class Salty {
     user: User | PartialUser
   ): Promise<any> {
     const { emoji, message } = react;
-    if (!message.guild || user.bot) {
-      return;
-    }
+    if (!message.guild || user.bot) return;
+
     const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
-    if (!roleBox) {
-      return;
-    }
+    if (!roleBox) return;
+
     const emojiRole = roleBox.emojiRoles.find((e) => e[0] === emoji.name);
     if (!emojiRole) {
-      return react.remove();
+      return react.remove().catch();
     }
     const member = message.guild.members.cache.get(user.id)!;
     member.roles.add(emojiRole[1]).catch();
@@ -800,17 +786,14 @@ export default class Salty {
     { emoji, message }: MessageReaction,
     user: User | PartialUser
   ): Promise<any> {
-    if (!message.guild || user.bot) {
-      return;
-    }
+    if (!message.guild || user.bot) return;
+
     const roleBox = this.roleBoxes.find((r) => r.messageId === message.id);
-    if (!roleBox) {
-      return;
-    }
+    if (!roleBox) return;
+
     const emojiRole = roleBox.emojiRoles.find((e) => e[0] === emoji.name);
-    if (!emojiRole) {
-      return;
-    }
+    if (!emojiRole) return;
+
     const member = message.guild.members.cache.get(user.id)!;
     member.roles.remove(emojiRole[1]).catch();
   }

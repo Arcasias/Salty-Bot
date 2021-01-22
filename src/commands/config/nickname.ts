@@ -55,16 +55,13 @@ const command: CommandDescriptor = {
       effect: "Removes the `particle` from each matching nickname",
     },
   ],
+  permissions: ["MANAGE_NICKNAMES"],
   access: "admin",
   channel: "guild",
 
   async action({ args, msg, send }) {
     const particle: string = args.slice(1).join(" ");
     const particleRegex = new RegExp(particle, "g");
-
-    if (!salty.hasPermission(msg.guild!, "MANAGE_NICKNAMES")) {
-      return send.warn(`I don't have the permission to do that.`);
-    }
 
     switch (meaning(args[0])) {
       case "add":

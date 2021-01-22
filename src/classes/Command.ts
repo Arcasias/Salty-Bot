@@ -1,4 +1,11 @@
-import { Collection, Guild, Message, Snowflake, User } from "discord.js";
+import {
+  Collection,
+  Guild,
+  Message,
+  PermissionString,
+  Snowflake,
+  User,
+} from "discord.js";
 import {
   ActionContext,
   ActionContextMessageHelpers,
@@ -39,6 +46,7 @@ export default class Command implements CommandDescriptor {
   public access: CommandAccess;
   public channel: CommandChannel;
   public guilds: Snowflake[] | null = null;
+  public permissions: PermissionString[] | null = null;
 
   public static aliases = new Collection<string, string>();
   public static categories = new Collection<CategoryId, Category>();
@@ -46,7 +54,16 @@ export default class Command implements CommandDescriptor {
   public static list = new Collection<string, Command>();
 
   constructor(
-    { action, help, aliases, name, access, channel, guilds }: CommandDescriptor,
+    {
+      action,
+      help,
+      aliases,
+      name,
+      access,
+      channel,
+      guilds,
+      permissions,
+    }: CommandDescriptor,
     category: CategoryId
   ) {
     this.action = action;
@@ -55,9 +72,12 @@ export default class Command implements CommandDescriptor {
     this.category = category;
     this.help = help || [];
     this.access = access || "public";
-    if (guilds) {
+    if (guilds?.length) {
       this.guilds = guilds;
       this.channel = "guild";
+      if (permissions?.length) {
+        this.permissions = permissions;
+      }
     } else {
       this.channel = channel || "all";
     }
@@ -68,7 +88,7 @@ export default class Command implements CommandDescriptor {
    * given message context, or false if it can.
    * @param message
    */
-  public isRestricted({ author, guild }: Message): string | false {
+  public isRestricted({ author, client, guild }: Message): string | false {
     // Right channel
     if (this.channel === "guild") {
       if (!guild) {
@@ -78,9 +98,19 @@ export default class Command implements CommandDescriptor {
         return `You can't use "${this.name}" in this server`;
       }
     }
-    // Right permissions
-    if (guild && !permissions[this.access](author, guild)) {
-      return `You need to have the ${this.access} permission to do that.`;
+    if (guild) {
+      // Right permissions
+      if (this.permissions) {
+        const clientMember = guild.members.cache.get(client.user!.id)!;
+        if (!clientMember.hasPermission(this.permissions)) {
+          return "I don't have the permission to do that.";
+        }
+      }
+      // Right access
+      if (!permissions[this.access](author, guild)) {
+        const article = ["admin", "owner"].includes(this.access) ? "an" : "a";
+        return `You need to have ${article} ${this.access} access to do that.`;
+      }
     }
     return false;
   }
@@ -120,6 +150,10 @@ export default class Command implements CommandDescriptor {
     this.categories = new Collection<CategoryId, Category>();
     this.doc = new Collection<string, CommandHelpDescriptor>();
     this.list = new Collection<string, Command>();
+  }
+
+  public static count() {
+    return this.list.size;
   }
 
   public static getOrderedCategories(): Category[] {

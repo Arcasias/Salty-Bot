@@ -71,9 +71,8 @@ export function getHistory({ id }: Guild | User): string[] {
  * @param message
  */
 export function debug(...message: any[]) {
-  if (env.DEBUG !== "true") {
-    return;
-  }
+  if (!JSON.parse(env.DEBUG || "0")) return;
+
   console.debug(applyColor("DEBUG", MAGENTA), ...message);
 }
 

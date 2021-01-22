@@ -16,6 +16,8 @@ export default class Model {
   public static fields: FieldDescriptor[];
   public static table: string;
 
+  public static validation: Dictionnary<(arg: string) => boolean> = {};
+
   constructor(values: Dictionnary<any> = {}) {
     const constructor = this.constructor as typeof Model;
     for (const { name } of constructor.fields) {
@@ -24,6 +26,26 @@ export default class Model {
       }
       this[name as keyof Model] = values[name];
     }
+  }
+
+  /**
+   * Shorthand to the constructor `remove` method, targetting the current
+   * instance.
+   */
+  public async remove(): Promise<void> {
+    const constructor = this.constructor as typeof Model;
+    await constructor.remove(this.id);
+  }
+
+  /**
+   * Shorthand to the constructor `update` method, targetting the current
+   * instance and modifying it in place.
+   * @param values
+   */
+  public async update(values: Dictionnary<any>): Promise<void> {
+    const constructor = this.constructor as typeof Model;
+    const [model] = await constructor.update(this.id, values);
+    Object.assign(this, model);
   }
 
   //===========================================================================

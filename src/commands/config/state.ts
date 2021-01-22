@@ -1,4 +1,5 @@
 import { env } from "process";
+import Command from "../../classes/Command";
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import { config } from "../../database/config";
@@ -16,11 +17,12 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ send }) {
+  async action({ msg, send }) {
     const [crewsCount, sailorsCount] = await Promise.all([
       Crew.count(),
       Sailor.count(),
     ]);
+    const commandCount = Command.count();
     const options: SaltyEmbedOptions = {
       title: `Salty Bot`,
       url: process.env.GITHUB_PAGE!,
@@ -30,18 +32,25 @@ const command: CommandDescriptor = {
           name: `Hosting`,
           value: env.MODE === "server" ? "Server" : "Local instance",
         },
-        { name: `Developers`, value: `${config.devIds.length} contributors` },
         {
-          name: `Crews`,
+          name: `Developers`,
+          value: `${config.devIds.length} contributors`,
+        },
+        {
+          name: `Crews (servers)`,
           value: `Handling ${crewsCount} crews`,
         },
         {
-          name: `Sailors`,
+          name: `Sailors (users)`,
           value: `Watching over ${sailorsCount} sailors`,
         },
         {
-          name: `Prefix`,
-          value: `${config.prefix}`,
+          name: `Commands`,
+          value: `${commandCount} registered commands`,
+        },
+        {
+          name: `Server latency`,
+          value: `${Date.now() - msg.createdTimestamp}ms`,
         },
       ],
       inline: true,

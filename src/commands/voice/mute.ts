@@ -15,7 +15,6 @@ function autoMute(oldState: VoiceState, newState: VoiceState) {
 const command: CommandDescriptor = {
   name: "mute",
   aliases: ["stfu", "shutup", "unmute"],
-  channel: "guild",
   help: [
     {
       argument: null,
@@ -26,6 +25,9 @@ const command: CommandDescriptor = {
       effect: "Removes the targetted user from the automute loop.",
     },
   ],
+  channel: "guild",
+  permissions: ["MUTE_MEMBERS"],
+
   async action({ alias, args, send, source, targets }) {
     const member = (targets[0]?.member || source.member)!;
     const option = meaning(args[0]) || "";

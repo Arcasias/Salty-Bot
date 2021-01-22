@@ -52,10 +52,12 @@ const command: CommandDescriptor = {
   ],
   access: "admin",
   channel: "guild",
+  permissions: ["MANAGE_ROLES"],
 
   async action({ args, msg, send }) {
     const guild = msg.guild!;
     const crew = await Crew.get(guild.id)!;
+    const defaultRole = crew.getDefaultRole(guild);
 
     switch (meaning(args[0])) {
       case "default": {
@@ -78,7 +80,7 @@ const command: CommandDescriptor = {
                 `This role doesn't exist. You can create it with "${commandString}".`
               );
             }
-            await Crew.update(crew.id, { defaultRole: role.id });
+            await crew.update({ defaultRole: role.id });
             return send.success(
               `Role **${role.name}** has been successfuly set as default role.`,
               { color: role.color }
@@ -86,23 +88,21 @@ const command: CommandDescriptor = {
           }
           case "clear":
           case "remove": {
-            if (!crew.defaultRole) {
+            if (!defaultRole) {
               return send.warn("No default role to remove.");
             }
-            await Crew.update(crew.id, { defaultRole: null });
-            return send.success("default role has been successfuly removed");
+            await crew.update({ defaultRole: null });
+            return send.success("Default role has been successfuly removed");
           }
           default: {
-            if (!crew.defaultRole) {
+            if (!defaultRole) {
               return send.info("No default role set");
-            } else {
-              const role = guild.roles.cache.get(crew.defaultRole);
-              return send.embed({
-                title: `Default role is ${role?.name}`,
-                description: "Newcomers will automatically get this role.",
-                color: role?.color,
-              });
             }
+            return send.embed({
+              title: `Default role is ${defaultRole.name}`,
+              description: "Newcomers will automatically get this role.",
+              color: defaultRole.color,
+            });
           }
         }
       }
@@ -123,11 +123,11 @@ const command: CommandDescriptor = {
         targetMessage.reactions.removeAll().catch();
         salty.removeRoleBox(targetMessage.channel.id, targetMessage.id);
         Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
-        return send.success(`Role box removed`);
+        return send.success(
+          `Role box removed from message ${targetMessage.url}`
+        );
       }
       default: {
-        await msg.delete().catch();
-
         const targetMessage = await getTargetMessage(args, msg.channel.id);
         if (!targetMessage) {
           return send.warn(
@@ -172,9 +172,11 @@ const command: CommandDescriptor = {
           crew.roleBoxes[boxIndex] = serializedBox;
         }
 
-        Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
-
-        salty.addRoleBox(targetMessage, newBox);
+        await Promise.all([
+          Crew.update(crew.id, { roleBoxes: crew.roleBoxes }),
+          salty.addRoleBox(targetMessage, newBox),
+        ]);
+        return send.success(`Role box added on message ${targetMessage.url}`);
       }
     }
   },

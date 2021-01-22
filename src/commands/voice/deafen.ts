@@ -15,7 +15,6 @@ function autoDeafen(oldState: VoiceState, newState: VoiceState) {
 const command: CommandDescriptor = {
   name: "deafen",
   aliases: ["deaf", "undeaf", "undeafen"],
-  channel: "guild",
   help: [
     {
       argument: null,
@@ -26,6 +25,9 @@ const command: CommandDescriptor = {
       effect: "Removes the targetted user from the autodeaf loop.",
     },
   ],
+  channel: "guild",
+  permissions: ["DEAFEN_MEMBERS"],
+
   async action({ alias, args, send, source, targets }) {
     const member = (targets[0]?.member || source.member)!;
     const option = meaning(args[0]) || "";

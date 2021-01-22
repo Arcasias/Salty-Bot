@@ -13,9 +13,8 @@ const command: CommandDescriptor = {
     },
   ],
   async action({ args, msg }) {
-    if (msg.channel instanceof DMChannel) {
-      return;
-    }
+    if (msg.channel instanceof DMChannel) return;
+
     await salty.message(msg.author, args.join(" "));
   },
 };

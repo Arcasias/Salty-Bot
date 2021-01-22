@@ -76,8 +76,7 @@ const command: CommandDescriptor = {
           }
         }
         if (blackListedNames.length) {
-          return send.embed({
-            title: "Blacklist",
+          return send.info("Blacklist", {
             description: blackListedNames.join("\n"),
           });
         }

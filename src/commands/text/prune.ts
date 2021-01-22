@@ -25,9 +25,8 @@ async function removeMessages(
   // Confirm deleting
   actions.set("✅", {
     onAdd: async (user) => {
-      if (msg.author.id !== user.id) {
-        return;
-      }
+      if (msg.author.id !== user.id) return;
+
       await msg.delete().catch();
       const messages = await channel.messages.fetch({ limit: 100 });
       const filtered = filter ? messages.filter(filter) : messages;
@@ -35,16 +34,16 @@ async function removeMessages(
       if (channel instanceof DMChannel) {
         await Promise.allSettled(toDelete.map((m) => m.delete()));
       } else {
-        await channel.bulkDelete(toDelete, true);
+        await channel.bulkDelete(toDelete, true).catch();
       }
     },
   });
   // Cancel deletion
   actions.set("❌", {
     onAdd: async (user) => {
-      if (msg.author.id === user.id) {
-        msg.delete().catch();
-      }
+      if (msg.author.id !== user.id) return;
+
+      await msg.delete().catch();
     },
   });
 

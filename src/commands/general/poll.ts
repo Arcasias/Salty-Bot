@@ -50,10 +50,6 @@ const command: CommandDescriptor = {
     const initMessage = send.embed(embedOptions);
     const pollMessage = await initMessage;
 
-    if (!pollMessage) {
-      return;
-    }
-
     function getEmbed(end?: boolean) {
       const votes = pollOptions.map(({ votes }) => votes.size);
       const mostVotes = Math.max(1, ...votes);

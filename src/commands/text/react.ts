@@ -52,7 +52,7 @@ const command: CommandDescriptor = {
       const toRemove = lastMessage.reactions.cache.filter((r) => r.me);
       if (toRemove.size === lastMessage.reactions.cache.size) {
         // Optimisation: it will be a lot faster if all emojis are from Salty
-        await lastMessage.reactions.removeAll();
+        await lastMessage.reactions.removeAll().catch();
       } else {
         await Promise.allSettled(
           lastMessage.reactions.cache.map((r) => r.me && r.remove())
