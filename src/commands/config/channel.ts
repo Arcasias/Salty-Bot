@@ -57,8 +57,8 @@ const command: CommandDescriptor = {
             description: "I'll speak right here when I need to",
           });
         } else {
-          return send.info(`Default bot channel is <#${defaultChannel.id}>`, {
-            description: "this is where I'll speak when I need to",
+          return send.info(`Default bot channel`, {
+            description: `<#${defaultChannel.id}>`,
           });
         }
       }
