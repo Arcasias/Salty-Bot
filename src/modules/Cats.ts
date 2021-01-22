@@ -67,7 +67,7 @@ const catsModule: Module = {
     if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
       return;
     }
-    salty.deleteMessage(msg);
+    msg.delete().catch();
     const {
       data: [firstResult],
     } = await axios.get(CAT_API_URL);

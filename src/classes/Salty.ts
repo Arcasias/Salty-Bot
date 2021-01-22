@@ -1,6 +1,4 @@
 import {
-  APIMessage,
-  APIMessageContentResolvable,
   Channel,
   Client,
   Collection,
@@ -10,7 +8,6 @@ import {
   GuildEmoji,
   GuildMember,
   Message,
-  MessageEditOptions,
   MessageEmbed,
   MessageReaction,
   NewsChannel,
@@ -43,7 +40,6 @@ import {
   SaltyMessageOptions,
 } from "../typings";
 import {
-  apiCatch,
   choice,
   clean,
   ellipsis,
@@ -146,7 +142,7 @@ export default class Salty {
     collector.on("end", async (collected, reason) => {
       if (userId) {
         delete runningCollectors[userId];
-        apiCatch(() => msg.reactions.removeAll());
+        msg.reactions.removeAll().catch();
       }
       collector.empty();
       if (onEnd) {
@@ -183,13 +179,6 @@ export default class Salty {
   }
 
   /**
-   * @param msg
-   */
-  public async deleteMessage(msg: Message): Promise<any> {
-    await apiCatch(() => msg.delete());
-  }
-
-  /**
    * Terminates the bot instance.
    */
   public async destroy(): Promise<void> {
@@ -201,27 +190,12 @@ export default class Salty {
   }
 
   /**
-   * @param msg
-   * @param content
-   */
-  public async editMessage(
-    msg: Message,
-    content:
-      | APIMessageContentResolvable
-      | MessageEditOptions
-      | MessageEmbed
-      | APIMessage
-  ): Promise<void> {
-    await apiCatch(() => msg.edit(content));
-  }
-
-  /**
    * Sends an embed message in the channel of the given 'msg' object.
    */
   public async embed(
     msg: Message,
     options: SaltyEmbedOptions = {}
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     // Other options that might change
     const defaultedOptions: SaltyEmbedOptions = Object.assign(
       {
@@ -277,7 +251,7 @@ export default class Salty {
     msg: Message,
     text: string = "error",
     options: SaltyEmbedOptions = {}
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     return this.embed(
       msg,
       Object.assign(
@@ -344,7 +318,7 @@ export default class Salty {
     msg: Message,
     text: string = "info",
     options: SaltyEmbedOptions = {}
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     return this.embed(
       msg,
       Object.assign(
@@ -365,7 +339,7 @@ export default class Salty {
     target: Message | TextChannel | DMChannel | NewsChannel | User,
     content: string = "",
     options?: SaltyMessageOptions
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     const defaultedOptions = Object.assign(
       {
         format: true,
@@ -387,9 +361,7 @@ export default class Salty {
     if (defaultedOptions.title) {
       content = title(content);
     }
-    const result = await apiCatch(() =>
-      channel.send(ellipsis(content), options || {})
-    );
+    const result = await channel.send(ellipsis(content), options || {});
     return Array.isArray(result) ? result[0] : result;
   }
 
@@ -409,8 +381,9 @@ export default class Salty {
       if (!emoji) {
         continue;
       }
-      const result = await apiCatch(() => msg.react(emoji));
-      if (!result) {
+      let error = false;
+      await msg.react(emoji).catch(() => (error = true));
+      if (error) {
         return;
       }
     }
@@ -473,7 +446,7 @@ export default class Salty {
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     return this.embed(
       msg,
       Object.assign(
@@ -497,7 +470,7 @@ export default class Salty {
     msg: Message,
     text: string = "success",
     options: SaltyEmbedOptions = {}
-  ): Promise<Message | false> {
+  ): Promise<Message> {
     return this.embed(
       msg,
       Object.assign(
@@ -811,14 +784,11 @@ export default class Salty {
       msg,
       `command "*${rawCommandName}*" doesn't exist. Did you mean "*${closestCommand}*"?`
     );
-    if (!helpMessage) {
-      return;
-    }
     const actions = new Collection<string, MessageAction>();
     actions.set("✅", {
       onAdd: (user) => {
         if (author.id === user.id) {
-          this.deleteMessage(helpMessage);
+          helpMessage.delete().catch();
           commandContext.run(closestCommand, msgArgs);
         }
       },
@@ -826,7 +796,7 @@ export default class Salty {
     actions.set("❌", {
       onAdd: (user) => {
         if (author.id === user.id) {
-          this.deleteMessage(helpMessage);
+          helpMessage.delete().catch();
         }
       },
     });
@@ -859,7 +829,7 @@ export default class Salty {
       return react.remove();
     }
     const member = message.guild.members.cache.get(user.id)!;
-    apiCatch(() => member.roles.add(emojiRole[1]));
+    member.roles.add(emojiRole[1]).catch();
   }
 
   private async onMessageReactionRemove(
@@ -878,7 +848,7 @@ export default class Salty {
       return;
     }
     const member = message.guild.members.cache.get(user.id)!;
-    apiCatch(() => member.roles.remove(emojiRole[1]));
+    member.roles.remove(emojiRole[1]).catch();
   }
 
   private async onReady(): Promise<any> {
@@ -938,7 +908,7 @@ export default class Salty {
         }
         const message =
           channel.messages.cache.get(messageId) ||
-          (await apiCatch(() => channel.messages.fetch(messageId)));
+          (await channel.messages.fetch(messageId).catch());
 
         // If the message doesn't exist anymore => remove the role box
         if (!message) {

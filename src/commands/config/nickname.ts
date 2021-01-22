@@ -12,9 +12,6 @@ async function changeNames(
     msg,
     `Changing ${members.length} nicknames...`
   );
-  if (!progressMsg) {
-    return;
-  }
   let updating: boolean = false;
   const promises = members.map(async (member, i) => {
     const newNick: string = mutator(member.displayName);
@@ -29,15 +26,17 @@ async function changeNames(
     }
     if (!updating) {
       updating = true;
-      await salty.editMessage(progressMsg, {
-        content: `Changing nicknames: ${i++}/${members.length}`,
-      });
+      await progressMsg
+        .edit({
+          content: `Changing nicknames: ${i++}/${members.length}`,
+        })
+        .catch();
       updating = false;
     }
   });
   await Promise.all(promises);
-  await Promise.all([
-    salty.deleteMessage(progressMsg),
+  await Promise.allSettled([
+    progressMsg.delete(),
     salty.success(msg, "Nicknames successfully changed"),
   ]);
 }

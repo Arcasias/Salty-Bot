@@ -20,7 +20,7 @@ const command: CommandDescriptor = {
         ? parseInt(args.shift()!) * 1000
         : 5000;
 
-    salty.deleteMessage(msg);
+    msg.delete().catch();
     salty.bot.setTimeout(() => {
       send.message(args.join(" "));
     }, delay);

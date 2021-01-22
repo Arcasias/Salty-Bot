@@ -7,7 +7,6 @@ import {
   User,
 } from "discord.js";
 import {
-  apiCatch,
   choice,
   clean,
   ellipsis,
@@ -124,14 +123,6 @@ test("mockMessage", () => {
 //=============================================================================
 // Utils tests
 //=============================================================================
-
-test("apiCatch", async () => {
-  const asyncString = await apiCatch(() => Promise.resolve("async"));
-  const asyncError = await apiCatch(() => Promise.reject("Error"));
-
-  expect(asyncString).toBe("async");
-  expect(asyncError).toBe(false);
-});
 
 test("choice", () => {
   patchRandom(0.1);

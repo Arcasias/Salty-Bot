@@ -84,22 +84,6 @@ const expressions: ExpressionDescriptor[] = [
 //=============================================================================
 
 /**
- * Meant to be wrapped around potentially failing API calls, for example:
- * - calling a method on a deleted Discord message
- * - performing an action without the appropriate permissions
- * @param action
- */
-export async function apiCatch<T>(
-  action: (...args: any[]) => Promise<T>
-): Promise<T | false> {
-  try {
-    return await action();
-  } catch (err) {
-    return false;
-  }
-}
-
-/**
  * Returns a random item from a given array.
  * @param array
  */
@@ -487,11 +471,11 @@ export function getRoleBoxActions(
     actions.set(emoji, {
       async onAdd(user) {
         const member = guild.members.cache.get(user.id)!;
-        apiCatch(() => member.roles.add(roleId));
+        member.roles.add(roleId).catch();
       },
       async onRemove(user) {
         const member = guild.members.cache.get(user.id)!;
-        apiCatch(() => member.roles.remove(roleId));
+        member.roles.remove(roleId).catch();
       },
     });
   }

@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
 const command: CommandDescriptor = {
@@ -15,7 +14,7 @@ const command: CommandDescriptor = {
     if (!args[0]) {
       return send.warn("You need to tell me what to say.");
     }
-    salty.deleteMessage(msg);
+    msg.delete().catch();
     await send.message(args.join(" "), { tts: true });
   },
 };

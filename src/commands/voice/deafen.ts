@@ -1,14 +1,14 @@
 import { Snowflake, VoiceState } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, meaning } from "../../utils/generic";
+import { meaning } from "../../utils/generic";
 
 const autoDeafenMap = new Set<Snowflake>();
 let listenerBound = false;
 
 function autoDeafen(oldState: VoiceState, newState: VoiceState) {
   if (autoDeafenMap.has(newState.id) && newState.channelID) {
-    apiCatch(() => newState.setDeaf(true));
+    newState.setDeaf(true).catch();
   }
 }
 
@@ -41,7 +41,7 @@ const command: CommandDescriptor = {
     }
 
     if (member.voice.channelID) {
-      apiCatch(() => member.voice.setDeaf(deafen));
+      member.voice.setDeaf(deafen).catch();
     }
 
     if (listenerBound && !autoDeafenMap.size) {

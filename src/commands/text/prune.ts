@@ -28,12 +28,12 @@ async function removeMessages(
       if (msg.author.id !== user.id) {
         return;
       }
-      await salty.deleteMessage(msg);
+      await msg.delete().catch();
       const messages = await channel.messages.fetch({ limit: 100 });
       const filtered = filter ? messages.filter(filter) : messages;
       const toDelete = [...filtered.values()].slice(0, limit);
       if (channel instanceof DMChannel) {
-        await Promise.allSettled(toDelete.map(salty.deleteMessage));
+        await Promise.allSettled(toDelete.map((m) => m.delete()));
       } else {
         await channel.bulkDelete(toDelete, true);
       }
@@ -43,7 +43,7 @@ async function removeMessages(
   actions.set("❌", {
     onAdd: async (user) => {
       if (msg.author.id === user.id) {
-        salty.deleteMessage(msg);
+        msg.delete().catch();
       }
     },
   });

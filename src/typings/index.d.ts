@@ -20,26 +20,14 @@ export interface ActionContext extends ParialActionContext {
 }
 export interface ActionContextMessageHelpers {
   embed: (options?: SaltyEmbedOptions) => Promise<Message | false>;
-  error: (
-    text?: string,
-    options?: SaltyEmbedOptions
-  ) => Promise<Message | false>;
-  info: (
-    text?: string,
-    options?: SaltyEmbedOptions
-  ) => Promise<Message | false>;
+  error: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
+  info: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
   message: (
     content?: string,
     options?: SaltyMessageOptions
-  ) => Promise<Message | false>;
-  success: (
-    text?: string,
-    options?: SaltyEmbedOptions
-  ) => Promise<Message | false>;
-  warn: (
-    text?: string,
-    options?: SaltyEmbedOptions
-  ) => Promise<Message | false>;
+  ) => Promise<Message>;
+  success: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
+  warn: (text?: string, options?: SaltyEmbedOptions) => Promise<Message>;
 }
 export interface BasicCommandDescriptor {
   readonly access?: CommandAccess;

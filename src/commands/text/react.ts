@@ -33,7 +33,7 @@ const command: CommandDescriptor = {
     const lastMessage = lastMessages.last()!;
 
     // Remove command message
-    salty.deleteMessage(msg);
+    msg.delete().catch();
 
     // Queue the application of the reactions after the previous has completed.
     const prom = messageCache.get(lastMessage) || Promise.resolve();

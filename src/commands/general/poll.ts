@@ -31,7 +31,7 @@ const command: CommandDescriptor = {
       );
     }
 
-    salty.deleteMessage(msg);
+    msg.delete().catch();
 
     const title = `${possessive(msg.member!.displayName)} poll`;
     const numberEmojis = getNumberReactions(VOTE_CHARS.length);
@@ -86,12 +86,12 @@ const command: CommandDescriptor = {
         onAdd: async (user) => {
           await initMessage;
           option.votes.add(user.username);
-          await salty.editMessage(pollMessage, getEmbed());
+          await pollMessage.edit(getEmbed()).catch();
         },
         onRemove: async (user) => {
           await initMessage;
           option.votes.delete(user.username);
-          await salty.editMessage(pollMessage, getEmbed());
+          await pollMessage.edit(getEmbed()).catch();
         },
       });
     }
@@ -101,7 +101,7 @@ const command: CommandDescriptor = {
         actions,
         async onEnd() {
           await initMessage;
-          await salty.editMessage(pollMessage, getEmbed(true));
+          await pollMessage.edit(getEmbed(true)).catch();
         },
       },
       msg.author.id

@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { isSorted, shuffle } from "../../utils/generic";
 
@@ -39,9 +38,6 @@ const command: CommandDescriptor = {
     }
 
     const runningMsg = await send.message("monkey sorting ...");
-    if (!runningMsg) {
-      return;
-    }
 
     let tests = 0;
     let list: number[] = [];
@@ -62,7 +58,7 @@ const command: CommandDescriptor = {
       resolve(Math.floor((Date.now() - startTimeStamp) / 100) / 10);
     });
 
-    salty.deleteMessage(runningMsg);
+    runningMsg.delete().catch();
     await send.info(
       `Monkey sort on a **${length}** element list took **${sortingTime}** seconds in **${tests}** tests`,
       { react: "🐒" }

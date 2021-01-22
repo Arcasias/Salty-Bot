@@ -1,6 +1,5 @@
 import fs from "fs";
 import { promisify } from "util";
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { choice } from "../../utils/generic";
 
@@ -36,7 +35,7 @@ const command: CommandDescriptor = {
         emoji = arg;
       }
       if (emoji) {
-        salty.deleteMessage(msg);
+        msg.delete().catch();
         return send.message("", {
           files: [`${emojiPath}/${emoji}.png`],
         });

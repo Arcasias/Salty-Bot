@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 import { clean } from "../../utils/generic";
 
@@ -48,12 +47,9 @@ const command: CommandDescriptor = {
     }
 
     const sentMsg = await send.message("Testing latency...");
-    if (!sentMsg) {
-      return;
-    }
     const latency = sentMsg.createdTimestamp - msg.createdTimestamp;
 
-    salty.deleteMessage(sentMsg);
+    sentMsg.delete().catch();
     await send.info(
       `Pong! Latency is ${latency}. ${
         PING_MESSAGES[Math.floor(latency / 200)] || "lol wat"

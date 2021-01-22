@@ -1,14 +1,14 @@
 import { Snowflake, VoiceState } from "discord.js";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, meaning } from "../../utils/generic";
+import { meaning } from "../../utils/generic";
 
 const autoMuteMap = new Set<Snowflake>();
 let listenerBound = false;
 
 function autoMute(oldState: VoiceState, newState: VoiceState) {
   if (autoMuteMap.has(newState.id) && newState.channelID) {
-    apiCatch(() => newState.setMute(true));
+    newState.setMute(true).catch();
   }
 }
 
@@ -41,7 +41,7 @@ const command: CommandDescriptor = {
     }
 
     if (member.voice.channelID) {
-      apiCatch(() => member.voice.setMute(mute));
+      member.voice.setMute(mute).catch();
     }
 
     if (listenerBound && !autoMuteMap.size) {

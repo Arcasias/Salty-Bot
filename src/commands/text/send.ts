@@ -1,4 +1,3 @@
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
 const specialActions: [RegExp, string][] = [
@@ -28,7 +27,7 @@ const command: CommandDescriptor = {
       }
     }
     if (!text) {
-      salty.deleteMessage(msg);
+      msg.delete().catch();
       text = args.join(" ");
     }
     await send.message(text);

@@ -4,7 +4,6 @@ import { keywords } from "../../strings";
 import { CommandDescriptor, RoleBox } from "../../typings";
 import { getTargetMessage } from "../../utils/command";
 import {
-  apiCatch,
   isSnowflake,
   meaning,
   parseRoleBox,
@@ -121,13 +120,13 @@ const command: CommandDescriptor = {
         if (!roleBox) {
           return send.warn("No role box on that message");
         }
-        apiCatch(() => targetMessage.reactions.removeAll());
+        targetMessage.reactions.removeAll().catch();
         salty.removeRoleBox(targetMessage.channel.id, targetMessage.id);
         Crew.update(crew.id, { roleBoxes: crew.roleBoxes });
         return send.success(`Role box removed`);
       }
       default: {
-        await salty.deleteMessage(msg);
+        await msg.delete().catch();
 
         const targetMessage = await getTargetMessage(args, msg.channel.id);
         if (!targetMessage) {
@@ -154,7 +153,7 @@ const command: CommandDescriptor = {
           emojiRoles.push([emoji, roleId]);
         }
 
-        await apiCatch(() => targetMessage.reactions.removeAll());
+        await targetMessage.reactions.removeAll().catch();
 
         const newBox: RoleBox = {
           channelId: targetMessage.channel.id,

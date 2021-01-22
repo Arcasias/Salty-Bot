@@ -1,6 +1,5 @@
 import fs from "fs";
 import { promisify } from "util";
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
 
 const readDir = promisify(fs.readdir.bind(fs));
@@ -11,7 +10,7 @@ const command: CommandDescriptor = {
   aliases: ["sonic"],
   help: [{ argument: null, effect: "MENFOU" }],
   async action({ msg, send }) {
-    salty.deleteMessage(msg);
+    msg.delete().catch();
     const images = await readDir(menfouPath);
     await send.message("", {
       files: images.map((i) => `${menfouPath}/${i}`),

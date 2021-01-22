@@ -41,7 +41,7 @@ const command: CommandDescriptor = {
       }
       const delay = parseInt(args.shift()!) * 1000;
 
-      salty.deleteMessage(msg);
+      msg.delete().catch();
 
       if (INTERVALS[channel]) {
         clearInterval(INTERVALS[channel]);

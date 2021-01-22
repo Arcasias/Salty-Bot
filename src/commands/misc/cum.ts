@@ -1,7 +1,6 @@
 import { Role } from "discord.js";
-import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { apiCatch, clean, meaning } from "../../utils/generic";
+import { clean, meaning } from "../../utils/generic";
 
 const MAX_AMOUNT = 100;
 const ROLE_NAME = "cum";
@@ -37,10 +36,8 @@ const cummand: CommandDescriptor = {
         const assignnMsg = await send.info(
           `Removing ${roles.size} ${ROLE_NAME}...`
         );
-        await apiCatch(() => source.member!.roles.remove(roles));
-        if (assignnMsg) {
-          await salty.deleteMessage(assignnMsg);
-        }
+        await source.member!.roles.remove(roles).catch();
+        await assignnMsg.delete().catch();
 
         return send.success(`You are now empty of ${ROLE_NAME}!`);
       }
@@ -53,9 +50,7 @@ const cummand: CommandDescriptor = {
             r.delete(`Deleted by ${msg.author.username} via Salty`)
           )
         );
-        if (deleteMsg) {
-          await salty.deleteMessage(deleteMsg);
-        }
+        await deleteMsg.delete().catch();
         return send.success(`All ${ROLE_NAME} roles have been removed.`);
       }
       default: {
@@ -68,32 +63,30 @@ const cummand: CommandDescriptor = {
           );
           await Promise.allSettled(
             [...new Array(toCreate)].map(async () => {
-              const role = await apiCatch(() =>
-                guild.roles.create({
+              const role = await guild.roles
+                .create({
                   name: ROLE_NAME,
                   mentionable: true,
                   color: 16777215,
                   permissions: [],
                   reason: `Created by ${msg.author.username} via Salty`,
                 })
-              );
+                .catch();
               if (role) {
                 roles.push(role);
               }
             })
           );
-          if (createMsg) {
-            await salty.deleteMessage(createMsg);
-          }
+          await createMsg.delete().catch();
         }
 
         const assignnMsg = await send.info(
           `Assigning ${roles.length} ${ROLE_NAME}...`
         );
-        await apiCatch(() => source.member!.roles.add(roles));
-        if (assignnMsg) {
-          await salty.deleteMessage(assignnMsg);
-        }
+        await Promise.allSettled([
+          source.member!.roles.add(roles).catch(),
+          assignnMsg.delete().catch(),
+        ]);
 
         return send.success(`You are now full of ${ROLE_NAME}!`);
       }
