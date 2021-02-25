@@ -1,12 +1,14 @@
 import Crew from "../../classes/Crew";
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
-import { CommandDescriptor } from "../../typings";
-import { ellipsis } from "../../utils/generic";
-import { debug } from "../../utils/log";
+import { CommandDescriptor, Dictionnary } from "../../typings";
+import * as utils from "../../utils/generic";
+import * as log from "../../utils/log";
 
 const MAXDEPTH = 3;
 const TAB = "    ";
+const CODE_QUOTES = /```(js|ts)?/g;
+const RETURN_STATEMENT = /return/g;
 
 function stringify(variable: any, depth: number): string {
   if (MAXDEPTH < depth) {
@@ -36,14 +38,13 @@ function stringify(variable: any, depth: number): string {
   }
 }
 
-function evalInContext(code: string): any {
-  const G = Crew;
-  const U = Sailor;
+function evalProxy(code: string): any {
   return eval(code);
 }
 
 const command: CommandDescriptor = {
   name: "debug",
+  aliases: ["exec", "eval"],
   help: [
     {
       argument: "`JS code`",
@@ -56,14 +57,30 @@ const command: CommandDescriptor = {
     if (!args[0]) {
       return send.warn("No code to execute.");
     }
-    const evalResult = evalInContext.call(salty, args.join(" "));
-    const result = `${args.join(" ")} = /*${typeof evalResult}*/ ${stringify(
-      evalResult,
-      0
-    )}`;
-    const message = ellipsis(result, 1985);
-    debug(message);
-    return send.message(`\`\`\`js\n${message}\n\`\`\``);
+    const ctx: Dictionnary<any> = {
+      Sailor,
+      Crew,
+      salty,
+      utils,
+      log,
+    };
+    const codeString = args.join(" ").replace(CODE_QUOTES, "");
+    const hasReturn = RETURN_STATEMENT.test(codeString);
+    const main = hasReturn ? codeString : `return ${codeString}`;
+    const evalCode = `const ${Object.keys(ctx).map(
+      (k) => `${k}=this.${k}`
+    )};(async function(){${main}})();`;
+    let result: any;
+    try {
+      result = await evalProxy.call(ctx, evalCode);
+    } catch (err) {
+      return send.error(`Error: ${err.message}`);
+    }
+    const message = utils.ellipsis(stringify(result, 0), 1985);
+    log.debug(message);
+    return send.message(
+      `Result (\`${typeof result}\`):\`\`\`js\n${message}\n\`\`\``
+    );
   },
 };
 

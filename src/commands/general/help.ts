@@ -128,6 +128,7 @@ const command: CommandDescriptor = {
       options.title = "list of commands";
       options.description =
         "These are the commands categories. Type the name of a category or a specific command after `$help` to have more information about it.";
+      options.inline = true;
       for (const {
         id,
         name,
@@ -143,7 +144,7 @@ const command: CommandDescriptor = {
           },
         });
         options.fields!.push({
-          name: `${icon} **${title(name)}**  (${commands.length} commands)`,
+          name: `${icon} **${title(name)}**  *(${commands.length})*`,
           value: `> \`${config.prefix}help ${id}\``,
         });
       }

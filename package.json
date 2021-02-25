@@ -21,10 +21,8 @@
   },
   "homepage": "https://github.com/Arcasias/Salty-Bot",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
     "axios": "^0.21.1",
-    "discord.js": "github:discordjs/discord.js",
-    "erlpack": "github:discordapp/erlpack",
+    "discord.js": "^12.5.0",
     "pg": "^8.5.1",
     "pureimage": "^0.2.5",
     "ts-node": "^9.1.1"

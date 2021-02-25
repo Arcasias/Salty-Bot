@@ -2,15 +2,14 @@ import Salty from "./classes/Salty";
 
 const salty: Salty = new Salty();
 const EXIT_EVENTS: string[] = [
-  // On app closing
+  // Closing events
   "exit",
-  // On Ctrl+C event
   "SIGINT",
-  // On pid killed
+  "SIGTERM",
+  // Miscellaneous
   "SIGUSR1",
   "SIGUSR2",
-  "SIGTERM",
-  // On uncaught error
+  // Uncaught error/rejection
   "uncaughtException",
   "unhandledRejection",
 ];

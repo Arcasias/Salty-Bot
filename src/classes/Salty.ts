@@ -25,7 +25,7 @@ import { env } from "process";
 import { promisify } from "util";
 import { config } from "../database/config";
 import { connect, disconnect } from "../database/helpers";
-import { answers, help, intro, keywords } from "../strings";
+import { answers, help, keywords } from "../strings";
 import {
   CategoryId,
   CommandDescriptor,
@@ -728,7 +728,7 @@ export default class Salty {
 
     if (!msgArgs.length && !attachments.size) {
       // Simple interaction if the messsage is empty
-      return this.message(msg, choice(help), { replyTo: msg });
+      return this.message(msg, choice(help), { reply: msg });
     }
 
     const rawCommandName = clean(msgArgs.shift() || "");
@@ -751,7 +751,7 @@ export default class Salty {
     // If no command found, tries to find the closest matches
     const [closest] = search([...Command.aliases.keys()], rawCommandName, 2);
     if (!closest) {
-      return this.message(msg, choice(help), { replyTo: msg });
+      return this.message(msg, choice(help), { reply: msg });
     }
     const closestCommand = Command.aliases.get(closest)!;
     const helpMessage = await this.message(
@@ -849,9 +849,7 @@ export default class Salty {
       // Default channel
       if (crew.defaultChannel) {
         const channel = guild.channels.cache.get(crew.defaultChannel);
-        if (channel instanceof TextChannel) {
-          this.message(channel, choice(intro));
-        } else {
+        if (!(channel instanceof TextChannel)) {
           toUpdate.defaultChannel = null;
         }
       }

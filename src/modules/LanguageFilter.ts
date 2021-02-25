@@ -10,7 +10,7 @@ const LanguageFilterModule: Module = {
   async onMessage(msg: Message) {
     for (const word of msg.cleanContent.split(/\s+/)) {
       if (SWEAR_WORDS.includes(word)) {
-        salty.message(msg, choice(answers.rude), { replyTo: msg });
+        salty.message(msg, choice(answers.rude), { reply: msg });
       }
     }
   },

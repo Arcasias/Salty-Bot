@@ -202,20 +202,6 @@ export const help: string[] = [
   "Hey there! Type `$help` if you need anything!",
 ];
 
-export const intro: string[] = [
-  "Did you miss me?",
-  "Here I come to salt the day!",
-  "Surprise, I'm back!",
-  "Your favorite bot is back online!",
-  "Powered up and ready to salt!",
-  "IT'S ME BOIIIIS",
-  "Mmmmh... looks like there's a serious lack of salt here!",
-  "I have been reborn!",
-  "Looks like you're getting bored without me ;)",
-  "Oh sweet, a whole server to fill with salt!",
-  "All aboard the salt train!",
-];
-
 export const jokes: Joke[] = [
   { text: "your life" },
   { text: "the current Bitcoin value" },

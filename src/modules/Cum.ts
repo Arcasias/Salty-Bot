@@ -65,10 +65,12 @@ const command: CommandDescriptor = {
             [...new Array(toCreate)].map(async () => {
               const role = await guild.roles
                 .create({
-                  name: ROLE_NAME,
-                  mentionable: true,
-                  color: 16777215,
-                  permissions: [],
+                  data: {
+                    name: ROLE_NAME,
+                    mentionable: true,
+                    color: 16777215,
+                    permissions: [],
+                  },
                   reason: `Created by ${msg.author.username} via Salty`,
                 })
                 .catch();
