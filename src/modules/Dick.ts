@@ -2,7 +2,7 @@ import Sailor from "../classes/Sailor";
 import { extendTable } from "../database/autoDB";
 import fields from "../database/fields";
 import { CommandDescriptor, Module } from "../typings";
-import { clean, gaussian, possessive } from "../utils/generic";
+import { clean, normalRandom, possessive } from "../utils/generic";
 
 const UPDATE_KW = [
   "update",
@@ -34,8 +34,8 @@ class DickSailor extends Sailor {
   ]);
 }
 
-const MIN_DICK_SIZE = 1;
-const MAX_DICK_SIZE = 30;
+const MIN_SIZE = 1;
+const MAX_SIZE = 30;
 
 const dickCommand: CommandDescriptor = {
   name: "mabite",
@@ -53,7 +53,7 @@ const dickCommand: CommandDescriptor = {
       (target === source && !sailor.dickSize) || UPDATE_KW.includes(arg);
 
     if (willUpdate) {
-      const dickSize = gaussian(MIN_DICK_SIZE, MAX_DICK_SIZE, 4);
+      const dickSize = normalRandom(5) * (MAX_SIZE - MIN_SIZE) + MIN_SIZE;
       await sailor.update({ dickSize });
     }
 

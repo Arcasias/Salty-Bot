@@ -117,25 +117,6 @@ export function formatDuration(time: number | null = null): string {
 }
 
 /**
- * Returns a gaussian random number between `min` and `max`, affected by a
- * given skewing value.
- * @param min
- * @param max
- * @param skew
- */
-export function gaussian(
-  min: number = 0,
-  max: number = 1,
-  skew: number = 3
-): number {
-  let rand = 0;
-  for (let i = 0; i < skew; i++) {
-    rand += randFloat();
-  }
-  return (rand / skew) * (max - min) + min;
-}
-
-/**
  * Gets the queried amount of number emojis.
  * @param length
  */
@@ -278,6 +259,20 @@ export function meaning(word?: string): MeaningKeys | null {
     }
   }
   return "string";
+}
+
+/**
+ * Returns a normalRandom random number between 0 and 1, affected by a given
+ * variance value (the higher = the smaller the standard deviation will be).
+ * Default is 1, which is equal to a standard JS random number.
+ * @param variance
+ */
+export function normalRandom(variance: number = 1): number {
+  let rand = 0;
+  for (let i = 0; i < variance; i++) {
+    rand += randFloat();
+  }
+  return rand / variance;
 }
 
 export function parseJSON(raw: string): any {
