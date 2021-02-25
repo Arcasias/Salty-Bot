@@ -88,6 +88,7 @@ export interface MessageActor {
   name: string;
 }
 export interface Module {
+  categories?: [CategoryId, CategoryDescriptor][];
   commands?: { category: CategoryId; command: CommandDescriptor }[];
   onLoad?: () => any;
   onMessage?: (msg: Message) => any;
@@ -169,6 +170,7 @@ export interface FieldStructure {
 
 export type CategoryId =
   | "config"
+  | "dick"
   | "general"
   | "image"
   | "misc"

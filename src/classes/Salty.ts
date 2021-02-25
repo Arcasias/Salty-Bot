@@ -626,6 +626,9 @@ export default class Salty {
     );
     const module = importedModule.default as Module;
     this.modules.push(module);
+    for (const [id, category] of module.categories || []) {
+      Command.registerCategory(id, category);
+    }
     for (const { category, command } of module.commands || []) {
       Command.registerCommand(command, category);
     }

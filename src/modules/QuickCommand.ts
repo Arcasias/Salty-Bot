@@ -2,7 +2,6 @@ import fields from "../database/fields";
 import salty from "../salty";
 import {
   ActionContext,
-  CategoryDescriptor,
   CommandDescriptor,
   Dictionnary,
   Module,
@@ -14,13 +13,6 @@ import Model from "./../classes/Model";
 
 const PRIMARY_SEPARATOR: string = ";";
 const SECONDARY_SEPARATOR: string = ",";
-const quickCommandDescriptor: CategoryDescriptor = {
-  name: "quick",
-  description:
-    "Configurable quick commands. See `$command` for more information.",
-  icon: "📨",
-  order: 10,
-};
 
 const quickCommandCommand: CommandDescriptor = {
   name: "command",
@@ -151,9 +143,20 @@ class QuickCommand extends Model {
 }
 
 const quickCommandModule: Module = {
+  categories: [
+    [
+      "quick",
+      {
+        name: "quick",
+        description:
+          "Configurable quick commands. See `$command` for more information.",
+        icon: "📨",
+        order: 10,
+      },
+    ],
+  ],
   commands: [{ category: "config", command: quickCommandCommand }],
   async onLoad() {
-    Command.registerCategory("quick", quickCommandDescriptor);
     const commands = (await QuickCommand.search({})) as QuickCommand[];
     for (const cmd of commands) {
       Command.registerCommand(cmd.toDescriptor(), "quick");

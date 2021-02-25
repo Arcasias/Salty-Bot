@@ -53,17 +53,21 @@ const command: CommandDescriptor = {
   ],
   access: "dev",
 
-  async action({ args, send }) {
+  async action(actionContext) {
+    const { args, send } = actionContext;
     if (!args[0]) {
       return send.warn("No code to execute.");
     }
-    const ctx: Dictionnary<any> = {
-      Sailor,
-      Crew,
-      salty,
-      utils,
-      log,
-    };
+    const ctx: Dictionnary<any> = Object.assign(
+      {
+        Sailor,
+        Crew,
+        salty,
+        utils,
+        log,
+      },
+      actionContext
+    );
     const codeString = args.join(" ").replace(CODE_QUOTES, "");
     const hasReturn = RETURN_STATEMENT.test(codeString);
     const main = hasReturn ? codeString : `return ${codeString}`;
