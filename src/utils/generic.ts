@@ -126,15 +126,13 @@ export function formatDuration(time: number | null = null): string {
 export function gaussian(
   min: number = 0,
   max: number = 1,
-  skew: number = 1
+  skew: number = 3
 ): number {
-  let u: number = 0;
-  let v: number = 0;
-  while (u === 0) u = randFloat(); // Converting [0,1) to (0,1)
-  while (v === 0) v = randFloat();
-  const rand: number = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  const skewed: number = rand ** skew;
-  return ((skewed + 5) / 10) * (max - min) + min;
+  let rand = 0;
+  for (let i = 0; i < skew; i++) {
+    rand += randFloat();
+  }
+  return (rand / skew) * (max - min) + min;
 }
 
 /**

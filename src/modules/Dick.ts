@@ -53,7 +53,8 @@ const dickCommand: CommandDescriptor = {
       (target === source && !sailor.dickSize) || UPDATE_KW.includes(arg);
 
     if (willUpdate) {
-      await sailor.update({ dickSize: gaussian(MIN_DICK_SIZE, MAX_DICK_SIZE) });
+      const dickSize = gaussian(MIN_DICK_SIZE, MAX_DICK_SIZE, 4);
+      await sailor.update({ dickSize });
     }
 
     const allSailors = (await DickSailor.search()) as DickSailor[];
