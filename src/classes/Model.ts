@@ -105,6 +105,16 @@ export default class Model {
   }
 
   /**
+   * Registers a table structure based on the given name and field descriptors.
+   * @param table
+   * @param fields
+   */
+  public static defineTable(table: string, fields: FieldDescriptor[]): string {
+    this.fields = [...AUTO_FILLED_COLUMNS, ...fields];
+    return registerTable(table, this.fields);
+  }
+
+  /**
    * Destroys the records linked to the given ids.
    */
   static async remove<T extends Model>(
@@ -142,16 +152,6 @@ export default class Model {
     return results.map((r) => new this(r) as T);
   }
 
-  /**
-   * Registers a table structure based on the given name and field descriptors.
-   * @param table
-   * @param fields
-   */
-  public static createTable(table: string, fields: FieldDescriptor[]): string {
-    this.fields = [...AUTO_FILLED_COLUMNS, ...fields];
-    return registerTable(table, this.fields);
-  }
-
   //===========================================================================
   // Private
   //===========================================================================
@@ -167,10 +167,10 @@ export default class Model {
     table: string,
     ...args: any[]
   ): Promise<QueryResultRow[]> {
-    if (!(this.name in MODEL_CACHE)) {
-      MODEL_CACHE[this.name] = {};
+    if (!(this.table in MODEL_CACHE)) {
+      MODEL_CACHE[this.table] = {};
     }
-    const cache = MODEL_CACHE[this.name];
+    const cache = MODEL_CACHE[this.table];
     const cacheKey = JSON.stringify(args);
     if (!(cacheKey in cache)) {
       // Ensures cache doesn't overflow its allowed limit
@@ -189,6 +189,6 @@ export default class Model {
    * cache.
    */
   private static invalidateCache(): void {
-    MODEL_CACHE[this.name] = {};
+    MODEL_CACHE[this.table] = {};
   }
 }

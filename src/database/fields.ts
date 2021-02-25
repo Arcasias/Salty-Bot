@@ -40,6 +40,25 @@ export function char(
   };
 }
 
+export function number(
+  name: string,
+  { nullable, defaultValue }: FieldOptions<number> = {}
+): FieldDescriptor {
+  const defVal = defaultValue || null;
+  return {
+    name,
+    type: "DOUBLE PRECISION",
+    defaultValue: defVal,
+    nullable,
+    structure: {
+      columnName: jsToDbKey(name),
+      dataType: "double precision",
+      isNullable: nullable ? "YES" : "NO",
+      columnDefault: jsToDbValue(defVal),
+    },
+  };
+}
+
 export function serial(name: string): FieldDescriptor {
   return {
     name,
@@ -95,6 +114,7 @@ export function varchar(
 export default {
   boolean,
   char,
+  number,
   serial,
   snowflake,
   timestamp,

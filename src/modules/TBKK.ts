@@ -1,5 +1,5 @@
 import { CommandDescriptor, Module } from "../typings";
-import { ellipsis, gaussian, randInt, shuffle } from "../utils/generic";
+import { ellipsis, randInt, shuffle } from "../utils/generic";
 
 const PREDICTIONS: string[] = [
   "changer de sexe",
@@ -44,24 +44,8 @@ const futureCommand: CommandDescriptor = {
   },
 };
 
-const MIN_DICK_SIZE = 1;
-const MAX_DICK_SIZE = 30;
-
-const mabiteCommand: CommandDescriptor = {
-  name: "mabite",
-  guilds: ["519974305388560393"],
-
-  async action({ send }) {
-    const size: number = gaussian(MIN_DICK_SIZE, MAX_DICK_SIZE);
-    return send.message(`Ta bite fait exactement ${size.toFixed(2)}cm.`);
-  },
-};
-
 const tbkkModule: Module = {
-  commands: [
-    { category: "misc", command: futureCommand },
-    { category: "misc", command: mabiteCommand },
-  ],
+  commands: [{ category: "misc", command: futureCommand }],
 };
 
 export default tbkkModule;

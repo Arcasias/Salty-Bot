@@ -8,7 +8,7 @@ export default class Crew extends Model {
   public defaultRole!: Snowflake | null;
   public roleBoxes!: string[];
 
-  public static table: string = Crew.createTable("crews", [
+  public static table: string = Crew.defineTable("crews", [
     fields.snowflake("discordId"),
     fields.snowflake("defaultChannel", true),
     fields.snowflake("defaultRole", true),

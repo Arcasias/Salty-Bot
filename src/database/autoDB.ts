@@ -133,6 +133,31 @@ export async function adjustDatabase(): Promise<void> {
  * @param tableName
  * @param columns
  */
+export function extendTable(tableName: string, columns: FieldDescriptor[]) {
+  if (!(tableName in registeredTables)) {
+    throw new Error(`Table with name "${tableName}" doesn't exist.`);
+  }
+  const existingNames = registeredTables[tableName].map((col) => col.name);
+  for (const { name } of columns) {
+    if (name !== sanitize(name)) {
+      throw new Error(
+        `Incorrect column name: "${name}" in table "${tableName}"`
+      );
+    }
+    if (existingNames.includes(name)) {
+      throw new Error(
+        `Column "${name}" already exists in table "${tableName}".`
+      );
+    }
+  }
+  registeredTables[tableName].push(...columns);
+  return tableName;
+}
+
+/**
+ * @param tableName
+ * @param columns
+ */
 export function registerTable(
   tableName: string,
   columns: FieldDescriptor[]

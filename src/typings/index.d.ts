@@ -147,7 +147,13 @@ export interface FieldDescriptor {
   defaultValue: any;
   nullable?: boolean;
   structure: FieldStructure;
-  type: "CHAR" | "VARCHAR" | "BOOLEAN" | "SERIAL" | "TIMESTAMPTZ";
+  type:
+    | "DOUBLE PRECISION"
+    | "CHAR"
+    | "VARCHAR"
+    | "BOOLEAN"
+    | "SERIAL"
+    | "TIMESTAMPTZ";
 }
 export interface FieldStructure {
   columnName: string;

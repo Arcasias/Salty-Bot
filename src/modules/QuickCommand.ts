@@ -102,7 +102,7 @@ class QuickCommand extends Model {
   public aliases!: string[];
   public answers!: string[];
 
-  public static readonly table = QuickCommand.createTable("commands", [
+  public static readonly table = QuickCommand.defineTable("commands", [
     fields.varchar("name", { length: 255 }),
     fields.varchar("aliases", { length: 1000, defaultValue: [] }),
     fields.varchar("answers", { length: 2000, defaultValue: [] }),

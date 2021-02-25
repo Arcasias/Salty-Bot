@@ -6,7 +6,7 @@ export default class Sailor extends Model {
   public blackListed!: boolean;
   public todos!: string[];
 
-  public static table = Sailor.createTable("sailors", [
+  public static table = Sailor.defineTable("sailors", [
     fields.snowflake("discordId"),
     fields.boolean("blackListed"),
     fields.varchar("todos", { length: 2000, defaultValue: [] }),
