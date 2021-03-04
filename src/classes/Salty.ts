@@ -553,14 +553,12 @@ export default class Salty {
 
     // MODULES
     const moduleFileNames = await readFolder(join(sourceDir, modulesDir));
+    const previousCommandCount = Command.list.size;
     // Load each module found in the "modules" folder.
     await Promise.all(
       moduleFileNames.map((fileName) => this.loadModule(fileName))
     );
-    const moduleCommands = this.modules.reduce(
-      (acc, mod) => acc + (mod.commands?.length || 0),
-      0
-    );
+    const moduleCommandCount = Command.list.size - previousCommandCount;
 
     // DATABASE
     await connect();
@@ -569,7 +567,7 @@ export default class Salty {
     await Promise.all(this.modules.map((m) => m.onLoad && m.onLoad()));
 
     log(
-      `${this.modules.length} modules loaded with ${moduleCommands} additionnal static commands.`
+      `${this.modules.length} modules loaded with ${moduleCommandCount} additionnal static commands.`
     );
   }
 
@@ -625,12 +623,17 @@ export default class Salty {
       ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
     );
     const module = importedModule.default as Module;
+    const commands = module.commands || {};
     this.modules.push(module);
-    for (const [id, category] of module.categories || []) {
-      Command.registerCategory(id, category);
+    if (module.category) {
+      const id = module.category.name as CategoryId;
+      Command.registerCategory(id, module.category);
     }
-    for (const { category, command } of module.commands || []) {
-      Command.registerCommand(command, category);
+    for (const categoryName in commands) {
+      const categoryId = categoryName as CategoryId;
+      for (const command of commands[categoryId]!) {
+        Command.registerCommand(command, categoryId);
+      }
     }
   }
 

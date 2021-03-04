@@ -5,7 +5,7 @@ import { clean, meaning } from "../utils/generic";
 const MAX_AMOUNT = 100;
 const ROLE_NAME = "cum";
 
-const command: CommandDescriptor = {
+const cumCommand: CommandDescriptor = {
   name: ROLE_NAME,
   aliases: ["cover", "shower"],
   help: [
@@ -97,7 +97,7 @@ const command: CommandDescriptor = {
 };
 
 const cumModule: Module = {
-  commands: [{ category: "misc", command }],
+  commands: { misc: [cumCommand] },
 };
 
 export default cumModule;

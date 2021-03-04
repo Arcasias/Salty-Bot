@@ -45,7 +45,7 @@ const futureCommand: CommandDescriptor = {
 };
 
 const tbkkModule: Module = {
-  commands: [{ category: "misc", command: futureCommand }],
+  commands: { misc: [futureCommand] },
 };
 
 export default tbkkModule;

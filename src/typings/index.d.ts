@@ -88,8 +88,8 @@ export interface MessageActor {
   name: string;
 }
 export interface Module {
-  categories?: [CategoryId, CategoryDescriptor][];
-  commands?: { category: CategoryId; command: CommandDescriptor }[];
+  category?: CategoryDescriptor;
+  commands?: { [key in CategoryId]?: CommandDescriptor[] };
   onLoad?: () => any;
   onMessage?: (msg: Message) => any;
 }

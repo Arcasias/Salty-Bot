@@ -61,7 +61,7 @@ const catsCommand: CommandDescriptor = {
 };
 
 const catsModule: Module = {
-  commands: [{ category: "misc", command: catsCommand }],
+  commands: { misc: [catsCommand] },
   async onMessage(msg: Message) {
     // Only applies to "marked" channels
     if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {

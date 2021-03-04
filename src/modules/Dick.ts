@@ -3,7 +3,13 @@ import Sailor from "../classes/Sailor";
 import { extendTable } from "../database/autoDB";
 import fields from "../database/fields";
 import { CommandDescriptor, Module, SaltyEmbedOptions } from "../typings";
-import { choice, clean, normalRandom, possessive } from "../utils/generic";
+import {
+  choice,
+  clean,
+  formatDuration,
+  normalRandom,
+  possessive,
+} from "../utils/generic";
 
 const MIN_SIZE = 0;
 const MAX_SIZE = 30;
@@ -99,17 +105,10 @@ function parseTokens(sailor: DickSailor) {
     if (diff >= 0) {
       available++;
     } else {
-      unavailable.push(timeToString(-diff));
+      unavailable.push(formatDuration(-diff));
     }
   }
   return { available, unavailable };
-}
-
-function timeToString(time: number): string {
-  const d = new Date(time);
-  const min = String(d.getMinutes()).padStart(2, "0");
-  const sec = String(d.getSeconds()).padStart(2, "0");
-  return [min, sec].join(":");
 }
 
 const boardCommand: CommandDescriptor = {
@@ -181,7 +180,7 @@ const dickCommand: CommandDescriptor = {
             } else {
               // No token old enough => sends a warning
               return send.warn(
-                choice(TOKEN_ERROR).replace(/<next>/, timeToString(-diff))
+                choice(TOKEN_ERROR).replace(/<next>/, formatDuration(-diff))
               );
             }
           }
@@ -280,22 +279,13 @@ const tokenCommand: CommandDescriptor = {
 };
 
 const dickModule: Module = {
-  categories: [
-    [
-      "dick",
-      {
-        name: "dick",
-        description: "Dick commands",
-        icon: "🍆",
-        order: 20,
-      },
-    ],
-  ],
-  commands: [
-    { category: "dick", command: boardCommand },
-    { category: "dick", command: dickCommand },
-    { category: "dick", command: tokenCommand },
-  ],
+  category: {
+    name: "dick",
+    description: "Dick commands",
+    icon: "🍆",
+    order: 20,
+  },
+  commands: { dick: [boardCommand, dickCommand, tokenCommand] },
 };
 
 export default dickModule;

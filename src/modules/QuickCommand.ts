@@ -143,19 +143,14 @@ class QuickCommand extends Model {
 }
 
 const quickCommandModule: Module = {
-  categories: [
-    [
-      "quick",
-      {
-        name: "quick",
-        description:
-          "Configurable quick commands. See `$command` for more information.",
-        icon: "📨",
-        order: 10,
-      },
-    ],
-  ],
-  commands: [{ category: "config", command: quickCommandCommand }],
+  category: {
+    name: "quick",
+    description:
+      "Configurable quick commands. See `$command` for more information.",
+    icon: "📨",
+    order: 10,
+  },
+  commands: { config: [quickCommandCommand] },
   async onLoad() {
     const commands = (await QuickCommand.search({})) as QuickCommand[];
     for (const cmd of commands) {

@@ -262,6 +262,24 @@ export function meaning(word?: string): MeaningKeys | null {
 }
 
 /**
+ * Returns the value of X on a gaussian curve defined by the given mean and
+ * standard deviation.
+ * @param x
+ * @param mean
+ * @param standardDeviation
+ */
+export function normalize(
+  x: number,
+  mean: number = 0,
+  standardDeviation: number = 1
+): number {
+  return (
+    (1 / (standardDeviation * Math.sqrt(2 * Math.PI))) *
+    Math.E ** (-0.5 * ((x - mean) / standardDeviation) ** 2)
+  );
+}
+
+/**
  * Returns a normalRandom random number between 0 and 1, affected by a given
  * variance value (the higher = the smaller the standard deviation will be).
  * Default is 1, which is equal to a standard JS random number.
