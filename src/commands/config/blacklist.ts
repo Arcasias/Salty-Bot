@@ -1,7 +1,7 @@
 import Sailor from "../../classes/Sailor";
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { isDev, meaning } from "../../utils/generic";
+import { meaning } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "blacklist",
@@ -31,7 +31,7 @@ const command: CommandDescriptor = {
             "Woa woa woa! You can't just put me in my own blacklist you punk!"
           );
         }
-        if (isDev(target.user)) {
+        if (salty.isDev(target.user)) {
           return send.warn(
             "Can't add a Salty dev to the blacklist: they're too nice for that!"
           );

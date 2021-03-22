@@ -4,13 +4,13 @@ import { registerTable } from "./autoDB";
 import fields from "./fields";
 import { read } from "./query";
 
+export const config: Dictionnary<any> = {};
+
 const configTableName = registerTable("config", [
   fields.varchar("prefix", { length: 32, defaultValue: "$" }),
   fields.snowflake("ownerId"),
   fields.varchar("devIds", { length: 1000 }),
 ]);
-
-export const config: Dictionnary<any> = {};
 
 /**
  * Loads and returns the configuration variables from the database.

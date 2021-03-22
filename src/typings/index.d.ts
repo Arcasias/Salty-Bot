@@ -38,6 +38,11 @@ export interface BasicCommandDescriptor {
   readonly permissions?: PermissionString[] | null;
   readonly name: string;
 }
+export interface CallbackDescriptor {
+  method: string;
+  callback: (...args: any[]) => any;
+  sequence?: number;
+}
 export interface Category extends CategoryDescriptor {
   commands: string[];
   id: CategoryId;
@@ -86,12 +91,6 @@ export interface MessageActor {
   member: GuildMember | null;
   sailor: Sailor;
   name: string;
-}
-export interface Module {
-  category?: CategoryDescriptor;
-  commands?: { [key in CategoryId]?: CommandDescriptor[] };
-  onLoad?: () => any;
-  onMessage?: (msg: Message) => any;
 }
 export interface ParialActionContext {
   readonly alias: string;

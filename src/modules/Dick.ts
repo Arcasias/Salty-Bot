@@ -1,8 +1,9 @@
 import { Guild } from "discord.js";
 import Sailor from "../classes/Sailor";
+import SaltyModule from "../classes/SaltyModule";
 import { extendTable } from "../database/autoDB";
 import fields from "../database/fields";
-import { CommandDescriptor, Module, SaltyEmbedOptions } from "../typings";
+import { CommandDescriptor, SaltyEmbedOptions } from "../typings";
 import {
   choice,
   clean,
@@ -278,14 +279,12 @@ const tokenCommand: CommandDescriptor = {
   },
 };
 
-const dickModule: Module = {
-  category: {
+export default class DickModule extends SaltyModule {
+  public category = {
     name: "dick",
     description: "Dick commands",
     icon: "🍆",
     order: 20,
-  },
-  commands: { dick: [boardCommand, dickCommand, tokenCommand] },
-};
-
-export default dickModule;
+  };
+  public commands = { dick: [boardCommand, dickCommand, tokenCommand] };
+}

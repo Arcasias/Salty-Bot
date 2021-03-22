@@ -1,8 +1,6 @@
 import { Client, QueryResult } from "pg";
 import { Dictionnary, FieldDescriptor } from "../typings";
 import { error } from "../utils/log";
-import { adjustDatabase } from "./autoDB";
-import { loadConfig } from "./config";
 
 const DB_SEPARATOR: string = "//";
 const SEPARATOR_REGEX = new RegExp(`^${DB_SEPARATOR}.*${DB_SEPARATOR}$`);
@@ -53,8 +51,6 @@ export async function connect(): Promise<void> {
   } catch (err) {
     return error(err.stack);
   }
-  await adjustDatabase();
-  await loadConfig();
 }
 
 export async function disconnect(): Promise<void> {

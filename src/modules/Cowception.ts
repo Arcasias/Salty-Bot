@@ -1,10 +1,6 @@
 import { EmbedField, Guild, Snowflake } from "discord.js";
-import {
-  CommandDescriptor,
-  Dictionnary,
-  Module,
-  SaltyEmbedOptions,
-} from "../typings";
+import SaltyModule from "../classes/SaltyModule";
+import { CommandDescriptor, Dictionnary, SaltyEmbedOptions } from "../typings";
 import { choice, clean, formatDuration, possessive } from "../utils/generic";
 
 const start = [
@@ -170,8 +166,6 @@ const valheimCommand: CommandDescriptor = {
   },
 };
 
-const cowceptionModule: Module = {
-  commands: { misc: [overwatchFaultCommand, valheimCommand] },
-};
-
-export default cowceptionModule;
+export default class CowceptionModule extends SaltyModule {
+  public commands = { misc: [overwatchFaultCommand, valheimCommand] };
+}

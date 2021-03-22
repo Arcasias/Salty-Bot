@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import salty from "../../salty";
 import { CommandDescriptor, SaltyEmbedOptions } from "../../typings";
-import { choice, isAdmin, isOwner, possessive } from "../../utils/generic";
+import { choice, possessive } from "../../utils/generic";
 
 const SALTY_IMAGES_PATH = "assets/img/salty";
 
@@ -36,9 +36,9 @@ const command: CommandDescriptor = {
     } else {
       if (user.bot) {
         options.description = "That's just a crappy bot"; // bot
-      } else if (isOwner(user)) {
+      } else if (salty.isOwner(user)) {
         options.description = "He's the coolest guy I know ^-^"; // owner
-      } else if (isAdmin(user, guild)) {
+      } else if (salty.isAdmin(user, guild)) {
         options.description = "It's a cute piece of shit"; // admin
       } else {
         options.description = "This is a huge piece of shit"; // else

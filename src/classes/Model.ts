@@ -163,7 +163,7 @@ export default class Model {
    * @param args
    */
   private static async cache(
-    dbFunction: (table: string, ...args: any) => Promise<QueryResultRow[]>,
+    dbFunction: (table: string, ...args: any[]) => Promise<QueryResultRow[]>,
     table: string,
     ...args: any[]
   ): Promise<QueryResultRow[]> {

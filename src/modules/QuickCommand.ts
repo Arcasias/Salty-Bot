@@ -1,11 +1,7 @@
+import SaltyModule from "../classes/SaltyModule";
 import fields from "../database/fields";
 import salty from "../salty";
-import {
-  ActionContext,
-  CommandDescriptor,
-  Dictionnary,
-  Module,
-} from "../typings";
+import { ActionContext, CommandDescriptor, Dictionnary } from "../typings";
 import { choice, clean, meaning } from "../utils/generic";
 import { log } from "../utils/log";
 import Command from "./../classes/Command";
@@ -142,22 +138,22 @@ class QuickCommand extends Model {
   }
 }
 
-const quickCommandModule: Module = {
-  category: {
+export default class QuickCommandModule extends SaltyModule {
+  public callbacks = [{ method: "load", callback: this.onLoad }];
+  public category = {
     name: "quick",
     description:
       "Configurable quick commands. See `$command` for more information.",
     icon: "📨",
     order: 10,
-  },
-  commands: { config: [quickCommandCommand] },
-  async onLoad() {
+  };
+  public commands = { config: [quickCommandCommand] };
+
+  private async onLoad() {
     const commands = (await QuickCommand.search({})) as QuickCommand[];
     for (const cmd of commands) {
       Command.registerCommand(cmd.toDescriptor(), "quick");
     }
     log(`${commands.length} dynamic commands loaded.`);
-  },
-};
-
-export default quickCommandModule;
+  }
+}

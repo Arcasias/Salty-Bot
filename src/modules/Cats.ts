@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Message } from "discord.js";
+import SaltyModule from "../classes/SaltyModule";
 import salty from "../salty";
-import { CommandDescriptor, Module } from "../typings";
+import { CommandDescriptor } from "../typings";
 import { meaning } from "../utils/generic";
 
 const CAT_API_URL: string = "https://api.thecatapi.com/v1/images/search";
@@ -60,19 +61,24 @@ const catsCommand: CommandDescriptor = {
   },
 };
 
-const catsModule: Module = {
-  commands: { misc: [catsCommand] },
-  async onMessage(msg: Message) {
+export default class CatsModule extends SaltyModule {
+  public commands = { misc: [catsCommand] };
+  public callbacks = [
+    { method: "message", callback: this.onMessage, sequence: -1 },
+  ];
+
+  private async onMessage(msg: Message) {
     // Only applies to "marked" channels
-    if (!salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)) {
+    if (
+      !this.salty.getTextChannel(msg.channel.id).name.startsWith(CAT_PREFIX)
+    ) {
       return;
     }
+    this.salty.cancelDispatch();
     msg.delete().catch();
     const {
       data: [firstResult],
     } = await axios.get(CAT_API_URL);
-    await salty.message(msg, firstResult.url, { title: false });
-  },
-};
-
-export default catsModule;
+    await this.salty.message(msg, firstResult.url, { title: false });
+  }
+}

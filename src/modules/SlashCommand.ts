@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Snowflake } from "discord.js";
-import { Module } from "../typings";
+import SaltyModule from "../classes/SaltyModule";
 import { log } from "../utils/log";
 
 interface PartialApplicationCommand {
@@ -82,11 +82,11 @@ async function deleteCommand(commandId: string): Promise<boolean> {
   return true;
 }
 
-const slashCommandModule: Module = {
+export default class SlashCommandModule extends SaltyModule {
+  public callbacks = [{ method: "load", callback: this.onLoad }];
+
   async onLoad() {
     const commands = await getCommands();
     log(`${commands.length} slash commands available`);
-  },
-};
-
-export default slashCommandModule;
+  }
+}

@@ -1,5 +1,4 @@
-import { Collection, Guild, Message, User } from "discord.js";
-import { config } from "../database/config";
+import { Collection, Guild, Message } from "discord.js";
 import { keywords } from "../strings";
 import {
   Dictionnary,
@@ -143,26 +142,6 @@ export function groupBy<T>(array: T[], prop: string): Dictionnary<T[]> {
 }
 
 /**
- * Returns true if the given user has admin level privileges or higher.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-export function isAdmin(user: User, guild: Guild | null): boolean {
-  return (
-    !guild ||
-    isDev(user) ||
-    guild.members.cache.get(user.id)!.hasPermission("ADMINISTRATOR")
-  );
-}
-
-/**
- * Returns true if the given user has developer level privileges or higher.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-export function isDev(user: User): boolean {
-  return isOwner(user) || config.devIds.includes(user.id);
-}
-
-/**
  * Returns whether or not the given object is considered empty:
  * - for an object: no owned key-values
  * - for an array: no items
@@ -177,14 +156,6 @@ export function isEmpty(object: any): boolean {
   } else {
     return !object;
   }
-}
-
-/**
- * Returns true if the given user has owner level privileges.
- * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
- */
-export function isOwner(user: User): boolean {
-  return user.id === config.ownerId;
 }
 
 /**
@@ -307,6 +278,19 @@ export function parseJSON(raw: string): any {
  */
 export function percent(percentage: number): boolean {
   return randFloat(0, 100) <= percentage;
+}
+
+/**
+ * Returns the singular or plural form of the given word depending on the given
+ * count.
+ * @param singular
+ * @param count
+ */
+export function plural(singular: string, count: number = 0): string {
+  if (count === 1 || /[sx]$/.test(singular)) {
+    return singular;
+  }
+  return singular + "s";
 }
 
 /**

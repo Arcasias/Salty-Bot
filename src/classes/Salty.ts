@@ -1,7 +1,6 @@
 import {
   Channel,
   Client,
-  Collection,
   DMChannel,
   Guild,
   GuildChannel,
@@ -23,17 +22,16 @@ import { readdir } from "fs";
 import { join } from "path";
 import { env } from "process";
 import { promisify } from "util";
-import { config } from "../database/config";
+import { adjustDatabase } from "../database/autoDB";
+import { config, loadConfig } from "../database/config";
 import { connect, disconnect } from "../database/helpers";
-import { answers, help, keywords } from "../strings";
+import { answers } from "../strings";
 import {
+  CallbackDescriptor,
   CategoryId,
   CommandDescriptor,
   Dictionnary,
-  MessageAction,
   MessageActionsDescriptor,
-  MessageActor,
-  Module,
   RoleBox,
   SaltyEmbedOptions,
   SaltyMessageOptions,
@@ -43,13 +41,15 @@ import {
   clean,
   ellipsis,
   parseRoleBox,
-  search,
+  plural,
+  sort,
   title,
 } from "../utils/generic";
-import { clearHistory, error, log, logRequest } from "../utils/log";
+import { clearHistory, debug, error, log } from "../utils/log";
 import Command from "./Command";
 import Crew from "./Crew";
 import Sailor from "./Sailor";
+import SaltyModule from "./SaltyModule";
 
 const readFolder = promisify(readdir);
 const SCRIPT_REGEX = /\.(ts|js)$/;
@@ -85,8 +85,9 @@ export default class Salty {
   // Private properties
   //===========================================================================
 
+  private callbackDescriptors: CallbackDescriptor[] = [];
   private destroyed: boolean = false;
-  private modules: Module[] = [];
+  private dispatching: boolean = false;
   private roleBoxes: RoleBox[] = [];
   private token: string | null = null;
 
@@ -149,6 +150,16 @@ export default class Salty {
   }
 
   /**
+   * Cancels a currently dispatched action.
+   */
+  public cancelDispatch(): void {
+    if (!this.dispatching) {
+      throw new Error(`No dispatch in progress.`);
+    }
+    this.dispatching = false;
+  }
+
+  /**
    * @param roleBox
    */
   public async addRoleBox(message: Message, roleBox: RoleBox): Promise<void> {
@@ -202,6 +213,29 @@ export default class Salty {
 
     this.bot.destroy();
     process.exit();
+  }
+
+  /**
+   * @param method
+   * @param payload
+   */
+  public dispatch(method: string, ...payload: any[]): void {
+    if (this.dispatching) {
+      throw new Error(`Dispatch currently in progress.`);
+    }
+    this.dispatching = true;
+    const filteredCallbacks = this.callbackDescriptors.filter(
+      (cbDescriptor) => cbDescriptor.method === method
+    );
+    const sortedCallbacks = sort(filteredCallbacks, "sequence");
+
+    debug(`Dispatch [${method}]: ${payload.join(", ")}`);
+
+    for (const { callback } of sortedCallbacks) {
+      if (!this.dispatching) return;
+      callback(...payload);
+    }
+    this.dispatching = false;
   }
 
   /**
@@ -311,6 +345,34 @@ export default class Salty {
   }
 
   /**
+   * Returns true if the given user has admin level privileges or higher.
+   * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+   */
+  public isAdmin(user: User, guild: Guild | null): boolean {
+    return (
+      !guild ||
+      this.isDev(user) ||
+      guild.members.cache.get(user.id)!.hasPermission("ADMINISTRATOR")
+    );
+  }
+
+  /**
+   * Returns true if the given user has developer level privileges or higher.
+   * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+   */
+  public isDev(user: User): boolean {
+    return this.isOwner(user) || config.devIds.includes(user.id);
+  }
+
+  /**
+   * Returns true if the given user has owner level privileges.
+   * Hierarchy (highest to lowest): Owner > Developer > Admin > User.
+   */
+  public isOwner(user: User): boolean {
+    return user.id === config.ownerId;
+  }
+
+  /**
    * Sends a simply structured message in the channel of the given 'msg' object.
    */
   public async message(
@@ -392,7 +454,7 @@ export default class Salty {
     await disconnect();
     Command.clearAll();
     this.roleBoxes = [];
-    this.modules = [];
+    this.callbackDescriptors = [];
     this.startTime = new Date();
     await this.start(this.token);
   }
@@ -473,66 +535,6 @@ export default class Salty {
   //===========================================================================
 
   /**
-   * @param msg
-   */
-  private async getMessageActors({
-    author,
-    member,
-    mentions,
-  }: Message): Promise<{
-    source: MessageActor;
-    targets: MessageActor[];
-  }> {
-    const userSailors: Map<string, Sailor | null> = new Map();
-    const idsToFetch: string[] = [];
-    for (const user of [author, ...mentions.users.values()]) {
-      if (user.id === this.bot.user?.id) {
-        userSailors.set(user.id, this.sailor);
-      } else if (!user.bot) {
-        userSailors.set(user.id, null);
-        idsToFetch.push(user.id);
-      }
-    }
-
-    // Get existing sailors
-    const existingSailors: Sailor[] = await Sailor.search({
-      discordId: idsToFetch,
-    });
-    for (const sailor of existingSailors) {
-      userSailors.set(sailor.discordId, sailor);
-    }
-
-    // Fill with new sailors if needed
-    const idsToCreate: { discordId: string }[] = [...userSailors]
-      .filter(([id, sailor]) => !sailor)
-      .map(([id]) => ({ discordId: id }));
-    if (idsToCreate.length) {
-      const newSailors: Sailor[] = await Sailor.create(...idsToCreate);
-      for (const sailor of newSailors) {
-        userSailors.set(sailor.discordId, sailor);
-      }
-    }
-
-    const source: MessageActor = {
-      user: author,
-      member,
-      sailor: userSailors.get(author.id)!,
-      name: member?.displayName || author.username,
-    };
-    const targets: MessageActor[] = mentions.users.map((user, id) => {
-      const member = mentions.members?.get(id) || null;
-      return {
-        user,
-        member,
-        sailor: userSailors.get(id)!,
-        name: member?.displayName || user.username,
-      };
-    });
-
-    return { source, targets };
-  }
-
-  /**
    * Sequentially performs the following actions in order:
    * 1. Loads all categories of commands and related commands
    * 2. Loads all modules (synchronous part, i.e. class definition etc.)
@@ -562,13 +564,12 @@ export default class Salty {
 
     // DATABASE
     await connect();
+    await adjustDatabase();
+    await loadConfig();
 
-    // ADDITIONAL MODULE LOADING
-    await Promise.all(this.modules.map((m) => m.onLoad && m.onLoad()));
+    this.dispatch("load");
 
-    log(
-      `${this.modules.length} modules loaded with ${moduleCommandCount} additionnal static commands.`
-    );
+    log(`${moduleCommandCount} additionnal static commands loaded by modules.`);
   }
 
   /**
@@ -622,13 +623,20 @@ export default class Salty {
     const importedModule = await import(
       ["..", modulesDir, fileName.replace(SCRIPT_REGEX, "")].join("/")
     );
-    const module = importedModule.default as Module;
-    const commands = module.commands || {};
-    this.modules.push(module);
+    const ModuleConstructor = importedModule.default as typeof SaltyModule;
+    const module = new ModuleConstructor(this);
+    for (const { method, callback, sequence } of module.callbacks) {
+      this.callbackDescriptors.push({
+        method,
+        callback: callback.bind(module),
+        sequence: sequence ?? 0,
+      });
+    }
     if (module.category) {
       const id = module.category.name as CategoryId;
       Command.registerCategory(id, module.category);
     }
+    const commands = module.commands || {};
     for (const categoryName in commands) {
       const categoryId = categoryName as CategoryId;
       for (const command of commands[categoryId]!) {
@@ -692,95 +700,10 @@ export default class Salty {
     }
   }
 
-  private async onMessage(msg: Message): Promise<any> {
-    const { attachments, author, cleanContent, guild } = msg;
+  private async onMessage(msg: Message): Promise<void> {
+    if (msg.author.bot) return;
 
-    // Ignores all bots
-    if (author.bot) return;
-
-    // Looks for an interaction: DM, prefix or mention
-    const prefixInteraction: boolean = cleanContent.startsWith(config.prefix);
-    const mentionInteraction: boolean = msg.mentions.users.has(this.user.id);
-    if (guild && !mentionInteraction && !prefixInteraction) {
-      for (const module of this.modules) {
-        if (module.onMessage) {
-          module.onMessage(msg);
-        }
-      }
-      return;
-    }
-
-    // All mentions are removed
-    let content = msg.content.replace(/<@!\d+>/g, "");
-    if (prefixInteraction) {
-      // Prefix is removed
-      content = content.slice(config.prefix.length);
-    }
-
-    // Fetches the actors of the action
-    const { source, targets } = await this.getMessageActors(msg);
-
-    // Logs the  action
-    logRequest(guild, source, cleanContent);
-
-    // The action is discarded if the user is black-listed
-    if (source.sailor.blackListed) return;
-
-    // Handles the actual command if found
-    const msgArgs = content
-      .split(/\s+/)
-      .map((w) => w.trim())
-      .filter(Boolean);
-
-    if (!msgArgs.length && !attachments.size) {
-      // Simple interaction if the messsage is empty
-      return this.message(msg, choice(help), { reply: msg });
-    }
-
-    const rawCommandName = clean(msgArgs.shift() || "");
-    const commandName = Command.aliases.get(rawCommandName);
-    const commandContext = Command.createContext(
-      this,
-      msg,
-      rawCommandName,
-      source,
-      targets,
-      msgArgs
-    );
-    if (commandName) {
-      if (msgArgs.length && keywords.help.includes(clean(msgArgs[0]))) {
-        return commandContext.run("help", [rawCommandName]);
-      } else {
-        return commandContext.run(commandName, msgArgs);
-      }
-    }
-    // If no command found, tries to find the closest matches
-    const [closest] = search([...Command.aliases.keys()], rawCommandName, 2);
-    if (!closest) {
-      return this.message(msg, choice(help), { reply: msg });
-    }
-    const closestCommand = Command.aliases.get(closest)!;
-    const helpMessage = await this.message(
-      msg,
-      `command "*${rawCommandName}*" doesn't exist. Did you mean "*${closestCommand}*"?`
-    );
-    const actions = new Collection<string, MessageAction>();
-    actions.set("✅", {
-      onAdd: (user) => {
-        if (author.id === user.id) {
-          helpMessage.delete().catch();
-          commandContext.run(closestCommand, msgArgs);
-        }
-      },
-    });
-    actions.set("❌", {
-      onAdd: (user) => {
-        if (author.id === user.id) {
-          helpMessage.delete().catch();
-        }
-      },
-    });
-    return this.addActions(helpMessage, { actions }, author.id);
+    this.dispatch("message", msg);
   }
 
   private async onMessageDelete(
@@ -862,7 +785,7 @@ export default class Salty {
 
       // Active roleBoxes
       const roleBoxesToRemove: string[] = [];
-      roleBoxesLoop: for (const rawRoleBox of crew.roleBoxes) {
+      for (const rawRoleBox of crew.roleBoxes) {
         const roleBox = parseRoleBox(rawRoleBox);
         const { channelId, messageId, emojiRoles } = roleBox;
         const channel = guild.channels.cache.get(channelId);
@@ -870,13 +793,13 @@ export default class Salty {
         // If the channel doesn't exist anymore => remove the role box
         if (!channel || !(channel instanceof TextChannel)) {
           roleBoxesToRemove.push(rawRoleBox);
-          continue roleBoxesLoop;
+          continue;
         }
 
         // If one of the roles is missing => remove the role box
         if (emojiRoles.find((e) => !guild.roles.cache.has(e[1]))) {
           roleBoxesToRemove.push(rawRoleBox);
-          continue roleBoxesLoop;
+          continue;
         }
         const message =
           channel.messages.cache.get(messageId) ||
@@ -885,7 +808,7 @@ export default class Salty {
         // If the message doesn't exist anymore => remove the role box
         if (!message) {
           roleBoxesToRemove.push(rawRoleBox);
-          continue roleBoxesLoop;
+          continue;
         }
 
         // Role box is clear => add it
@@ -907,10 +830,6 @@ export default class Salty {
     const loadingTime: number =
       Math.floor((Date.now() - this.startTime.getTime()) / 100) / 10;
 
-    log(
-      `Salty loaded in ${loadingTime} second${
-        loadingTime === 1 ? "" : "s"
-      } and ready to salt the chat :D`
-    );
+    log(`Bot loaded in ${loadingTime} ${plural("second", loadingTime)}.`);
   }
 }

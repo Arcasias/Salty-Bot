@@ -1,5 +1,6 @@
 import { Role } from "discord.js";
-import { CommandDescriptor, Module } from "../typings";
+import SaltyModule from "../classes/SaltyModule";
+import { CommandDescriptor } from "../typings";
 import { clean, meaning } from "../utils/generic";
 
 const MAX_AMOUNT = 100;
@@ -96,8 +97,6 @@ const cumCommand: CommandDescriptor = {
   },
 };
 
-const cumModule: Module = {
-  commands: { misc: [cumCommand] },
-};
-
-export default cumModule;
+export default class CumModule extends SaltyModule {
+  public commands = { misc: [cumCommand] };
+}

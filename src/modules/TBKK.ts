@@ -1,4 +1,5 @@
-import { CommandDescriptor, Module } from "../typings";
+import SaltyModule from "../classes/SaltyModule";
+import { CommandDescriptor } from "../typings";
 import { ellipsis, randInt, shuffle } from "../utils/generic";
 
 const PREDICTIONS: string[] = [
@@ -44,8 +45,6 @@ const futureCommand: CommandDescriptor = {
   },
 };
 
-const tbkkModule: Module = {
-  commands: { misc: [futureCommand] },
-};
-
-export default tbkkModule;
+export default class TbkkModule extends SaltyModule {
+  public commands = { misc: [futureCommand] };
+}

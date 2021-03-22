@@ -1,6 +1,5 @@
 import salty from "../../salty";
 import { CommandDescriptor } from "../../typings";
-import { isAdmin } from "../../utils/generic";
 
 const command: CommandDescriptor = {
   name: "admin",
@@ -18,7 +17,7 @@ const command: CommandDescriptor = {
   ],
   async action({ msg, send, source, targets }) {
     const [target] = targets;
-    const isRequestedUserAdmin: boolean = isAdmin(
+    const isRequestedUserAdmin: boolean = salty.isAdmin(
       target ? target.user : source.user,
       msg.guild
     );

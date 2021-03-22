@@ -6,6 +6,7 @@ import {
   Snowflake,
   User,
 } from "discord.js";
+import salty from "../salty";
 import {
   ActionContext,
   ActionContextMessageHelpers,
@@ -21,16 +22,16 @@ import {
   MessageActor,
   ParialActionContext,
 } from "../typings";
-import { isAdmin, isDev, isOwner, sort } from "../utils/generic";
+import { sort } from "../utils/generic";
 import { error } from "../utils/log";
 import Salty from "./Salty";
 
 const permissions: {
   [key in CommandAccess]: (user: User, guild: Guild) => boolean;
 } = {
-  admin: isAdmin,
-  dev: isDev,
-  owner: isOwner,
+  admin: (user: User, guild: Guild | null) => salty.isAdmin(user, guild),
+  dev: (user: User) => salty.isDev(user),
+  owner: (user: User) => salty.isOwner(user),
   public: () => true,
 };
 
