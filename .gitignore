@@ -1,9 +1,8 @@
 # Folders
 node_modules/
-dist/
 
 # Env. variables
-local*
+.env
 
 # sql scripts
 *.sql

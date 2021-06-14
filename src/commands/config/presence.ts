@@ -42,9 +42,8 @@ const command: CommandDescriptor = {
         }
       }
       default: {
-        const { color, title } = STATUSINFO[
-          <keyof StatusInfos>salty.bot.user!.presence.status
-        ];
+        const { color, title } =
+          STATUSINFO[<keyof StatusInfos>salty.bot.user!.presence.status];
         const description = salty.bot.user!.presence.status;
         return send.embed({ color, title, description });
       }

@@ -211,8 +211,7 @@ export const jokes: Joke[] = [
     text: "I don't like jokes about german sausages. They really are the wurst",
   },
   {
-    text:
-      "two routers decided to marry. The wedding wasn't much, but the reception was incredible",
+    text: "two routers decided to marry. The wedding wasn't much, but the reception was incredible",
   },
   {
     text: "what's the hardest part in a vegetable?",
